@@ -1,0 +1,12 @@
+singleton FlareData 1.0 FlareData.qml
+singleton Strings 1.0 Strings.qml
+singleton Theme 1.0 Theme.qml
+
+AuraView 1.0 AuraView.qml
+ClassicView 1.0 ClassicView.qml
+CompactView 1.0 CompactView.qml
+DetailCard 1.0 DetailCard.qml
+FlareHost 1.0 FlareHost.qml
+FlareSettings 1.0 FlareSettings.qml
+NotchShape 1.0 NotchShape.qml
+ProviderRing 1.0 ProviderRing.qml

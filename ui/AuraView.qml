@@ -1,0 +1,182 @@
+import QtQuick
+
+// One provider at a time, tinted with its colour. The others wait below as a
+// logo and a number; Super + ← / → (or a tap on one) moves the focus.
+Item {
+    id: view
+
+    required property string edge
+    required property real size
+
+    readonly property var cell: FlareData.focusedCell
+    readonly property var others: FlareData.cells.filter(c => view.cell && c.id !== view.cell.id)
+    readonly property bool blocked: cell !== null && (cell.status === "needs_auth" || cell.status === "error" || cell.status === "backoff")
+    readonly property real flare: 46 * size
+    readonly property real corner: 34 * size
+    readonly property real pad: 26 * size
+    readonly property real depth: 96 * size
+    property color tint: cell ? cell.aura : Theme.textSecondary
+
+    Behavior on tint {
+        ColorAnimation {
+            duration: 450
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    implicitWidth: depth
+    implicitHeight: 2 * flare + 2 * pad + column.implicitHeight
+
+    NotchShape {
+        anchors.fill: parent
+        edge: view.edge
+        depth: view.depth
+        length: view.implicitHeight
+        flare: view.flare
+        corner: view.corner
+        tint: view.tint
+        tintStrength: 0.36
+    }
+
+    Column {
+        id: column
+
+        width: view.depth
+        y: view.flare + view.pad
+        visible: view.cell !== null
+
+        ProviderRing {
+            anchors.horizontalCenter: parent.horizontalCenter
+            diameter: 68 * view.size
+            trackWidth: 5 * view.size
+            arcWidth: 5 * view.size
+            logoSize: 28 * view.size
+            fraction: view.cell ? view.cell.fraction : 0
+            arcColor: view.cell && view.cell.metered ? view.tint : Theme.textSecondary
+            provider: view.cell ? view.cell.id : ""
+            dimmed: view.cell ? view.cell.dimmed : true
+            exhausted: view.cell ? view.cell.exhausted : false
+            Accessible.role: Accessible.ProgressBar
+            Accessible.name: view.cell ? view.cell.name + ": " + view.cell.label : ""
+
+            TapHandler {
+                onTapped: FlareData.openUsagePage(view.cell.id)
+            }
+        }
+
+        Item {
+            width: 1
+            height: 12 * view.size
+        }
+
+        Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: view.cell ? view.cell.label : ""
+            color: Theme.textPrimary
+            font.pixelSize: Math.round(24 * view.size)
+            font.weight: Font.DemiBold
+            font.letterSpacing: -0.5
+            font.features: {
+                "tnum": 1
+            }
+        }
+
+        Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            topPadding: 5 * view.size
+            text: {
+                if (!view.cell)
+                    return "";
+                if (!view.cell.metered)
+                    return Strings.today;
+                if (view.blocked || !view.cell.head)
+                    return Strings.status(view.cell.status) || Strings.noReading;
+                return Strings.timeLeft(view.cell.head.resets_at, FlareData.now);
+            }
+            color: view.cell && view.cell.used !== null && view.cell.used >= 0.8 ? Theme.critical : Qt.rgba(1, 1, 1, 0.55)
+            font.pixelSize: Math.max(9, Math.round(11 * view.size))
+        }
+
+        Item {
+            width: 1
+            height: 22 * view.size
+            visible: view.others.length > 0
+        }
+
+        Rectangle {
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 56 * view.size
+            height: 1
+            color: Qt.rgba(1, 1, 1, 0.08)
+            visible: view.others.length > 0
+        }
+
+        Item {
+            width: 1
+            height: 16 * view.size
+            visible: view.others.length > 0
+        }
+
+        Column {
+            anchors.horizontalCenter: parent.horizontalCenter
+            spacing: 10 * view.size
+
+            Repeater {
+                model: view.others
+
+                Item {
+                    id: mini
+
+                    required property var modelData
+
+                    width: 56 * view.size
+                    height: miniColumn.implicitHeight + 8 * view.size
+                    opacity: miniHover.hovered ? 1 : 0.7
+                    Accessible.role: Accessible.Button
+                    Accessible.name: modelData.name + ": " + modelData.label
+
+                    Behavior on opacity {
+                        OpacityAnimator {
+                            duration: 150
+                        }
+                    }
+
+                    Column {
+                        id: miniColumn
+
+                        anchors.centerIn: parent
+                        spacing: 5 * view.size
+
+                        Image {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            width: 18 * view.size
+                            height: 18 * view.size
+                            source: Theme.logo(mini.modelData.id)
+                            sourceSize: Qt.size(Math.ceil(36 * view.size), Math.ceil(36 * view.size))
+                            fillMode: Image.PreserveAspectFit
+                            asynchronous: true
+                        }
+
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: mini.modelData.label
+                            color: mini.modelData.dimmed ? Theme.textSecondary : Qt.rgba(1, 1, 1, 0.85)
+                            font.pixelSize: Math.max(9, Math.round(11 * view.size))
+                            font.features: {
+                                "tnum": 1
+                            }
+                        }
+                    }
+
+                    HoverHandler {
+                        id: miniHover
+                    }
+
+                    TapHandler {
+                        onTapped: FlareData.focusOn(mini.modelData.id)
+                    }
+                }
+            }
+        }
+    }
+}
