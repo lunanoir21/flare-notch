@@ -66,6 +66,18 @@ pub enum Mount {
     Flush,
 }
 
+/// When the widget is on screen.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Reveal {
+    #[default]
+    Always,
+    /// Tucked past the edge until the pointer reaches it.
+    Hover,
+    /// Tucked past the edge until the `toggleVisible` IPC call, e.g. from a keybind.
+    Shortcut,
+}
+
 /// The edge the compact strip sits on.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -96,6 +108,11 @@ pub struct Notch {
     pub mount: Mount,
     /// Floating only: pixels between the panel and the screen edge.
     pub gap: u32,
+    pub reveal: Reveal,
+    /// Hover only: how long the pointer rests on the edge before it slides in.
+    pub reveal_delay_ms: u32,
+    /// Hover only: how long after the pointer leaves before it slides away.
+    pub hide_delay_ms: u32,
     pub edge: Edge,
     /// Pixels along the edge away from centre; positive moves down.
     pub offset: i32,
@@ -110,6 +127,9 @@ impl Default for Notch {
             style: Style::Classic,
             mount: Mount::Bridge,
             gap: 8,
+            reveal: Reveal::Always,
+            reveal_delay_ms: 80,
+            hide_delay_ms: 400,
             edge: Edge::Left,
             offset: 0,
             scale: 1.0,
@@ -232,6 +252,7 @@ pub struct Config {
 pub const SCALE_RANGE: RangeInclusive<f64> = 0.5..=2.0;
 pub const MIN_POLL_SECS: u64 = 5;
 pub const MAX_GAP: u32 = 64;
+pub const MAX_DELAY_MS: u32 = 5000;
 
 /// Every key `flare config set` accepts.
 pub const KEYS: &[&str] = &[
@@ -239,6 +260,9 @@ pub const KEYS: &[&str] = &[
     "notch.style",
     "notch.mount",
     "notch.gap",
+    "notch.reveal",
+    "notch.reveal_delay_ms",
+    "notch.hide_delay_ms",
     "notch.edge",
     "notch.offset",
     "notch.scale",
@@ -289,6 +313,15 @@ style = "classic"
 mount = "bridge"
 # Floating only: pixels between the panel and the screen edge, 0 to 64.
 gap = 8
+# When it is on screen:
+#   always    always there
+#   hover     tucked past the edge until the pointer reaches it
+#   shortcut  tucked away until `qs ipc call flare toggleVisible` (bind it to a key)
+reveal = "always"
+# Hover only: how long the pointer rests on the edge before it slides in, and
+# how long after the pointer leaves before it slides away. 0 to 5000.
+reveal_delay_ms = 80
+hide_delay_ms = 400
 # Edge for classic and aura: left or right.
 edge = "left"
 # Pixels to slide along the edge from the centre; positive moves it down.
@@ -403,6 +436,12 @@ impl Config {
             "notch.gap must be at most {MAX_GAP}, got {}",
             self.notch.gap
         );
+        for (key, value) in [
+            ("notch.reveal_delay_ms", self.notch.reveal_delay_ms),
+            ("notch.hide_delay_ms", self.notch.hide_delay_ms),
+        ] {
+            ensure!(value <= MAX_DELAY_MS, "{key} must be at most {MAX_DELAY_MS}, got {value}");
+        }
         for (index, id) in self.providers.order.iter().enumerate() {
             ensure!(
                 IDS.contains(&id.as_str()),
@@ -434,6 +473,8 @@ impl Config {
         self.poll.interval_secs = self.poll.interval_secs.max(MIN_POLL_SECS);
         self.scan.window_days = self.scan.window_days.max(1);
         self.notch.gap = self.notch.gap.min(MAX_GAP);
+        self.notch.reveal_delay_ms = self.notch.reveal_delay_ms.min(MAX_DELAY_MS);
+        self.notch.hide_delay_ms = self.notch.hide_delay_ms.min(MAX_DELAY_MS);
         let mut order: Vec<String> = Vec::new();
         for id in &self.providers.order {
             if IDS.contains(&id.as_str()) && !order.contains(id) {
@@ -613,7 +654,7 @@ mod tests {
         let path = write(
             dir.path(),
             "[data]\nmode = \"local\"\n\
-             [notch]\nstyle = \"aura\"\nmount = \"floating\"\ngap = 12\nedge = \"right\"\noffset = -40\nscale = 1.25\nscreen = \"DP-1\"\n\
+             [notch]\nstyle = \"aura\"\nmount = \"floating\"\ngap = 12\nreveal = \"hover\"\nhide_delay_ms = 250\nedge = \"right\"\noffset = -40\nscale = 1.25\nscreen = \"DP-1\"\n\
              [compact]\nedge = \"bottom\"\noffset = 12\nopen_on = \"hover\"\n\
              [providers]\ncodex = false\norder = [\"cursor\", \"claude\"]\n\
              [aura]\nclaude = \"#112233\"\n",
@@ -624,6 +665,9 @@ mod tests {
         assert_eq!(config.notch.style, Style::Aura);
         assert_eq!(config.notch.mount, Mount::Floating);
         assert_eq!(config.notch.gap, 12);
+        assert_eq!(config.notch.reveal, Reveal::Hover);
+        assert_eq!(config.notch.reveal_delay_ms, 80);
+        assert_eq!(config.notch.hide_delay_ms, 250);
         assert_eq!(config.notch.edge, Edge::Right);
         assert_eq!(config.compact.edge, CompactEdge::Bottom);
         assert_eq!(config.compact.open_on, OpenOn::Hover);
@@ -685,6 +729,8 @@ mod tests {
         assert!(set_value(&path, "data.mode", "cloud").is_err());
         assert!(set_value(&path, "notch.mount", "side").is_err());
         assert!(set_value(&path, "notch.gap", "100").is_err());
+        assert!(set_value(&path, "notch.reveal", "sometimes").is_err());
+        assert!(set_value(&path, "notch.hide_delay_ms", "9000").is_err());
         assert!(set_value(&path, "aura.claude", "orange").is_err());
         assert!(set_value(&path, "providers.order", "claude,claude").is_err());
         assert!(set_value(&path, "notch.nope", "1").is_err());
