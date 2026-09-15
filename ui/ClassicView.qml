@@ -8,6 +8,8 @@ Item {
 
     required property string edge
     required property real size
+    property string mount: "bridge"
+    property real edgeGap: 0
 
     signal cellHovered(string id, bool inside)
 
@@ -24,16 +26,21 @@ Item {
     readonly property real padTrail: 50.1 * u
     readonly property real spacing: 83.5 * u
     readonly property real depth: 186 * u
+    readonly property real bodyDepth: depth
+    // Only a floating body keeps off the edge, and only a bridge spends its
+    // ends on flares.
+    readonly property real inset: mount === "floating" ? edgeGap : 0
+    readonly property real ends: mount === "bridge" ? flare : 0
     readonly property real cellHeight: ring + gap + metrics.height
     readonly property int count: FlareData.cells.length
-    readonly property real length: 2 * flare + padLead + count * cellHeight + Math.max(0, count - 1) * spacing + padTrail
+    readonly property real length: 2 * ends + padLead + count * cellHeight + Math.max(0, count - 1) * spacing + padTrail
 
-    implicitWidth: depth
+    implicitWidth: depth + inset
     implicitHeight: length
 
     function cellCenter(id) {
         const index = FlareData.cells.findIndex(c => c.id === id);
-        return index < 0 ? length / 2 : flare + padLead + index * (cellHeight + spacing) + ring / 2;
+        return index < 0 ? length / 2 : ends + padLead + index * (cellHeight + spacing) + ring / 2;
     }
 
     FontMetrics {
@@ -42,18 +49,22 @@ Item {
         font.weight: Font.Medium
     }
 
+    // A flush strip is drawn by the host along the whole edge.
     NotchShape {
         anchors.fill: parent
+        visible: view.mount !== "flush"
         edge: view.edge
+        mount: view.mount
         depth: view.depth
         length: view.length
+        gap: view.inset
         flare: view.flare
-        corner: view.corner
+        corner: view.mount === "floating" ? 22 * view.size : view.corner
     }
 
     Column {
-        x: (view.depth - view.ring) / 2
-        y: view.flare + view.padLead
+        x: (view.edge === "left" ? view.inset : 0) + (view.depth - view.ring) / 2
+        y: view.ends + view.padLead
         spacing: view.spacing
 
         Repeater {

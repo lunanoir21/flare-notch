@@ -81,8 +81,17 @@ Scope {
                 bottom: !win.compact || win.edge === "bottom"
             }
 
-            implicitWidth: compact ? 0 : body.width + cardRoom
-            implicitHeight: compact && body.item ? body.item.fullDepth : 0
+            implicitWidth: compact ? 0 : Math.max(body.width + cardRoom, FlareData.mount === "flush" && body.item ? body.item.bodyDepth + 18 * FlareData.scale : 0)
+            implicitHeight: compact && body.item ? body.item.fullReach : 0
+
+            property color stripTint: style === "aura" && FlareData.focusedCell ? FlareData.focusedCell.aura : "transparent"
+
+            Behavior on stripTint {
+                ColorAnimation {
+                    duration: 450
+                    easing.type: Easing.OutCubic
+                }
+            }
 
             mask: Region {
                 item: body
@@ -90,6 +99,29 @@ Scope {
                 Region {
                     item: cardHit
                 }
+            }
+
+            // Flush: one strip down the whole edge, the body riding on it.
+            // Declared first so it sits underneath.
+            NotchShape {
+                id: strip
+
+                readonly property real stripDepth: body.item ? body.item.bodyDepth : 0
+                // Sized here, not from the path: the path is drawn to the size.
+                readonly property real stripReach: stripDepth + Math.min(18 * FlareData.scale, stripDepth, win.span / 2)
+
+                visible: FlareData.mount === "flush" && body.item !== null
+                edge: win.edge
+                mount: "flush"
+                depth: stripDepth
+                length: win.span
+                flare: 18 * FlareData.scale
+                tint: win.stripTint
+                tintStrength: win.style === "aura" ? 0.36 : 0
+                width: win.compact ? win.width : stripReach
+                height: win.compact ? stripReach : win.height
+                x: !win.compact && win.edge === "right" ? win.width - width : 0
+                y: win.compact && win.edge === "bottom" ? win.height - height : 0
             }
 
             Loader {
@@ -131,6 +163,8 @@ Scope {
                 ClassicView {
                     edge: win.edge
                     size: FlareData.scale
+                    mount: FlareData.mount
+                    edgeGap: FlareData.gap
                     onCellHovered: (id, inside) => win.hover(id, inside)
                 }
             }
@@ -141,6 +175,8 @@ Scope {
                 AuraView {
                     edge: win.edge
                     size: FlareData.scale
+                    mount: FlareData.mount
+                    edgeGap: FlareData.gap
                 }
             }
 
@@ -150,6 +186,8 @@ Scope {
                 CompactView {
                     edge: win.edge
                     size: FlareData.scale
+                    mount: FlareData.mount
+                    edgeGap: FlareData.gap
                 }
             }
 

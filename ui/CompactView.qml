@@ -7,6 +7,8 @@ Item {
 
     required property string edge
     required property real size
+    property string mount: "bridge"
+    property real edgeGap: 0
 
     readonly property bool open: FlareData.compactOpen
     readonly property bool atTop: edge !== "bottom"
@@ -14,8 +16,13 @@ Item {
     readonly property real flare: 16 * size
     readonly property real corner: 14 * size
     readonly property real sidePad: 22 * size
-    readonly property real length: Math.max(strip.implicitWidth, panel.width) + 2 * flare + 2 * sidePad
+    readonly property real inset: mount === "floating" ? edgeGap : 0
+    readonly property real ends: mount === "bridge" ? flare : 0
+    readonly property real length: Math.max(strip.implicitWidth, panel.width) + 2 * ends + 2 * sidePad
     readonly property real fullDepth: stripHeight + panel.implicitHeight + 8 * size
+    // What the surface has to hold when open: the gap, and a flush strip's flare.
+    readonly property real fullReach: fullDepth + inset + (mount === "flush" ? 18 * size : 0)
+    readonly property real bodyDepth: depth
     property real depth: open ? fullDepth : stripHeight
 
     Behavior on depth {
@@ -26,24 +33,27 @@ Item {
     }
 
     implicitWidth: length
-    implicitHeight: depth
+    implicitHeight: depth + inset
     // The panel is laid out at full size and revealed as the body grows.
     clip: true
 
     NotchShape {
         anchors.fill: parent
+        visible: view.mount !== "flush"
         edge: view.edge
+        mount: view.mount
         depth: view.depth
         length: view.length
+        gap: view.inset
         flare: view.flare
-        corner: view.corner
+        corner: view.mount === "floating" ? 17 * view.size : view.corner
     }
 
     Row {
         id: strip
 
         anchors.horizontalCenter: parent.horizontalCenter
-        y: view.atTop ? 0 : view.depth - view.stripHeight
+        y: view.atTop ? view.inset : view.depth - view.stripHeight
         height: view.stripHeight
         spacing: 14 * view.size
 
@@ -96,7 +106,7 @@ Item {
         id: panel
 
         anchors.horizontalCenter: parent.horizontalCenter
-        y: view.atTop ? view.stripHeight : view.depth - view.stripHeight - implicitHeight - 8 * view.size
+        y: view.atTop ? view.inset + view.stripHeight : view.depth - view.stripHeight - implicitHeight - 8 * view.size
         width: 292 * view.size
         opacity: view.open ? 1 : 0
         visible: view.depth > view.stripHeight + 1

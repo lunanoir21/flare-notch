@@ -23,6 +23,7 @@ Singleton {
     // Live values while a settings slider is being dragged; NaN when not.
     property real previewOffset: NaN
     property real previewScale: NaN
+    property real previewGap: NaN
 
     property real now: Date.now() / 1000
 
@@ -35,6 +36,8 @@ Singleton {
     readonly property string compactEdge: section("compact").edge || "top"
     readonly property real compactOffset: section("compact").offset || 0
     readonly property string openOn: section("compact").open_on || "click"
+    readonly property string mount: section("notch").mount || "bridge"
+    readonly property real gap: isNaN(previewGap) ? (section("notch").gap ?? 8) : previewGap
     readonly property string dataMode: section("data").mode || "official"
     readonly property int pollMs: Math.max(5, section("poll").interval_secs || 30) * 1000
 
@@ -296,6 +299,7 @@ Singleton {
         onExited: {
             root.previewOffset = NaN;
             root.previewScale = NaN;
+            root.previewGap = NaN;
             root.pump();
         }
     }

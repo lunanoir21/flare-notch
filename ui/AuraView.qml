@@ -7,6 +7,8 @@ Item {
 
     required property string edge
     required property real size
+    property string mount: "bridge"
+    property real edgeGap: 0
 
     readonly property var cell: FlareData.focusedCell
     readonly property var others: FlareData.cells.filter(c => view.cell && c.id !== view.cell.id)
@@ -15,6 +17,9 @@ Item {
     readonly property real corner: 34 * size
     readonly property real pad: 26 * size
     readonly property real depth: 96 * size
+    readonly property real bodyDepth: depth
+    readonly property real inset: mount === "floating" ? edgeGap : 0
+    readonly property real ends: mount === "bridge" ? flare : 0
     property color tint: cell ? cell.aura : Theme.textSecondary
 
     Behavior on tint {
@@ -24,16 +29,20 @@ Item {
         }
     }
 
-    implicitWidth: depth
-    implicitHeight: 2 * flare + 2 * pad + column.implicitHeight
+    implicitWidth: depth + inset
+    implicitHeight: 2 * ends + 2 * pad + column.implicitHeight
 
+    // A flush strip, tinted the same way, is drawn by the host.
     NotchShape {
         anchors.fill: parent
+        visible: view.mount !== "flush"
         edge: view.edge
+        mount: view.mount
         depth: view.depth
         length: view.implicitHeight
+        gap: view.inset
         flare: view.flare
-        corner: view.corner
+        corner: view.mount === "floating" ? 24 * view.size : view.corner
         tint: view.tint
         tintStrength: 0.36
     }
@@ -41,8 +50,9 @@ Item {
     Column {
         id: column
 
+        x: view.edge === "left" ? view.inset : 0
         width: view.depth
-        y: view.flare + view.pad
+        y: view.ends + view.pad
         visible: view.cell !== null
 
         ProviderRing {
