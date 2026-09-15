@@ -1,0 +1,8 @@
+{
+  "numStartups": 1,
+  "oauthAccount": {
+    "accountUuid": "00000000-0000-0000-0000-000000000000",
+    "emailAddress": "redacted@example.invalid",
+    "organizationRole": "admin"
+  }
+}

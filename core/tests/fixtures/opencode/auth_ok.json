@@ -1,0 +1,10 @@
+{
+  "openrouter": {
+    "type": "api",
+    "key": "redacted"
+  },
+  "nvidia": {
+    "type": "api",
+    "key": "redacted"
+  }
+}

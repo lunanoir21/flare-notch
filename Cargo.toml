@@ -1,0 +1,27 @@
+[workspace]
+resolver = "3"
+members = ["core", "cli"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+rust-version = "1.85"
+
+[workspace.dependencies]
+anyhow = "1"
+base64 = "0.22"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+clap = { version = "4", features = ["derive"] }
+dirs = "6"
+rusqlite = { version = "0.37", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.9"
+toml_edit = "0.25"
+ureq = "2"
+flare-core = { path = "core" }
+
+[profile.release]
+lto = true
+strip = true

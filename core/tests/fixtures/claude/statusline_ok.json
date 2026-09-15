@@ -1,0 +1,15 @@
+{
+  "model": {
+    "display_name": "Test"
+  },
+  "rate_limits": {
+    "five_hour": {
+      "used_percentage": 63,
+      "resets_at": 1787017800
+    },
+    "seven_day": {
+      "used_percentage": 72,
+      "resets_at": 1787097600
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "auth_mode": "chatgpt",
+  "OPENAI_API_KEY": null,
+  "tokens": {
+    "id_token": "eyJhbGciOiAiUlMyNTYiLCAidHlwIjogIkpXVCJ9.eyJlbWFpbCI6ICJyZWRhY3RlZEBleGFtcGxlLmludmFsaWQiLCAic3ViIjogInJlZGFjdGVkIn0.not-a-real-signature",
+    "access_token": "redacted",
+    "refresh_token": "redacted",
+    "account_id": "00000000-0000-0000-0000-000000000000"
+  },
+  "last_refresh": "2026-08-16T18:33:00.000Z"
+}
