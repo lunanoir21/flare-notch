@@ -53,6 +53,19 @@ pub enum Edge {
     Right,
 }
 
+/// How the body meets the screen edge, as in Quay.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Mount {
+    /// Welded to the edge with inverse rounded corners: Codenotch's notch.
+    #[default]
+    Bridge,
+    /// A rounded panel held off the edge by `notch.gap`.
+    Floating,
+    /// A strip along the whole edge that flares into the screen at both ends.
+    Flush,
+}
+
 /// The edge the compact strip sits on.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -80,6 +93,9 @@ pub struct Data {
 #[serde(default)]
 pub struct Notch {
     pub style: Style,
+    pub mount: Mount,
+    /// Floating only: pixels between the panel and the screen edge.
+    pub gap: u32,
     pub edge: Edge,
     /// Pixels along the edge away from centre; positive moves down.
     pub offset: i32,
@@ -92,6 +108,8 @@ impl Default for Notch {
     fn default() -> Self {
         Self {
             style: Style::Classic,
+            mount: Mount::Bridge,
+            gap: 8,
             edge: Edge::Left,
             offset: 0,
             scale: 1.0,
@@ -213,11 +231,14 @@ pub struct Config {
 
 pub const SCALE_RANGE: RangeInclusive<f64> = 0.5..=2.0;
 pub const MIN_POLL_SECS: u64 = 5;
+pub const MAX_GAP: u32 = 64;
 
 /// Every key `flare config set` accepts.
 pub const KEYS: &[&str] = &[
     "data.mode",
     "notch.style",
+    "notch.mount",
+    "notch.gap",
     "notch.edge",
     "notch.offset",
     "notch.scale",
@@ -261,6 +282,13 @@ mode = "official"
 # aura     one provider at a time, tinted with its colour
 # compact  a thin strip on the top or bottom edge, opened with a tap
 style = "classic"
+# How it meets the screen edge, in every style:
+#   bridge    welded to the edge with inverse rounded corners (Codenotch's notch)
+#   floating  a rounded panel held off the edge by `gap`
+#   flush     a strip along the whole edge, flaring into the screen at both ends
+mount = "bridge"
+# Floating only: pixels between the panel and the screen edge, 0 to 64.
+gap = 8
 # Edge for classic and aura: left or right.
 edge = "left"
 # Pixels to slide along the edge from the centre; positive moves it down.
@@ -370,6 +398,11 @@ impl Config {
             self.poll.interval_secs
         );
         ensure!(self.scan.window_days >= 1, "scan.window_days must be at least 1");
+        ensure!(
+            self.notch.gap <= MAX_GAP,
+            "notch.gap must be at most {MAX_GAP}, got {}",
+            self.notch.gap
+        );
         for (index, id) in self.providers.order.iter().enumerate() {
             ensure!(
                 IDS.contains(&id.as_str()),
@@ -400,6 +433,7 @@ impl Config {
         };
         self.poll.interval_secs = self.poll.interval_secs.max(MIN_POLL_SECS);
         self.scan.window_days = self.scan.window_days.max(1);
+        self.notch.gap = self.notch.gap.min(MAX_GAP);
         let mut order: Vec<String> = Vec::new();
         for id in &self.providers.order {
             if IDS.contains(&id.as_str()) && !order.contains(id) {
@@ -579,7 +613,7 @@ mod tests {
         let path = write(
             dir.path(),
             "[data]\nmode = \"local\"\n\
-             [notch]\nstyle = \"aura\"\nedge = \"right\"\noffset = -40\nscale = 1.25\nscreen = \"DP-1\"\n\
+             [notch]\nstyle = \"aura\"\nmount = \"floating\"\ngap = 12\nedge = \"right\"\noffset = -40\nscale = 1.25\nscreen = \"DP-1\"\n\
              [compact]\nedge = \"bottom\"\noffset = 12\nopen_on = \"hover\"\n\
              [providers]\ncodex = false\norder = [\"cursor\", \"claude\"]\n\
              [aura]\nclaude = \"#112233\"\n",
@@ -588,6 +622,8 @@ mod tests {
         assert!(problem.is_none(), "{problem:?}");
         assert_eq!(config.data.mode, DataMode::Local);
         assert_eq!(config.notch.style, Style::Aura);
+        assert_eq!(config.notch.mount, Mount::Floating);
+        assert_eq!(config.notch.gap, 12);
         assert_eq!(config.notch.edge, Edge::Right);
         assert_eq!(config.compact.edge, CompactEdge::Bottom);
         assert_eq!(config.compact.open_on, OpenOn::Hover);
@@ -647,6 +683,8 @@ mod tests {
         assert!(set_value(&path, "notch.edge", "top").is_err());
         assert!(set_value(&path, "notch.scale", "9").is_err());
         assert!(set_value(&path, "data.mode", "cloud").is_err());
+        assert!(set_value(&path, "notch.mount", "side").is_err());
+        assert!(set_value(&path, "notch.gap", "100").is_err());
         assert!(set_value(&path, "aura.claude", "orange").is_err());
         assert!(set_value(&path, "providers.order", "claude,claude").is_err());
         assert!(set_value(&path, "notch.nope", "1").is_err());
