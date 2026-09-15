@@ -18,6 +18,10 @@ Her stil kenara Quay'deki gibi üç biçimden biriyle bağlanır: varsayılan **
 ayrık, yuvarlak bir paneldir; **flush** (kenar boyu) bütün kenar boyunca uzanıp iki
 ucunda ekrana kıvrılan bir şerittir.
 
+Yolunuza da çıkmayabilir: `notch.reveal = "hover"` ile kenarın ötesinde saklı bekler ve
+fare kenara gelince kayarak içeri girer; `"shortcut"` ile bir tuş onu getirir ve geri
+gönderir.
+
 Kullanmadığınız sağlayıcıları ayarlar sayfasından kapatabilirsiniz; kurulu olmayan bir
 sağlayıcı zaten hiç gösterilmez.
 
@@ -121,6 +125,7 @@ flare Quickshell IPC'de `flare` adıyla dinler:
 |---|---|
 | `next`, `prev` | aura'yı sonraki ya da önceki sağlayıcıya geçirir |
 | `toggle` | kompakt paneli açar ya da kapatır |
+| `toggleVisible`, `show`, `hide` | widget'ı getirir ya da saklar (hover ve shortcut modlarında) |
 | `style classic\|aura\|compact` | stili değiştirir |
 | `settings` | ayarlar sayfasını açar ya da kapatır |
 | `refresh` | hemen okur |
@@ -131,6 +136,7 @@ Hyprland için, flare `~/.config/quickshell/shell.qml` içindeki shell'deyse:
 bind = SUPER, right, exec, qs ipc call flare next
 bind = SUPER, left,  exec, qs ipc call flare prev
 bind = SUPER, U,     exec, qs ipc call flare toggle
+bind = SUPER SHIFT, U, exec, qs ipc call flare toggleVisible
 ```
 
 Shell'iniz başka bir yerdeyse `qs`'ten sonra `-p /path/to/shell.qml` ekleyin.

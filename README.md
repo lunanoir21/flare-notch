@@ -18,6 +18,10 @@ welds it to the edge with inverse rounded corners; **floating** holds it off the
 as a rounded panel; **flush** runs a strip along the whole edge that flares into the
 screen at both ends.
 
+It can also stay out of the way: with `notch.reveal = "hover"` it waits tucked past the
+edge and slides in when the pointer reaches it, and with `"shortcut"` a key brings it
+in and sends it away.
+
 Providers you don't use can be switched off in the settings page, and a provider that
 is not installed never gets a cell.
 
@@ -117,6 +121,8 @@ comments. The widget picks up a saved change within a second.
 | `notch.style` | `classic`, `aura`, `compact` |
 | `notch.mount` | `bridge`, `floating`, `flush` |
 | `notch.gap` | floating: pixels off the edge, `0` to `64` |
+| `notch.reveal` | `always`, `hover`, `shortcut` |
+| `notch.reveal_delay_ms`, `notch.hide_delay_ms` | hover: `0` to `5000` |
 | `notch.edge` | `left`, `right` |
 | `notch.offset` | pixels from the centre, along the edge |
 | `notch.scale` | `0.5` to `2.0` |
@@ -138,6 +144,7 @@ flare listens on Quickshell IPC as `flare`:
 |---|---|
 | `next`, `prev` | step aura to the next or previous provider |
 | `toggle` | open or close the compact panel |
+| `toggleVisible`, `show`, `hide` | bring the widget in or tuck it away (hover and shortcut reveal) |
 | `style classic\|aura\|compact` | switch style |
 | `settings` | open or close the settings page |
 | `refresh` | read now |
@@ -148,6 +155,7 @@ For Hyprland, with flare inside the shell at `~/.config/quickshell/shell.qml`:
 bind = SUPER, right, exec, qs ipc call flare next
 bind = SUPER, left,  exec, qs ipc call flare prev
 bind = SUPER, U,     exec, qs ipc call flare toggle
+bind = SUPER SHIFT, U, exec, qs ipc call flare toggleVisible
 ```
 
 Add `-p /path/to/shell.qml` after `qs` when your shell lives elsewhere.
