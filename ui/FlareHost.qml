@@ -18,6 +18,15 @@ Scope {
         function toggle(): void {
             FlareData.toggleCompact();
         }
+        function toggleVisible(): void {
+            FlareData.toggleVisible();
+        }
+        function show(): void {
+            FlareData.shown = true;
+        }
+        function hide(): void {
+            FlareData.hideWidget();
+        }
         function refresh(): void {
             FlareData.refresh(true);
         }
@@ -52,16 +61,52 @@ Scope {
 
             readonly property real span: compact ? width : height
             readonly property real bodySize: compact ? body.width : body.height
+            readonly property real bodyAcross: compact ? body.height : body.width
             readonly property real along: Math.max(0, Math.min(span - bodySize, Math.round((span - bodySize) / 2 + baseOffset + dragDelta)))
             readonly property real cardRoom: style === "classic" ? card.width + 28 * FlareData.scale : 0
 
+            // A hover reveal belongs to this screen; a shortcut shows every screen.
+            property bool hoverShown: false
+            readonly property bool onScreen: FlareData.reveal === "always" || FlareData.shown || (FlareData.reveal === "hover" && hoverShown)
+            // 0 is tucked past the edge, 1 fully in.
+            property real slide: onScreen ? 1 : 0
+            readonly property real tucked: (1 - slide) * (bodyAcross + 2)
+            readonly property bool pointerNear: edgeHover.hovered || bodyHover.hovered || cardHover.hovered
+
+            Behavior on slide {
+                NumberAnimation {
+                    duration: 280
+                    easing.type: Easing.OutCubic
+                }
+            }
+
+            onPointerNearChanged: {
+                if (!pointerNear)
+                    FlareData.hoverSuppressed = false;
+            }
+            onOnScreenChanged: {
+                if (onScreen)
+                    holdOpen(bodyHover.hovered);
+            }
+
             function hover(id, inside) {
                 if (inside) {
-                    hideTimer.stop();
+                    cardTimer.stop();
                     hoverId = id;
                 } else if (id === hoverId) {
-                    hideTimer.restart();
+                    cardTimer.restart();
                 }
+            }
+
+            // In hover mode, keep it out while the pointer is on it; otherwise
+            // start the countdown to tuck it away.
+            function holdOpen(inside) {
+                if (FlareData.reveal !== "hover")
+                    return;
+                if (inside)
+                    hideTimer.stop();
+                else if (!bodyHover.hovered && !cardHover.hovered)
+                    hideTimer.restart();
             }
 
             screen: modelData
@@ -93,24 +138,61 @@ Scope {
                 }
             }
 
+            // Tucked away, only the strip of edge beside the body listens.
             mask: Region {
-                item: body
+                item: win.onScreen ? body : hotEdgeArea
 
                 Region {
                     item: cardHit
                 }
             }
 
-            // Flush: one strip down the whole edge, the body riding on it.
-            // Declared first so it sits underneath.
-            NotchShape {
-                id: strip
+            Connections {
+                target: FlareData
 
-                readonly property real stripDepth: body.item ? body.item.bodyDepth : 0
+                function onShownChanged() {
+                    if (!FlareData.shown)
+                        win.hoverShown = false;
+                }
+                function onRevealChanged() {
+                    win.hoverShown = false;
+                    revealTimer.stop();
+                    hideTimer.stop();
+                }
+            }
+
+            // Only as long as the body, give or take a little, so a pointer
+            // resting on the edge beside it cannot flicker it in and out.
+            Item {
+                id: hotEdgeArea
+
+                readonly property real margin: 24
+
+                width: win.compact ? win.bodySize + 2 * margin : 12
+                height: win.compact ? 12 : win.bodySize + 2 * margin
+                x: win.compact ? win.along - margin : (win.edge === "right" ? win.width - width : 0)
+                y: win.compact ? (win.edge === "bottom" ? win.height - height : 0) : win.along - margin
+
+                HoverHandler {
+                    id: edgeHover
+                    enabled: FlareData.reveal === "hover"
+                    onHoveredChanged: {
+                        if (hovered && !win.onScreen && !FlareData.hoverSuppressed)
+                            revealTimer.restart();
+                        else
+                            revealTimer.stop();
+                    }
+                }
+            }
+
+            // Flush: one strip down the whole edge, the body riding on it.
+            // Declared before the body so it sits underneath.
+            NotchShape {
+                readonly property real stripDepth: (body.item ? body.item.bodyDepth : 0) * win.slide
                 // Sized here, not from the path: the path is drawn to the size.
                 readonly property real stripReach: stripDepth + Math.min(18 * FlareData.scale, stripDepth, win.span / 2)
 
-                visible: FlareData.mount === "flush" && body.item !== null
+                visible: FlareData.mount === "flush" && body.item !== null && win.slide > 0.001
                 edge: win.edge
                 mount: "flush"
                 depth: stripDepth
@@ -128,10 +210,17 @@ Scope {
                 id: body
 
                 sourceComponent: win.compact ? compactView : (win.style === "aura" ? auraView : classicView)
-                x: win.compact ? win.along : (win.edge === "right" ? win.width - width : 0)
-                y: win.compact ? (win.edge === "bottom" ? win.height - height : 0) : win.along
+                visible: win.slide > 0.001
+                x: win.compact ? win.along : (win.edge === "right" ? win.width - width + win.tucked : -win.tucked)
+                y: win.compact ? (win.edge === "bottom" ? win.height - height + win.tucked : -win.tucked) : win.along
+
+                HoverHandler {
+                    id: bodyHover
+                    onHoveredChanged: win.holdOpen(hovered)
+                }
 
                 DragHandler {
+                    id: drag
                     target: null
                     xAxis.enabled: win.compact
                     yAxis.enabled: !win.compact
@@ -197,7 +286,7 @@ Scope {
                 readonly property var hovered: FlareData.cellFor(win.hoverId)
                 readonly property real anchorY: body.y + (body.item && typeof body.item.cellCenter === "function" ? body.item.cellCenter(win.hoverId) : 0)
 
-                visible: win.style === "classic" && hovered !== null
+                visible: win.style === "classic" && hovered !== null && win.slide > 0.99
                 cell: hovered
                 side: win.edge
                 x: win.edge === "right" ? body.x - width - 14 * FlareData.scale : body.x + body.width + 14 * FlareData.scale
@@ -205,7 +294,11 @@ Scope {
                 tailY: anchorY - y
 
                 HoverHandler {
-                    onHoveredChanged: win.hover(win.hoverId, hovered)
+                    id: cardHover
+                    onHoveredChanged: {
+                        win.hover(win.hoverId, hovered);
+                        win.holdOpen(hovered);
+                    }
                 }
             }
 
@@ -219,9 +312,29 @@ Scope {
             }
 
             Timer {
-                id: hideTimer
+                id: cardTimer
                 interval: 250
                 onTriggered: win.hoverId = ""
+            }
+
+            Timer {
+                id: revealTimer
+                interval: FlareData.revealDelay
+                onTriggered: {
+                    if (FlareData.reveal === "hover" && !FlareData.hoverSuppressed)
+                        win.hoverShown = true;
+                }
+            }
+
+            Timer {
+                id: hideTimer
+                interval: FlareData.hideDelay
+                onTriggered: {
+                    if (FlareData.reveal !== "hover" || drag.active || FlareData.settingsOpen || bodyHover.hovered || cardHover.hovered)
+                        return;
+                    win.hoverShown = false;
+                    FlareData.shown = false;
+                }
             }
         }
     }

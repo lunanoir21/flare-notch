@@ -76,8 +76,8 @@ Shape {
 
     readonly property string outline: mount === "floating" ? floatingPath() : (mount === "flush" ? flushPath() : bridgePath())
 
-    implicitWidth: vertical ? reach : length
-    implicitHeight: vertical ? length : reach
+    // No implicit size: the outline is drawn to the size it is given, so a size
+    // taken from the outline would be a loop. Callers size it.
     preferredRendererType: Shape.CurveRenderer
 
     ShapePath {

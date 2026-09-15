@@ -38,6 +38,20 @@ Singleton {
     readonly property string openOn: section("compact").open_on || "click"
     readonly property string mount: section("notch").mount || "bridge"
     readonly property real gap: isNaN(previewGap) ? (section("notch").gap ?? 8) : previewGap
+    readonly property string reveal: section("notch").reveal || "always"
+    readonly property int revealDelay: section("notch").reveal_delay_ms ?? 80
+    readonly property int hideDelay: section("notch").hide_delay_ms ?? 400
+    // Brought on screen by a shortcut (every screen at once); hover reveals
+    // are kept per screen by the host.
+    property bool shown: false
+    // Set by a manual hide while the pointer is still at the edge, so the same
+    // pointer does not bring it straight back.
+    property bool hoverSuppressed: false
+
+    onRevealChanged: {
+        shown = false;
+        hoverSuppressed = false;
+    }
     readonly property string dataMode: section("data").mode || "official"
     readonly property int pollMs: Math.max(5, section("poll").interval_secs || 30) * 1000
 
@@ -63,6 +77,9 @@ Singleton {
     readonly property var cells: {
         const out = [];
         for (const id of root.order) {
+            // Switched off counts at once, not at the next reading.
+            if (root.section("providers")[id] === false)
+                continue;
             const p = root.providers.find(entry => entry.provider === id);
             if (!p || p.status === "absent")
                 continue;
@@ -121,6 +138,24 @@ Singleton {
 
     function toggleCompact() {
         compactOpen = !compactOpen;
+    }
+
+    // Nothing to bring back in "always", so it stays put there.
+    function toggleVisible() {
+        if (reveal === "always")
+            return;
+        if (shown)
+            hideWidget();
+        else
+            shown = true;
+    }
+
+    function hideWidget() {
+        if (reveal === "always")
+            return;
+        if (reveal === "hover")
+            hoverSuppressed = true;
+        shown = false;
     }
 
     function openUsagePage(id) {
@@ -194,11 +229,15 @@ Singleton {
     }
 
     property var pending: []
+    // A provider switched back on has no reading yet: read once the write lands.
+    property bool refreshAfterSet: false
 
     // Applied at once so the widget answers immediately, then written through
     // `flare config set`, whose reply becomes the truth.
     function set(key, value) {
         applyLocal(key, value);
+        if (key.startsWith("providers."))
+            refreshAfterSet = true;
         const text = Array.isArray(value) ? value.join(",") : String(value);
         pending = pending.filter(item => item[0] !== key).concat([[key, text]]);
         pump();
@@ -300,6 +339,10 @@ Singleton {
             root.previewOffset = NaN;
             root.previewScale = NaN;
             root.previewGap = NaN;
+            if (root.refreshAfterSet && root.pending.length === 0) {
+                root.refreshAfterSet = false;
+                root.refresh(false);
+            }
             root.pump();
         }
     }
