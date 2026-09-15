@@ -71,6 +71,53 @@ PanelWindow {
         }
     }
 
+    component Toggle: Item {
+        id: toggle
+
+        property bool checked: false
+        signal toggled
+
+        implicitWidth: 34
+        implicitHeight: 20
+        activeFocusOnTab: true
+        Accessible.role: Accessible.CheckBox
+        Accessible.checked: checked
+        Keys.onSpacePressed: toggled()
+
+        Rectangle {
+            anchors.fill: parent
+            radius: height / 2
+            color: toggle.checked ? "#E8EAED" : "#2A2F36"
+            border.color: toggle.activeFocus ? "#E8EAED" : "transparent"
+
+            Behavior on color {
+                ColorAnimation {
+                    duration: 150
+                }
+            }
+
+            Rectangle {
+                width: 14
+                height: 14
+                radius: 7
+                y: 3
+                x: toggle.checked ? parent.width - width - 3 : 3
+                color: toggle.checked ? "#111418" : "#8A919A"
+
+                Behavior on x {
+                    NumberAnimation {
+                        duration: 150
+                        easing.type: Easing.OutCubic
+                    }
+                }
+            }
+        }
+
+        TapHandler {
+            onTapped: toggle.toggled()
+        }
+    }
+
     Shortcut {
         sequence: "Escape"
         onActivated: FlareData.settingsOpen = false
@@ -135,6 +182,56 @@ PanelWindow {
                                 selected: FlareData.style === modelData[0]
                                 onPicked: FlareData.set("notch.style", modelData[0])
                             }
+                        }
+                    }
+                }
+
+                Column {
+                    width: content.width - 40
+                    spacing: 10
+
+                    SectionLabel {
+                        text: Strings.mount
+                    }
+
+                    Row {
+                        spacing: 8
+
+                        Repeater {
+                            model: [["bridge", Strings.bridge], ["floating", Strings.floating], ["flush", Strings.flush]]
+
+                            Choice {
+                                required property var modelData
+                                text: modelData[1]
+                                selected: FlareData.mount === modelData[0]
+                                onPicked: FlareData.set("notch.mount", modelData[0])
+                            }
+                        }
+                    }
+
+                    Help {
+                        text: FlareData.mount === "floating" ? Strings.floatingHint : (FlareData.mount === "flush" ? Strings.flushHint : Strings.bridgeHint)
+                    }
+
+                    Text {
+                        visible: FlareData.mount === "floating"
+                        text: Strings.edgeGap + "  ·  " + Math.round(gapSlider.value) + " px"
+                        color: "#E8EAED"
+                        font.pixelSize: 13
+                    }
+
+                    Slider {
+                        id: gapSlider
+                        visible: FlareData.mount === "floating"
+                        width: parent.width
+                        from: 0
+                        to: 48
+                        stepSize: 1
+                        value: FlareData.gap
+                        onMoved: FlareData.previewGap = value
+                        onPressedChanged: {
+                            if (!pressed)
+                                FlareData.set("notch.gap", Math.round(value));
                         }
                     }
                 }
@@ -305,11 +402,11 @@ PanelWindow {
                                     }
                                 }
 
-                                Choice {
-                                    text: providerRow.enabledHere ? "✓" : "–"
-                                    selected: providerRow.enabledHere
-                                    implicitWidth: 28
-                                    onPicked: FlareData.set("providers." + providerRow.modelData, !providerRow.enabledHere)
+                                Toggle {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    checked: providerRow.enabledHere
+                                    Accessible.name: Strings.show + " " + FlareData.names[providerRow.modelData]
+                                    onToggled: FlareData.set("providers." + providerRow.modelData, !providerRow.enabledHere)
                                 }
 
                                 Choice {
@@ -330,7 +427,7 @@ PanelWindow {
                     }
 
                     Help {
-                        text: Strings.auraHint
+                        text: Strings.providersHint
                     }
                 }
 
