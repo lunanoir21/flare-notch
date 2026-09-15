@@ -20,6 +20,16 @@ Singleton {
     readonly property color textSecondary: "#808080"
     readonly property color textSoft: "#C8C8C8"
 
+    // The settings page: near-black and monochrome, colour only in the small
+    // things that are colour (a provider's tint, a ring).
+    readonly property color sheet: "#0A0B0D"
+    readonly property color sheetRaised: "#121417"
+    readonly property color sheetLine: Qt.rgba(1, 1, 1, 0.08)
+    readonly property color sheetText: "#F2F3F5"
+    readonly property color sheetSubtext: "#A3A8AF"
+    readonly property color sheetMuted: "#6B7078"
+    readonly property string mono: "JetBrains Mono"
+
     // The frame shows 21% green, 52% yellow and 73% orange, so yellow ends at
     // 70, not at the spec table's 80.
     function bandColor(usedFraction) {
