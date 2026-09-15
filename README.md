@@ -13,6 +13,14 @@ Cursor and OpenCode allowance is left, welded to the edge of the screen.
 | **aura** | One provider at a time, tinted with its colour. The others wait below as a logo and a number. Tap one, or bind Super + ← / → to the `next` / `prev` IPC calls (see Keybinds). |
 | **compact** | A thin strip on the top or bottom edge. One tap grows it into a panel with a row per provider; another tap closes it. |
 
+Each style meets the edge one of three ways, as in Quay: **bridge**, the default,
+welds it to the edge with inverse rounded corners; **floating** holds it off the edge
+as a rounded panel; **flush** runs a strip along the whole edge that flares into the
+screen at both ends.
+
+Providers you don't use can be switched off in the settings page, and a provider that
+is not installed never gets a cell.
+
 Rings go green under 50 %, yellow under 70 %, orange above. A reading flare could
 not refresh is dimmed, never invented.
 
@@ -107,6 +115,8 @@ comments. The widget picks up a saved change within a second.
 |---|---|
 | `data.mode` | `official`, `local` |
 | `notch.style` | `classic`, `aura`, `compact` |
+| `notch.mount` | `bridge`, `floating`, `flush` |
+| `notch.gap` | floating: pixels off the edge, `0` to `64` |
 | `notch.edge` | `left`, `right` |
 | `notch.offset` | pixels from the centre, along the edge |
 | `notch.scale` | `0.5` to `2.0` |

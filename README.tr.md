@@ -13,6 +13,14 @@ OpenCode haklarından ne kadarının kaldığını ekranın kenarında gösterir
 | **aura** | Bir anda tek sağlayıcı, onun rengine bürünmüş. Diğerleri altta logo ve sayı olarak durur. Birine dokunarak ya da Super + ← / →'yu `next` / `prev` IPC çağrılarına bağlayarak geçilir (Kısayollar'a bakın). |
 | **compact** | Üst ya da alt kenarda ince bir şerit. Tek dokunuşla her sağlayıcı için bir satırlık panele açılır, bir dokunuşla kapanır. |
 
+Her stil kenara Quay'deki gibi üç biçimden biriyle bağlanır: varsayılan **bridge**
+(köprü) kenara ters yuvarlatılmış köşelerle kaynaşır; **floating** (yüzen) kenardan
+ayrık, yuvarlak bir paneldir; **flush** (kenar boyu) bütün kenar boyunca uzanıp iki
+ucunda ekrana kıvrılan bir şerittir.
+
+Kullanmadığınız sağlayıcıları ayarlar sayfasından kapatabilirsiniz; kurulu olmayan bir
+sağlayıcı zaten hiç gösterilmez.
+
 Halkalar %50'nin altında yeşil, %70'in altında sarı, üstünde turuncudur. flare'in
 yenileyemediği bir okuma soluk gösterilir; asla uydurulmaz.
 
