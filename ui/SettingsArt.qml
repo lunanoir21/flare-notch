@@ -51,6 +51,10 @@ Item {
                 return officialArt;
             case "local":
                 return localArt;
+            case "monochrome":
+                return monoArt;
+            case "provider":
+                return providerArt;
             }
             return null;
         }
@@ -300,6 +304,76 @@ Item {
                 width: 34
                 height: 1.5
                 color: Theme.sheetSubtext
+            }
+        }
+    }
+
+    Component {
+        id: monoArt
+
+        Item {
+            NotchShape {
+                x: 0
+                y: 8
+                width: 20
+                height: 58
+                edge: "left"
+                depth: 20
+                length: 58
+                flare: 9
+                corner: 8
+            }
+
+            Column {
+                x: 5
+                y: 22
+                spacing: 3
+
+                Ring {
+                    tone: Theme.sheetSubtext
+                }
+                // The one ring standing for a critical/exhausted state —
+                // the only colour monochrome mode ever shows.
+                Ring {
+                    tone: Theme.critical
+                }
+                Ring {
+                    tone: Theme.sheetSubtext
+                }
+            }
+        }
+    }
+
+    Component {
+        id: providerArt
+
+        Item {
+            NotchShape {
+                x: 0
+                y: 8
+                width: 20
+                height: 58
+                edge: "left"
+                depth: 20
+                length: 58
+                flare: 9
+                corner: 8
+            }
+
+            Column {
+                x: 5
+                y: 22
+                spacing: 3
+
+                Ring {
+                    tone: FlareData.auraColour("claude")
+                }
+                Ring {
+                    tone: FlareData.auraColour("codex")
+                }
+                Ring {
+                    tone: FlareData.auraColour("cursor")
+                }
             }
         }
     }

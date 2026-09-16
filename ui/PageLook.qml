@@ -60,6 +60,61 @@ Flickable {
         }
 
         SettingsCard {
+            title: Strings.colorTitle
+
+            SettingsRow {
+                label: Strings.themeModeLabel
+
+                SettingsSegmented {
+                    options: [
+                        { value: "black", label: Strings.black },
+                        { value: "white", label: Strings.white },
+                        { value: "auto", label: Strings.auto }
+                    ]
+                    currentValue: FlareData.themeMode
+                    onPicked: value => FlareData.set("theme.mode", value)
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.topMargin: 4
+                spacing: 10
+
+                Repeater {
+                    model: [
+                        {
+                            value: "monochrome",
+                            label: Strings.monochrome,
+                            hint: Strings.monochromeShort
+                        },
+                        {
+                            value: "provider",
+                            label: Strings.provider,
+                            hint: Strings.providerShort
+                        }
+                    ]
+
+                    SettingsChoiceCard {
+                        id: colorChoice
+
+                        required property var modelData
+
+                        label: modelData.label
+                        hint: modelData.hint
+                        selected: FlareData.ringColorMode === modelData.value
+                        onPicked: FlareData.set("theme.ring_color", modelData.value)
+
+                        SettingsArt {
+                            anchors.fill: parent
+                            kind: colorChoice.modelData.value
+                        }
+                    }
+                }
+            }
+        }
+
+        SettingsCard {
             title: Strings.mount
 
             RowLayout {
