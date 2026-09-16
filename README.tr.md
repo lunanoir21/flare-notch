@@ -40,7 +40,7 @@ Ayarlar için widget'a sağ tıklayın. Kenar boyunca sürükleyerek taşıyabil
 |---|---|
 | Claude Code | Claude Code'un `~/.claude/.credentials.json` içinde tuttuğu token ile `GET api.anthropic.com/api/oauth/usage`. Süresi dolmuş token asla gönderilmez; bitmeden kısa süre önce `claude -p` çalıştırılarak yenilenir. 429 alınınca bir dakikadan on beş dakikaya kadar beklenir ve bu süre yeniden başlatmalarda korunur. Uç nokta yanıt veremezse taze bir durum satırı kaydı devreye girer. |
 | Codex | `~/.codex/auth.json`'daki oturumla `GET chatgpt.com/backend-api/wham/usage`; olmazsa Codex'in son rollout kaydına yazdığı limitler. |
-| Cursor | Editörün `~/.config/Cursor/User/globalStorage/state.vscdb` içindeki kendi oturumuyla `GET cursor.com/api/usage-summary`. |
+| Cursor | Editörün `~/.config/Cursor/User/globalStorage/state.vscdb` içindeki kendi oturumuyla `GET cursor.com/api/usage-summary`. Bu, official modun bir saklı token'dan fazlasını — canlı bir oturum çerezini — ödünç aldığı tek durum, bu yüzden widget bunu yapmadan önce bir kez soruyor; reddetmek, `data.cursor_consent` değiştirilene kadar Cursor'ı official moddan çıkarır. |
 | OpenCode | Kendi yerel veritabanı. OpenCode sizin API anahtarlarınızla çalıştığı için limit değil bugünkü token sayısını gösterir. |
 
 **local** hiçbir zaman ağ bağlantısı açmaz. Claude durum satırı kaydından (aşağıda),
@@ -50,6 +50,11 @@ yazmadığı için bu modda bir şey göstermez.
 Kimlik bilgileri okunur, asla yazılmaz ve yazdırılmaz: `flare doctor` bir token'ı
 yalnızca uzunluğuyla tarif eder. Ağ okumaları, widget ne sıklıkla yenilenirse
 yenilensin kendi hızında kalır: Claude dakikada bir, Codex ve Cursor beş dakikada bir.
+
+Claude'un token'ını yenilemek `claude -p` çalıştırır; bu ikili önce `PATH`'te, sonra
+bilinen bir dizi kurulum dizininde aranır — herhangi bir kabuğun kendi `PATH`
+aramasıyla aynı güven düzeyi, ama fazlası isteniyorsa `claude.binary_path` ile tam
+olarak hangisinin çalışacağı sabitlenebilir.
 
 ## Kurulum
 

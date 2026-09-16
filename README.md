@@ -40,7 +40,7 @@ Right-click the widget for its settings page. Drag it along its edge to move it.
 |---|---|
 | Claude Code | `GET api.anthropic.com/api/oauth/usage` with the token Claude Code keeps in `~/.claude/.credentials.json`. An expired token is never sent; it is renewed shortly before expiry by running `claude -p`. A 429 backs off from one minute to fifteen, and the deadline survives restarts. Where the endpoint cannot answer, a fresh status line capture stands in. |
 | Codex | `GET chatgpt.com/backend-api/wham/usage` with the session in `~/.codex/auth.json`, falling back to the limits Codex wrote into its newest rollout log. |
-| Cursor | `GET cursor.com/api/usage-summary` with the editor's own session from `~/.config/Cursor/User/globalStorage/state.vscdb`. |
+| Cursor | `GET cursor.com/api/usage-summary` with the editor's own session from `~/.config/Cursor/User/globalStorage/state.vscdb`. Reading this is the one case where official mode borrows more than a stored token — a live session cookie — so the widget asks once before ever doing it; declining leaves Cursor out of official mode until `data.cursor_consent` is changed. |
 | OpenCode | Its local database. OpenCode runs on your own API keys, so it shows tokens today rather than a limit. |
 
 **local** never opens a network connection. Claude comes from the status line
@@ -50,6 +50,11 @@ keeps no usage on disk, so it shows nothing in this mode.
 Credentials are read, never written, and never printed: `flare doctor` describes a
 token by its length. Network reads keep their own pace — Claude every minute, Codex
 and Cursor every five — however often the widget refreshes.
+
+Renewing Claude's token runs `claude -p`, found by searching `PATH` and then a fixed
+list of well-known install directories — the same trust any shell's own `PATH` lookup
+already carries, but if that is more than you want, set `claude.binary_path` to pin
+the exact one to run.
 
 ## Install
 
@@ -118,6 +123,9 @@ comments. The widget picks up a saved change within a second.
 | Key | Values |
 |---|---|
 | `data.mode` | `official`, `local` |
+| `data.cursor_consent` | `unset`, `granted`, `declined` |
+| `theme.mode` | `black`, `white`, `auto` |
+| `theme.ring_color` | `monochrome`, `provider` |
 | `notch.style` | `classic`, `aura`, `compact` |
 | `notch.mount` | `bridge`, `floating`, `flush` |
 | `notch.gap` | floating: pixels off the edge, `0` to `64` |
@@ -135,6 +143,7 @@ comments. The widget picks up a saved change within a second.
 | `aura.claude` … `aura.opencode` | `#RRGGBB` |
 | `poll.interval_secs` | widget refresh, at least 5 |
 | `scan.window_days` | days of logs counted toward token totals |
+| `claude.binary_path`, `opencode.binary_path`, `codex.binary_path`, `flare.binary_path` | pin a program instead of searching `PATH` |
 
 ## Keybinds
 
