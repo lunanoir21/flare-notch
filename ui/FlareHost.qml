@@ -67,7 +67,7 @@ Scope {
 
             // A hover reveal belongs to this screen; a shortcut shows every screen.
             property bool hoverShown: false
-            readonly property bool onScreen: FlareData.reveal === "always" || FlareData.shown || (FlareData.reveal === "hover" && hoverShown)
+            readonly property bool onScreen: FlareData.reveal === "always" || FlareData.shown || FlareData.consentCell !== null || (FlareData.reveal === "hover" && hoverShown)
             // 0 is tucked past the edge, 1 fully in.
             property real slide: onScreen ? 1 : 0
             readonly property real tucked: (1 - slide) * (bodyAcross + 2)
@@ -144,6 +144,10 @@ Scope {
 
                 Region {
                     item: cardHit
+                }
+
+                Region {
+                    item: consentHit
                 }
             }
 
@@ -309,6 +313,34 @@ Scope {
                 y: card.y
                 width: card.visible ? card.width + 32 * FlareData.scale : 0
                 height: card.visible ? card.height : 0
+            }
+
+            // Cursor's one-time official-mode question — not tied to any
+            // style, so it needs its own placement rather than reusing
+            // DetailCard's classic-only, vertical-edge-only positioning.
+            ConsentCard {
+                id: consentCard
+
+                visible: FlareData.consentCell !== null
+                side: win.edge
+                x: win.compact
+                    ? Math.max(8, Math.min(win.width - width - 8, win.along + (win.bodySize - width) / 2))
+                    : (win.edge === "right" ? body.x - width - 14 * FlareData.scale : body.x + body.width + 14 * FlareData.scale)
+                y: win.compact
+                    ? (win.edge === "bottom" ? body.y - height - 14 * FlareData.scale : body.y + body.height + 14 * FlareData.scale)
+                    : Math.max(8, Math.min(win.height - height - 8, win.along + (win.bodySize - height) / 2))
+
+                onAllowed: FlareData.set("data.cursor_consent", "granted")
+                onDeclined: FlareData.set("data.cursor_consent", "declined")
+            }
+
+            Item {
+                id: consentHit
+
+                x: consentCard.x - 16 * FlareData.scale
+                y: consentCard.y - 16 * FlareData.scale
+                width: consentCard.visible ? consentCard.width + 32 * FlareData.scale : 0
+                height: consentCard.visible ? consentCard.height + 32 * FlareData.scale : 0
             }
 
             Timer {

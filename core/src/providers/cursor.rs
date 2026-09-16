@@ -24,7 +24,7 @@ use rusqlite::types::ValueRef;
 use rusqlite::{Connection, OpenFlags};
 use serde_json::Value;
 
-use crate::config::DataMode;
+use crate::config::{Consent, DataMode};
 use crate::http::{self, HttpError};
 use crate::store::Saved;
 use crate::{Config, Fetch, ProviderUsage, SOURCE_LOCAL, SOURCE_OFFICIAL, Status, UsageProvider, UsageWindow, paths};
@@ -56,6 +56,16 @@ impl UsageProvider for Cursor {
         if self.config.data.mode == DataMode::Local {
             let mut usage = ProviderUsage::new(ID, SOURCE_LOCAL);
             usage.note = Some("Cursor keeps no usage on disk — set data.mode to official to read it".into());
+            return Ok(usage);
+        }
+        if self.config.data.cursor_consent != Consent::Granted {
+            let mut usage = ProviderUsage::new(ID, SOURCE_LOCAL);
+            usage.status = Status::NeedsConsent;
+            usage.note = Some(
+                "Official mode would read Cursor's live session from the editor's own state \
+                 and send it to cursor.com — needs a one-time yes first"
+                    .into(),
+            );
             return Ok(usage);
         }
 

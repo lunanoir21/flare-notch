@@ -12,7 +12,7 @@ Item {
 
     readonly property var cell: FlareData.focusedCell
     readonly property var others: FlareData.cells.filter(c => view.cell && c.id !== view.cell.id)
-    readonly property bool blocked: cell !== null && (cell.status === "needs_auth" || cell.status === "error" || cell.status === "backoff")
+    readonly property bool blocked: cell !== null && (cell.status === "needs_auth" || cell.status === "error" || cell.status === "backoff" || cell.status === "needs_consent")
     readonly property real flare: 46 * size
     readonly property real corner: 34 * size
     readonly property real pad: 26 * size

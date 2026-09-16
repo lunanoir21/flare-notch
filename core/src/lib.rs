@@ -45,6 +45,10 @@ pub enum Status {
     Stale,
     /// No usable sign-in for this provider.
     NeedsAuth,
+    /// Official mode would read this provider's own live session out of
+    /// another program's private state and replay it — not done until the
+    /// user has agreed to it once.
+    NeedsConsent,
     /// Asked to slow down, with no earlier reading to show meanwhile.
     Backoff,
     /// A fresh reading failed and there is no earlier one to show.

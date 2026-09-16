@@ -121,10 +121,28 @@ pub enum OpenOn {
     Hover,
 }
 
+/// Whether the user has agreed to official mode reading Cursor's live
+/// session out of the editor's own private state and replaying it against
+/// cursor.com — the one provider where official mode borrows more than a
+/// stored token (see `Consent` on [`Data::cursor_consent`]).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Consent {
+    /// Not asked yet, or reset — the widget asks once, the next time
+    /// official mode would need it.
+    #[default]
+    Unset,
+    Granted,
+    /// Asked and declined; Cursor stays out of official mode until this is
+    /// changed by hand or from the settings page.
+    Declined,
+}
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Data {
     pub mode: DataMode,
+    pub cursor_consent: Consent,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -295,6 +313,7 @@ pub const MAX_DELAY_MS: u32 = 5000;
 /// Every key `flare config set` accepts.
 pub const KEYS: &[&str] = &[
     "data.mode",
+    "data.cursor_consent",
     "theme.mode",
     "theme.ring_color",
     "notch.style",
@@ -341,6 +360,13 @@ pub const TEMPLATE: &str = r##"# flare configuration.
 #             CLI or editor already keeps, as Codenotch does
 #   local     never touch the network; read only what the CLIs wrote to disk
 mode = "official"
+# Cursor is the one provider where official mode reads more than a stored
+# token: a live session cookie, out of the Cursor editor's own private state.
+# The widget asks once before ever doing that; this records the answer.
+#   unset     not asked yet — asked once, the next time it would matter
+#   granted   go ahead and read it
+#   declined  don't; Cursor stays out of official mode until this changes
+cursor_consent = "unset"
 
 [theme]
 # black, white, or auto (follow the system's light/dark preference).
@@ -690,6 +716,7 @@ mod tests {
         let (config, problem) = Config::load_from(&dir.path().join("absent.toml"));
         assert!(problem.is_none());
         assert_eq!(config.data.mode, DataMode::Official);
+        assert_eq!(config.data.cursor_consent, Consent::Unset);
         assert_eq!(config.theme.mode, ThemeMode::Black);
         assert_eq!(config.theme.ring_color, RingColor::Monochrome);
         assert_eq!(config.notch.style, Style::Classic);
@@ -710,7 +737,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let path = write(
             dir.path(),
-            "[data]\nmode = \"local\"\n\
+            "[data]\nmode = \"local\"\ncursor_consent = \"granted\"\n\
              [theme]\nmode = \"white\"\nring_color = \"provider\"\n\
              [notch]\nstyle = \"aura\"\nmount = \"floating\"\ngap = 12\nreveal = \"hover\"\nhide_delay_ms = 250\nedge = \"right\"\noffset = -40\nscale = 1.25\nscreen = \"DP-1\"\n\
              [compact]\nedge = \"bottom\"\noffset = 12\nopen_on = \"hover\"\n\
@@ -720,6 +747,7 @@ mod tests {
         let (config, problem) = Config::load_from(&path);
         assert!(problem.is_none(), "{problem:?}");
         assert_eq!(config.data.mode, DataMode::Local);
+        assert_eq!(config.data.cursor_consent, Consent::Granted);
         assert_eq!(config.theme.mode, ThemeMode::White);
         assert_eq!(config.theme.ring_color, RingColor::Provider);
         assert_eq!(config.notch.style, Style::Aura);
@@ -796,6 +824,7 @@ mod tests {
         assert!(set_value(&path, "notch.nope", "1").is_err());
         assert!(set_value(&path, "theme.mode", "purple").is_err());
         assert!(set_value(&path, "theme.ring_color", "rainbow").is_err());
+        assert!(set_value(&path, "data.cursor_consent", "maybe").is_err());
         assert_eq!(std::fs::read_to_string(&path).unwrap(), TEMPLATE);
     }
 

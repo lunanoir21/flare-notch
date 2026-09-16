@@ -84,7 +84,7 @@ Singleton {
             if (!p || p.status === "absent")
                 continue;
             const head = p.windows.find(w => w.id === p.headline) || p.windows[0] || null;
-            const blocked = p.status === "needs_auth" || p.status === "error" || p.status === "backoff";
+            const blocked = p.status === "needs_auth" || p.status === "error" || p.status === "backoff" || p.status === "needs_consent";
             const used = head && !blocked ? head.used : null;
             let label = "—";
             if (!p.metered)
@@ -115,6 +115,11 @@ Singleton {
     }
 
     readonly property var focusedCell: cells.find(c => c.id === focusId) || cells[0] || null
+
+    // A provider whose official-mode read needs a one-time yes before it
+    // happens (Cursor's live session cookie, so far the only one). Surfaced
+    // once; declining or granting clears it for good.
+    readonly property var consentCell: cells.find(c => c.status === "needs_consent") || null
 
     function cellFor(id) {
         return cells.find(c => c.id === id) || null;

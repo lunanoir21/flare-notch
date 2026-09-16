@@ -121,6 +121,10 @@ Singleton {
     readonly property string localOnly: tr ? "Sadece yerel" : "Local only"
     readonly property string officialHint: tr ? "Codenotch gibi: sağlayıcının kendi kullanım uç noktası, CLI'ın zaten sakladığı girişle." : "Like Codenotch: each provider's own usage endpoint, with the sign-in its CLI already keeps."
     readonly property string localHint: tr ? "Ağa hiç çıkmaz; yalnızca CLI'ların diske yazdığını okur." : "Never touches the network; reads only what the CLIs wrote to disk."
+    readonly property string cursorConsentTitle: tr ? "Cursor kullanımını okumadan önce" : "Before reading Cursor's usage"
+    readonly property string cursorConsentBody: tr ? "Official mod, diğer sağlayıcılardan farklı olarak Cursor editörünün kendi oturum çerezini okuyup cursor.com'a gönderiyor. Devam edilsin mi?" : "Unlike the other providers, official mode here reads the Cursor editor's own session cookie and sends it to cursor.com. Go ahead?"
+    readonly property string allow: tr ? "İzin ver" : "Allow"
+    readonly property string decline: tr ? "Reddet" : "Decline"
     readonly property string screen: tr ? "Ekran" : "Screen"
     readonly property string allScreens: tr ? "Tümü" : "All"
     readonly property string refreshNow: tr ? "Şimdi yenile" : "Refresh now"
@@ -232,12 +236,14 @@ Singleton {
         const table = tr ? {
             stale: "son okuma",
             needs_auth: "giriş gerekli",
+            needs_consent: "onay gerekli",
             backoff: "bekleniyor",
             error: "okunamadı",
             none: "ölçülen yok"
         } : {
             stale: "last reading",
             needs_auth: "sign-in needed",
+            needs_consent: "needs consent",
             backoff: "waiting",
             error: "could not read",
             none: "nothing metered"
@@ -248,6 +254,6 @@ Singleton {
     function note(text) {
         if (!text || !tr)
             return text || "";
-        return text.replace(/^Rate limited, retrying in (\d+)s/, "Hız sınırı, $1 sn sonra yeniden denenecek").replace("Credential expired — run claude once in a terminal to renew it", "Giriş süresi doldu — yenilemek için terminalde bir kez claude çalıştır").replace("Credential rejected (switched accounts?)", "Giriş reddedildi (hesap mı değişti?)").replace("No Claude Code credential found — sign in with claude once", "Claude Code girişi bulunamadı — bir kez claude ile giriş yap").replace("Codex sign-in expired — open Codex once to refresh it", "Codex girişi doldu — yenilemek için Codex'i bir kez aç").replace("Codex rejected its sign-in — sign in to Codex again", "Codex girişi reddetti — Codex'e yeniden giriş yap").replace("Codex has not recorded a usage snapshot yet", "Codex henüz kullanım kaydı yazmadı").replace("from last Codex run", "son Codex çalışmasından").replace("from the status line", "durum satırından").replace("Sign in to Cursor (the editor) to see usage", "Kullanımı görmek için Cursor editöründe giriş yap").replace("Cursor session was rejected — sign in again in the editor", "Cursor oturumu reddedildi — editörde yeniden giriş yap").replace(/^Live read failed \((.+)\)/, "Canlı okuma başarısız ($1)");
+        return text.replace(/^Rate limited, retrying in (\d+)s/, "Hız sınırı, $1 sn sonra yeniden denenecek").replace("Credential expired — run claude once in a terminal to renew it", "Giriş süresi doldu — yenilemek için terminalde bir kez claude çalıştır").replace("Credential rejected (switched accounts?)", "Giriş reddedildi (hesap mı değişti?)").replace("No Claude Code credential found — sign in with claude once", "Claude Code girişi bulunamadı — bir kez claude ile giriş yap").replace("Codex sign-in expired — open Codex once to refresh it", "Codex girişi doldu — yenilemek için Codex'i bir kez aç").replace("Codex rejected its sign-in — sign in to Codex again", "Codex girişi reddetti — Codex'e yeniden giriş yap").replace("Codex has not recorded a usage snapshot yet", "Codex henüz kullanım kaydı yazmadı").replace("from last Codex run", "son Codex çalışmasından").replace("from the status line", "durum satırından").replace("Official mode would read Cursor's live session from the editor's own state and send it to cursor.com — needs a one-time yes first", "Official mod, Cursor'ın canlı oturumunu editörün kendi durumundan okuyup cursor.com'a gönderir — önce bir kez onay gerekiyor").replace("Sign in to Cursor (the editor) to see usage", "Kullanımı görmek için Cursor editöründe giriş yap").replace("Cursor session was rejected — sign in again in the editor", "Cursor oturumu reddedildi — editörde yeniden giriş yap").replace(/^Live read failed \((.+)\)/, "Canlı okuma başarısız ($1)");
     }
 }

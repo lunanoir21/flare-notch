@@ -5,6 +5,7 @@ singleton Theme 1.0 Theme.qml
 AuraView 1.0 AuraView.qml
 ClassicView 1.0 ClassicView.qml
 CompactView 1.0 CompactView.qml
+ConsentCard 1.0 ConsentCard.qml
 DetailCard 1.0 DetailCard.qml
 FlareHost 1.0 FlareHost.qml
 FlareSettings 1.0 FlareSettings.qml
