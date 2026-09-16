@@ -11,7 +11,7 @@ pub fn run(config: &Config, config_problem: Option<&str>, ctx: &Fetch) {
     for id in config.provider_order() {
         println!();
         let probe = match id {
-            "claude" => claude::probe(),
+            "claude" => claude::probe(&config.claude),
             "codex" => codex::probe(),
             "cursor" => cursor::probe(),
             "opencode" => opencode::probe(),

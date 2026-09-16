@@ -31,7 +31,7 @@ use std::time::{Duration, Instant};
 use anyhow::Result;
 use serde_json::Value;
 
-use crate::config::DataMode;
+use crate::config::{Binary, DataMode};
 use crate::http::{self, HttpError};
 use crate::store::{self, Saved};
 use crate::{
@@ -72,7 +72,7 @@ impl UsageProvider for Claude {
         }
 
         let mut usage = match self.config.data.mode {
-            DataMode::Official => official(ctx, &home),
+            DataMode::Official => official(ctx, &home, &self.config.claude),
             DataMode::Local => local(),
         };
 
@@ -106,7 +106,7 @@ fn local() -> ProviderUsage {
     usage
 }
 
-fn official(ctx: &Fetch, home: &Path) -> ProviderUsage {
+fn official(ctx: &Fetch, home: &Path, claude_bin: &Binary) -> ProviderUsage {
     let now = ctx.now;
     let credentials = credentials_path(home);
     let mut saved = Saved::load(ID);
@@ -119,7 +119,7 @@ fn official(ctx: &Fetch, home: &Path) -> ProviderUsage {
     // Ahead of the back-off: renewing never touches the usage endpoint, and a
     // fresh token deserves a fresh try.
     if let Some(credential) = read_credentials(&credentials) {
-        if maybe_renew(&credential, &credentials, &mut saved, now) {
+        if maybe_renew(&credential, &credentials, &mut saved, now, claude_bin) {
             saved.consecutive_429 = 0;
             saved.backoff_until = None;
         }
@@ -390,7 +390,13 @@ fn should_renew(
 
 /// Judged on the outcome, never the exit status: refusing the empty prompt is
 /// a non-zero exit and a successful renewal at the same time.
-fn maybe_renew(credential: &Credential, path: &Path, saved: &mut Saved, now: i64) -> bool {
+fn maybe_renew(
+    credential: &Credential,
+    path: &Path,
+    saved: &mut Saved,
+    now: i64,
+    claude_bin: &Binary,
+) -> bool {
     if !should_renew(
         credential.expires_at_ms,
         now,
@@ -401,7 +407,7 @@ fn maybe_renew(credential: &Credential, path: &Path, saved: &mut Saved, now: i64
     }
     saved.renew_last_attempt = Some(now);
     saved.renew_attempted_for = credential.expires_at_ms;
-    let Some(cli) = find_cli() else { return false };
+    let Some(cli) = find_cli(claude_bin) else { return false };
     if run_renewal(&cli).is_err() {
         return false;
     }
@@ -409,8 +415,15 @@ fn maybe_renew(credential: &Credential, path: &Path, saved: &mut Saved, now: i64
     matches!((after, credential.expires_at_ms), (Some(a), Some(b)) if a > b)
 }
 
-/// Where Claude Code installs itself, PATH first.
-pub fn find_cli() -> Option<PathBuf> {
+/// Where Claude Code installs itself. An explicit `claude.binary_path`
+/// override is trusted outright and nothing else is tried; otherwise PATH,
+/// then a fixed list of well-known install directories, first match wins —
+/// all of them locations another program could also have written to, which
+/// is exactly what the override exists to let a user route around.
+pub fn find_cli(claude_bin: &Binary) -> Option<PathBuf> {
+    if let Some(path) = override_path(claude_bin) {
+        return Some(path);
+    }
     let mut candidates: Vec<PathBuf> = Vec::new();
     if let Some(path) = std::env::var_os("PATH") {
         candidates.extend(std::env::split_paths(&path).map(|dir| dir.join("claude")));
@@ -432,6 +445,12 @@ pub fn find_cli() -> Option<PathBuf> {
         }
     }
     candidates.into_iter().find(|path| is_executable(path))
+}
+
+/// Pure, so it is testable without touching PATH or the filesystem.
+fn override_path(claude_bin: &Binary) -> Option<PathBuf> {
+    let trimmed = claude_bin.binary_path.as_deref()?.trim();
+    (!trimmed.is_empty()).then(|| PathBuf::from(trimmed))
 }
 
 fn is_executable(path: &Path) -> bool {
@@ -581,7 +600,7 @@ fn read_account_from(path: &Path) -> Option<String> {
 }
 
 /// For `flare doctor`. Never prints a secret: a token is described by length.
-pub fn probe() -> Vec<String> {
+pub fn probe(claude_bin: &Binary) -> Vec<String> {
     let mut lines = Vec::new();
     let now = paths::now_secs();
     match paths::claude_home() {
@@ -605,7 +624,7 @@ pub fn probe() -> Vec<String> {
         }
         Err(err) => lines.push(format!("home: unresolved ({err:#})")),
     }
-    lines.push(match find_cli() {
+    lines.push(match find_cli(claude_bin) {
         Some(cli) => format!("token renewal: via {}", cli.display()),
         None => "token renewal: no claude CLI found".to_string(),
     });
@@ -674,6 +693,19 @@ mod tests {
             expiry,
             Some(expiry_secs - RENEW_COOLDOWN_SECS)
         ));
+    }
+
+    #[test]
+    fn override_path_is_trusted_outright() {
+        let bin = Binary { binary_path: Some("/opt/not-really-claude".into()) };
+        assert_eq!(override_path(&bin), Some(PathBuf::from("/opt/not-really-claude")));
+    }
+
+    #[test]
+    fn a_blank_or_unset_override_is_not_one() {
+        assert_eq!(override_path(&Binary { binary_path: None }), None);
+        assert_eq!(override_path(&Binary { binary_path: Some("   ".into()) }), None);
+        assert_eq!(override_path(&Binary { binary_path: Some(String::new()) }), None);
     }
 
     #[test]

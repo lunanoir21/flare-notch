@@ -278,6 +278,10 @@ pub struct Config {
     pub scan: Scan,
     pub opencode: Binary,
     pub codex: Binary,
+    /// Where to find the `claude` CLI for token renewal, instead of
+    /// searching PATH and a fixed list of well-known, user-writable install
+    /// directories — all of which run whatever they find there.
+    pub claude: Binary,
     /// The flare binary itself, for a compositor that starts Quickshell
     /// without the login shell's PATH.
     pub flare: Binary,
@@ -319,6 +323,7 @@ pub const KEYS: &[&str] = &[
     "scan.window_days",
     "opencode.binary_path",
     "codex.binary_path",
+    "claude.binary_path",
     "flare.binary_path",
 ];
 
@@ -414,6 +419,11 @@ window_days = 1
 
 [codex]
 # binary_path = "/usr/local/bin/codex"
+
+# Claude Code's own CLI, used only to renew an expiring token. Pin this
+# instead of trusting whatever "claude" resolves to first on PATH.
+[claude]
+# binary_path = "/usr/local/bin/claude"
 
 [flare]
 # binary_path = "/usr/local/bin/flare"
