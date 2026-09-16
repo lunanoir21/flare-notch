@@ -28,6 +28,8 @@ Singleton {
     property real now: Date.now() / 1000
 
     readonly property var section: name => root.config && root.config[name] ? root.config[name] : ({})
+    readonly property string themeMode: section("theme").mode || "black"
+    readonly property string ringColorMode: section("theme").ring_color || "monochrome"
     readonly property string style: section("notch").style || "classic"
     readonly property string notchEdge: section("notch").edge || "left"
     readonly property real notchOffset: section("notch").offset || 0
@@ -104,7 +106,9 @@ Singleton {
                 tokens: p.tokens_today,
                 fetchedAt: p.fetched_at,
                 fraction: p.metered ? (used === null ? 0 : used) : 1,
-                arcColor: p.metered ? Theme.bandColor(used === null ? 0 : used) : Theme.textSecondary,
+                arcColor: p.metered
+                    ? Theme.ringColor(used === null ? 0 : used, used !== null && used >= 1, root.auraColour(id))
+                    : Theme.textSecondary,
                 exhausted: used !== null && used >= 1,
                 dimmed: p.metered && (used === null || p.status === "stale" || (head !== null && head.reset_elapsed)),
                 label: label,

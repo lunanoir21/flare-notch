@@ -149,7 +149,7 @@ Item {
                         width: parent.width * Math.min(1, block.modelData.used)
                         height: parent.height
                         radius: parent.radius
-                        color: Theme.bandColor(block.modelData.used)
+                        color: Theme.ringColor(block.modelData.used, block.modelData.used >= 1, card.cell ? card.cell.aura : "")
                     }
                 }
 
