@@ -6,6 +6,11 @@
 //! The only tolerated damage is a partial final line, because that is what a
 //! write racing with our read looks like. A parse failure on any earlier line
 //! is a real schema problem and is reported, not swallowed.
+//!
+//! A single line and the file as a whole are both bounded: an agent's own log
+//! is well-behaved, but nothing here should trust that completely. A line (or
+//! a file) that blows past the ceiling is reported the same way a malformed
+//! line already is, not silently truncated.
 
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -13,6 +18,12 @@ use std::path::Path;
 
 use anyhow::{Context, Result, bail};
 use serde_json::Value;
+
+/// A single line longer than this is treated as damage, not read further.
+/// Session-log entries are small JSON objects; this is generous headroom.
+const MAX_LINE_BYTES: usize = 64 * 1024;
+/// Total bytes read from one file before the scan gives up on it.
+const MAX_TOTAL_BYTES: u64 = 64 * 1024 * 1024;
 
 /// Call `visit` for every JSON object in a JSONL file, oldest line first.
 ///
@@ -23,14 +34,17 @@ where
     F: FnMut(&Value),
 {
     let file = File::open(path).with_context(|| format!("{}", path.display()))?;
-    let reader = BufReader::new(file);
+    let mut reader = BufReader::new(file);
 
     // Hold each line back until we know another one follows it, so the last
     // line is never parsed under the strict rule.
-    let mut pending: Option<(usize, String)> = None;
+    let mut pending: Option<(usize, Vec<u8>)> = None;
+    let mut total: u64 = 0;
 
-    for (index, line) in reader.lines().enumerate() {
-        let line = line.with_context(|| format!("{}", path.display()))?;
+    for index in 0.. {
+        let Some(line) = read_bounded_line(&mut reader, path, &mut total)? else {
+            break;
+        };
         if let Some((prev_index, prev)) = pending.take() {
             if let Some(value) = parse_strict(path, prev_index, &prev)? {
                 visit(&value);
@@ -40,8 +54,8 @@ where
     }
 
     if let Some((_, last)) = pending {
-        if !last.trim().is_empty() {
-            if let Ok(value) = serde_json::from_str::<Value>(&last) {
+        if !last.iter().all(|b| b.is_ascii_whitespace()) {
+            if let Ok(value) = serde_json::from_slice::<Value>(&last) {
                 visit(&value);
             }
         }
@@ -50,12 +64,49 @@ where
     Ok(())
 }
 
+/// Reads one line (without its trailing newline) into `reader`'s own buffer,
+/// bounded by `MAX_LINE_BYTES` per line and `MAX_TOTAL_BYTES` for the whole
+/// file. `Ok(None)` at a clean EOF with nothing pending; the final
+/// unterminated fragment before EOF still comes back as a line, matching
+/// `BufRead::lines()`.
+fn read_bounded_line(reader: &mut BufReader<File>, path: &Path, total: &mut u64) -> Result<Option<Vec<u8>>> {
+    let mut out = Vec::new();
+    loop {
+        let available = reader.fill_buf().with_context(|| format!("{}", path.display()))?;
+        if available.is_empty() {
+            return Ok(if out.is_empty() { None } else { Some(out) });
+        }
+        if let Some(pos) = available.iter().position(|&b| b == b'\n') {
+            out.extend_from_slice(&available[..pos]);
+            *total += (pos + 1) as u64;
+            reader.consume(pos + 1);
+            check_total(path, *total)?;
+            return Ok(Some(out));
+        }
+        if out.len() + available.len() > MAX_LINE_BYTES {
+            bail!("{}: a line is longer than {MAX_LINE_BYTES} bytes", path.display());
+        }
+        let read = available.len();
+        out.extend_from_slice(available);
+        *total += read as u64;
+        reader.consume(read);
+        check_total(path, *total)?;
+    }
+}
+
+fn check_total(path: &Path, total: u64) -> Result<()> {
+    if total > MAX_TOTAL_BYTES {
+        bail!("{}: more than {MAX_TOTAL_BYTES} bytes, giving up on it", path.display());
+    }
+    Ok(())
+}
+
 /// Parse a line that is known not to be the last one, so a failure is real.
-fn parse_strict(path: &Path, index: usize, line: &str) -> Result<Option<Value>> {
-    if line.trim().is_empty() {
+fn parse_strict(path: &Path, index: usize, line: &[u8]) -> Result<Option<Value>> {
+    if line.iter().all(|b| b.is_ascii_whitespace()) {
         return Ok(None);
     }
-    match serde_json::from_str::<Value>(line) {
+    match serde_json::from_slice::<Value>(line) {
         Ok(value) => Ok(Some(value)),
         Err(err) => bail!("{}:{}: {err}", path.display(), index + 1),
     }
@@ -93,5 +144,34 @@ mod tests {
     #[test]
     fn a_missing_file_is_an_error_not_a_panic() {
         assert!(count("claude/does_not_exist.jsonl").is_err());
+    }
+
+    #[test]
+    fn a_line_past_the_byte_cap_is_reported_not_read_unbounded() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("huge.jsonl");
+        // No newline at all: a pathological single "line" many times the cap.
+        std::fs::write(&path, "a".repeat(MAX_LINE_BYTES * 4)).unwrap();
+        let mut seen = 0;
+        let err = for_each(&path, |_| seen += 1).unwrap_err();
+        assert_eq!(seen, 0);
+        assert!(format!("{err:#}").contains("longer than"), "{err:#}");
+    }
+
+    #[test]
+    fn a_file_past_the_total_byte_cap_is_reported() {
+        // Lines near (but under) the per-line cap, so the total cap trips
+        // first without needing millions of lines to get there.
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("long.jsonl");
+        let padding = " ".repeat(MAX_LINE_BYTES - 32);
+        let line = format!("{{\"n\":1,\"pad\":\"{padding}\"}}\n");
+        let repeats = (MAX_TOTAL_BYTES as usize / line.len()) + 4;
+        std::fs::write(&path, line.repeat(repeats)).unwrap();
+        let mut seen = 0;
+        let err = for_each(&path, |_| seen += 1).unwrap_err();
+        assert!(format!("{err:#}").contains("giving up"), "{err:#}");
+        // The cap tripped partway through, not on the very first line.
+        assert!(seen > 0, "should have made progress before the cap tripped");
     }
 }

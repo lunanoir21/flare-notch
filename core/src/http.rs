@@ -4,9 +4,16 @@
 //! note, a log line or the widget.
 
 use std::fmt;
+use std::io::Read;
 use std::time::Duration;
 
 use serde_json::Value;
+
+/// A usage endpoint replies with a small JSON document; this is generous
+/// headroom over that, not a real expectation. Reading is capped here
+/// instead of trusting the endpoint (or a MITM, since nothing pins the
+/// certificate) to keep its reply short.
+const MAX_BODY_BYTES: u64 = 4 * 1024 * 1024;
 
 #[derive(Debug)]
 pub enum HttpError {
@@ -37,10 +44,18 @@ pub fn get_json(url: &str, headers: &[(&str, &str)]) -> Result<Value, HttpError>
     }
     match request.call() {
         Ok(response) => {
-            let text = response
-                .into_string()
+            let mut body = Vec::new();
+            // One byte past the cap, so a reply that lands exactly on it and
+            // one that overflows it are told apart without reading further.
+            response
+                .into_reader()
+                .take(MAX_BODY_BYTES + 1)
+                .read_to_end(&mut body)
                 .map_err(|err| HttpError::Transport(err.to_string()))?;
-            serde_json::from_str(&text).map_err(|err| HttpError::Parse(err.to_string()))
+            if body.len() as u64 > MAX_BODY_BYTES {
+                return Err(HttpError::Transport(format!("reply larger than {MAX_BODY_BYTES} bytes")));
+            }
+            serde_json::from_slice(&body).map_err(|err| HttpError::Parse(err.to_string()))
         }
         Err(ureq::Error::Status(code, response)) => {
             let retry_after = response
