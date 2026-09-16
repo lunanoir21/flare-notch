@@ -32,6 +32,32 @@ pub enum DataMode {
     Local,
 }
 
+/// black or white, or follow the system's light/dark preference. The QML
+/// side owns "auto": it watches the desktop portal and picks light or dark
+/// itself, the same way Quay's own theme does — this enum just carries the
+/// user's choice of the three, untouched.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ThemeMode {
+    #[default]
+    Black,
+    White,
+    Auto,
+}
+
+/// How a ring shows usage.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum RingColor {
+    /// Contrast only; a single accent colour appears just for a critical
+    /// state (90% used, or exhausted).
+    #[default]
+    Monochrome,
+    /// Each provider's own `[aura]` colour, on its ring too — not only in
+    /// the aura style.
+    Provider,
+}
+
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Style {
@@ -99,6 +125,13 @@ pub enum OpenOn {
 #[serde(default)]
 pub struct Data {
     pub mode: DataMode,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Theme {
+    pub mode: ThemeMode,
+    pub ring_color: RingColor,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -236,6 +269,7 @@ impl Binary {
 #[serde(default)]
 pub struct Config {
     pub data: Data,
+    pub theme: Theme,
     pub notch: Notch,
     pub compact: Compact,
     pub providers: Providers,
@@ -257,6 +291,8 @@ pub const MAX_DELAY_MS: u32 = 5000;
 /// Every key `flare config set` accepts.
 pub const KEYS: &[&str] = &[
     "data.mode",
+    "theme.mode",
+    "theme.ring_color",
     "notch.style",
     "notch.mount",
     "notch.gap",
@@ -300,6 +336,15 @@ pub const TEMPLATE: &str = r##"# flare configuration.
 #             CLI or editor already keeps, as Codenotch does
 #   local     never touch the network; read only what the CLIs wrote to disk
 mode = "official"
+
+[theme]
+# black, white, or auto (follow the system's light/dark preference).
+mode = "black"
+# How rings show usage:
+#   monochrome  contrast only; a single accent colour appears just for a
+#               critical state (90% used, or exhausted)
+#   provider    each provider's own [aura] colour, on its ring too
+ring_color = "monochrome"
 
 [notch]
 # classic  Codenotch's notch, every provider as a ring
@@ -635,6 +680,8 @@ mod tests {
         let (config, problem) = Config::load_from(&dir.path().join("absent.toml"));
         assert!(problem.is_none());
         assert_eq!(config.data.mode, DataMode::Official);
+        assert_eq!(config.theme.mode, ThemeMode::Black);
+        assert_eq!(config.theme.ring_color, RingColor::Monochrome);
         assert_eq!(config.notch.style, Style::Classic);
         assert_eq!(config.provider_order(), ["claude", "codex", "opencode", "cursor"]);
     }
@@ -654,6 +701,7 @@ mod tests {
         let path = write(
             dir.path(),
             "[data]\nmode = \"local\"\n\
+             [theme]\nmode = \"white\"\nring_color = \"provider\"\n\
              [notch]\nstyle = \"aura\"\nmount = \"floating\"\ngap = 12\nreveal = \"hover\"\nhide_delay_ms = 250\nedge = \"right\"\noffset = -40\nscale = 1.25\nscreen = \"DP-1\"\n\
              [compact]\nedge = \"bottom\"\noffset = 12\nopen_on = \"hover\"\n\
              [providers]\ncodex = false\norder = [\"cursor\", \"claude\"]\n\
@@ -662,6 +710,8 @@ mod tests {
         let (config, problem) = Config::load_from(&path);
         assert!(problem.is_none(), "{problem:?}");
         assert_eq!(config.data.mode, DataMode::Local);
+        assert_eq!(config.theme.mode, ThemeMode::White);
+        assert_eq!(config.theme.ring_color, RingColor::Provider);
         assert_eq!(config.notch.style, Style::Aura);
         assert_eq!(config.notch.mount, Mount::Floating);
         assert_eq!(config.notch.gap, 12);
@@ -734,6 +784,8 @@ mod tests {
         assert!(set_value(&path, "aura.claude", "orange").is_err());
         assert!(set_value(&path, "providers.order", "claude,claude").is_err());
         assert!(set_value(&path, "notch.nope", "1").is_err());
+        assert!(set_value(&path, "theme.mode", "purple").is_err());
+        assert!(set_value(&path, "theme.ring_color", "rainbow").is_err());
         assert_eq!(std::fs::read_to_string(&path).unwrap(), TEMPLATE);
     }
 
@@ -747,8 +799,10 @@ mod tests {
         set_value(&path, "notch.screen", "1").unwrap();
         set_value(&path, "providers.order", "cursor, opencode claude").unwrap();
         set_value(&path, "aura.cursor", "#abcdef").unwrap();
+        set_value(&path, "theme.mode", "auto").unwrap();
         let (config, problem) = Config::load_from(&path);
         assert!(problem.is_none(), "{problem:?}");
+        assert_eq!(config.theme.mode, ThemeMode::Auto);
         assert_eq!(config.notch.offset, -40);
         assert_eq!(config.notch.scale, 1.0);
         assert!(!config.providers.codex);
