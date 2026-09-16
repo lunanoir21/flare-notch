@@ -32,7 +32,9 @@ Item {
     implicitWidth: depth + inset
     implicitHeight: 2 * ends + 2 * pad + column.implicitHeight
 
-    // A flush strip, tinted the same way, is drawn by the host.
+    // A flush strip is drawn by the host. The panel itself no longer tints —
+    // the ring alone carries the provider's colour; one animated surface,
+    // not two.
     NotchShape {
         anchors.fill: parent
         visible: view.mount !== "flush"
@@ -43,8 +45,6 @@ Item {
         gap: view.inset
         flare: view.flare
         corner: view.mount === "floating" ? 24 * view.size : view.corner
-        tint: view.tint
-        tintStrength: 0.36
     }
 
     Column {
@@ -103,7 +103,9 @@ Item {
                     return Strings.status(view.cell.status) || Strings.noReading;
                 return Strings.timeLeft(view.cell.head.resets_at, FlareData.now);
             }
-            color: view.cell && view.cell.used !== null && view.cell.used >= 0.8 ? Theme.critical : Qt.rgba(1, 1, 1, 0.55)
+            // The ring itself carries the critical accent now (Theme.ringColor);
+            // a second, independently-thresholded red here would just repeat it.
+            color: Qt.rgba(1, 1, 1, 0.55)
             font.pixelSize: Math.max(9, Math.round(11 * view.size))
         }
 
@@ -131,6 +133,9 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             spacing: 10 * view.size
 
+            // Who else is here, and a tap moves the focus — the name itself
+            // is already showing above for whichever one is focused, so an
+            // icon says enough.
             Repeater {
                 model: view.others
 
@@ -139,43 +144,20 @@ Item {
 
                     required property var modelData
 
-                    width: 56 * view.size
-                    height: miniColumn.implicitHeight + 8 * view.size
-                    opacity: miniHover.hovered ? 1 : 0.7
+                    width: 28 * view.size
+                    height: 28 * view.size
+                    opacity: miniHover.hovered ? 1 : 0.6
                     Accessible.role: Accessible.Button
                     Accessible.name: modelData.name + ": " + modelData.label
 
-                    Behavior on opacity {
-                        OpacityAnimator {
-                            duration: 150
-                        }
-                    }
-
-                    Column {
-                        id: miniColumn
-
+                    Image {
                         anchors.centerIn: parent
-                        spacing: 5 * view.size
-
-                        Image {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            width: 18 * view.size
-                            height: 18 * view.size
-                            source: Theme.logo(mini.modelData.id)
-                            sourceSize: Qt.size(Math.ceil(36 * view.size), Math.ceil(36 * view.size))
-                            fillMode: Image.PreserveAspectFit
-                            asynchronous: true
-                        }
-
-                        Text {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            text: mini.modelData.label
-                            color: mini.modelData.dimmed ? Theme.textSecondary : Qt.rgba(1, 1, 1, 0.85)
-                            font.pixelSize: Math.max(9, Math.round(11 * view.size))
-                            font.features: {
-                                "tnum": 1
-                            }
-                        }
+                        width: 18 * view.size
+                        height: 18 * view.size
+                        source: Theme.logo(mini.modelData.id)
+                        sourceSize: Qt.size(Math.ceil(36 * view.size), Math.ceil(36 * view.size))
+                        fillMode: Image.PreserveAspectFit
+                        asynchronous: true
                     }
 
                     HoverHandler {

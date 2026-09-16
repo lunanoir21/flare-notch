@@ -129,15 +129,6 @@ Scope {
             implicitWidth: compact ? 0 : Math.max(body.width + cardRoom, FlareData.mount === "flush" && body.item ? body.item.bodyDepth + 18 * FlareData.scale : 0)
             implicitHeight: compact && body.item ? body.item.fullReach : 0
 
-            property color stripTint: style === "aura" && FlareData.focusedCell ? FlareData.focusedCell.aura : "transparent"
-
-            Behavior on stripTint {
-                ColorAnimation {
-                    duration: 450
-                    easing.type: Easing.OutCubic
-                }
-            }
-
             // Tucked away, only the strip of edge beside the body listens.
             mask: Region {
                 item: win.onScreen ? body : hotEdgeArea
@@ -202,8 +193,6 @@ Scope {
                 depth: stripDepth
                 length: win.span
                 flare: 18 * FlareData.scale
-                tint: win.stripTint
-                tintStrength: win.style === "aura" ? 0.36 : 0
                 width: win.compact ? win.width : stripReach
                 height: win.compact ? stripReach : win.height
                 x: !win.compact && win.edge === "right" ? win.width - width : 0
