@@ -25,10 +25,32 @@ in and sends it away.
 Providers you don't use can be switched off in the settings page, and a provider that
 is not installed never gets a cell.
 
-Rings go green under 50 %, yellow under 70 %, orange above. A reading flare could
-not refresh is dimmed, never invented.
+Rings go green under 50 %, yellow under 70 %, orange above; the hover card's bars go
+green, orange and red the same way. A reading flare could not refresh is dimmed,
+never invented.
 
 Right-click the widget for its settings page. Drag it along its edge to move it.
+
+## Open sessions
+
+The hover card also lists the Claude Code sessions running right now, folded under a
+**Sessions** header: click the header (or bind the `toggleSessions` IPC call) to open
+it. Each row shows the session's name, its project, how long it has been open and
+whether it is working, waiting on you or idle. Click a row to bring its terminal to
+the front.
+
+The list comes from the records Claude Code itself keeps in
+`~/.claude/sessions/<pid>.json`. A record whose process has exited, or whose pid now
+belongs to another process, is skipped. On Hyprland a session also needs a window:
+one kept alive by a host whose window is closed — Orca's terminal daemon, say — is as
+good as closed, so it is not listed. The same jump works from a terminal:
+
+```sh
+flare focus <pid>      # pid as listed under "sessions" in flare's JSON
+```
+
+Jumping to a session and hiding windowless ones use `hyprctl`; on another compositor
+the list still shows, without either.
 
 ## Where the numbers come from
 
@@ -159,6 +181,7 @@ flare listens on Quickshell IPC as `flare`:
 | `next`, `prev` | step aura to the next or previous provider |
 | `toggle` | open or close the compact panel |
 | `toggleVisible`, `show`, `hide` | bring the widget in or tuck it away (hover and shortcut reveal) |
+| `toggleSessions` | open or fold the hover card's session list |
 | `style classic\|aura\|compact` | switch style |
 | `settings` | open or close the settings page |
 | `refresh` | read now |

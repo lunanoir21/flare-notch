@@ -25,10 +25,32 @@ gönderir.
 Kullanmadığınız sağlayıcıları ayarlar sayfasından kapatabilirsiniz; kurulu olmayan bir
 sağlayıcı zaten hiç gösterilmez.
 
-Halkalar %50'nin altında yeşil, %70'in altında sarı, üstünde turuncudur. flare'in
+Halkalar %50'nin altında yeşil, %70'in altında sarı, üstünde turuncudur; hover
+kartındaki barlar da aynı şekilde yeşil, turuncu ve kırmızı olur. flare'in
 yenileyemediği bir okuma soluk gösterilir; asla uydurulmaz.
 
 Ayarlar için widget'a sağ tıklayın. Kenar boyunca sürükleyerek taşıyabilirsiniz.
+
+## Açık oturumlar
+
+Hover kartı, o an çalışan Claude Code oturumlarını da **Oturumlar** başlığı altında,
+katlanmış olarak listeler: açmak için başlığa tıklayın (ya da `toggleSessions` IPC
+çağrısını bir tuşa bağlayın). Her satırda oturumun adı, projesi, ne kadar süredir
+açık olduğu ve çalışıyor mu, sizi mi bekliyor, yoksa boşta mı olduğu görünür. Bir
+satıra tıklamak, oturumun terminalini öne getirir.
+
+Liste, Claude Code'un kendi tuttuğu `~/.claude/sessions/<pid>.json` kayıtlarından
+gelir. Process'i kapanmış ya da pid'i artık başka bir process'e ait olan kayıtlar
+atlanır. Hyprland'de bir oturumun ayrıca bir penceresi olmalıdır: penceresi kapanmış
+bir host'un (örneğin Orca'nın terminal daemon'u) canlı tuttuğu oturum kapanmış
+sayılır ve listelenmez. Aynı geçiş terminalden de yapılabilir:
+
+```sh
+flare focus <pid>      # pid, flare'in JSON çıktısında "sessions" altındaki
+```
+
+Oturuma geçiş ve penceresiz oturumları gizleme `hyprctl` kullanır; başka bir
+compositor'da liste yine görünür, bu ikisi olmadan.
 
 ## Sayılar nereden gelir
 
@@ -136,6 +158,7 @@ flare Quickshell IPC'de `flare` adıyla dinler:
 | `next`, `prev` | aura'yı sonraki ya da önceki sağlayıcıya geçirir |
 | `toggle` | kompakt paneli açar ya da kapatır |
 | `toggleVisible`, `show`, `hide` | widget'ı getirir ya da saklar (hover ve shortcut modlarında) |
+| `toggleSessions` | hover kartındaki oturum listesini açar ya da katlar |
 | `style classic\|aura\|compact` | stili değiştirir |
 | `settings` | ayarlar sayfasını açar ya da kapatır |
 | `refresh` | hemen okur |
