@@ -151,6 +151,7 @@ fn fetch(provider: &dyn UsageProvider, ctx: &Fetch) -> ProviderUsage {
     if usage.status != Status::Absent {
         usage.sessions = sessions::live(provider.id());
         usage.history = history::record(&usage, ctx.now);
+        usage.session_log = sessions::record(provider.id(), &usage.sessions, ctx.now);
     }
     usage
 }

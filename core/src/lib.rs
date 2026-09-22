@@ -178,6 +178,9 @@ pub struct ProviderUsage {
     /// window id. Kept in its own file, not in the stored snapshot.
     #[serde(default, skip_deserializing)]
     pub history: history::History,
+    /// Sessions seen over the last week, closed ones included.
+    #[serde(default, skip_deserializing)]
+    pub session_log: Vec<sessions::Logged>,
 }
 
 impl ProviderUsage {
@@ -200,6 +203,7 @@ impl ProviderUsage {
             error: None,
             sessions: Vec::new(),
             history: history::History::new(),
+            session_log: Vec::new(),
         }
     }
 

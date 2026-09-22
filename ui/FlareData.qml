@@ -118,6 +118,7 @@ Singleton {
                 head: head,
                 windows: p.windows,
                 sessions: p.sessions || [],
+                sessionLog: p.session_log || [],
                 status: p.status,
                 note: p.note || "",
                 plan: p.plan || "",

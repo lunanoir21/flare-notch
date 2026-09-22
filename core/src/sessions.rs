@@ -137,6 +137,84 @@ fn claude(dir: &Path, proc_root: &Path) -> Vec<Session> {
     out
 }
 
+/// A session as remembered after the fact: when it started, when flare last
+/// saw it, and in what state. Kept a little over a week, so the usage panel
+/// can draw today's sessions, the closed ones too.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Logged {
+    pub pid: u32,
+    pub name: String,
+    pub project: String,
+    pub started_at: i64,
+    pub last_seen: i64,
+    pub state: SessionState,
+    /// Open right now. Worked out on every run, never stored.
+    #[serde(default, skip_deserializing)]
+    pub live: bool,
+}
+
+const LOG_KEEP_SECS: i64 = 8 * 86_400;
+/// A still-open session's last_seen is rewritten at most this often.
+const LOG_TOUCH_SECS: i64 = 60;
+
+/// Merge the sessions open now into the provider's log and return the log.
+pub fn record(provider: &str, open: &[Session], now: i64) -> Vec<Logged> {
+    let Some(path) = paths::flare_state().ok().map(|dir| dir.join(format!("sessions-{provider}.json"))) else {
+        return Vec::new();
+    };
+    let exists = path.exists();
+    if open.is_empty() && !exists {
+        return Vec::new();
+    }
+    let mut log: Vec<Logged> = fs::read_to_string(&path)
+        .ok()
+        .and_then(|text| serde_json::from_str(&text).ok())
+        .unwrap_or_default();
+    let changed = merge(&mut log, open, now);
+    if changed || !exists {
+        if let Ok(text) = serde_json::to_string(&log) {
+            let _ = crate::store::write_private(&path, &text);
+        }
+    }
+    for entry in &mut log {
+        entry.live = open.iter().any(|s| s.pid == entry.pid && s.started_at.unwrap_or(entry.started_at) == entry.started_at);
+    }
+    log
+}
+
+fn merge(log: &mut Vec<Logged>, open: &[Session], now: i64) -> bool {
+    let mut changed = false;
+    for session in open {
+        let started = session.started_at.unwrap_or(now);
+        match log.iter_mut().find(|e| e.pid == session.pid && e.started_at == started) {
+            Some(entry) => {
+                if entry.state != session.state || entry.name != session.name || now - entry.last_seen >= LOG_TOUCH_SECS {
+                    entry.state = session.state;
+                    entry.name = session.name.clone();
+                    entry.last_seen = now;
+                    changed = true;
+                }
+            }
+            None => {
+                log.push(Logged {
+                    pid: session.pid,
+                    name: session.name.clone(),
+                    project: session.project.clone(),
+                    started_at: started,
+                    last_seen: now,
+                    state: session.state,
+                    live: false,
+                });
+                changed = true;
+            }
+        }
+    }
+    let before = log.len();
+    log.retain(|e| e.last_seen >= now - LOG_KEEP_SECS);
+    log.sort_by_key(|e| (e.started_at, e.pid));
+    changed || log.len() != before
+}
+
 /// Field `n` (1-based, as in proc(5)) of `/proc/<pid>/stat`. The command
 /// name, field 2, is in parentheses and may hold spaces, so fields are
 /// counted from after its closing one, which is field 3.
@@ -299,6 +377,21 @@ mod tests {
         assert_eq!(kitty_tab(&procfs, 2), None);
         assert_eq!(kitty_tab(&procfs, 3), None);
         assert_eq!(kitty_tab(&procfs, 9), None);
+    }
+
+    #[test]
+    fn the_log_keeps_closed_sessions_and_touches_open_ones_sparingly() {
+        let mut log = Vec::new();
+        let mut s1 = Session { pid: 1, name: "a".into(), project: "p".into(), state: SessionState::Busy, waiting_for: None, started_at: Some(100) };
+        assert!(merge(&mut log, &[s1.clone()], 200));
+        assert!(!merge(&mut log, &[s1.clone()], 230));
+        s1.state = SessionState::Waiting;
+        assert!(merge(&mut log, &[s1.clone()], 240));
+        assert!(!merge(&mut log, &[], 250));
+        assert_eq!(log.len(), 1);
+        assert_eq!(log[0].last_seen, 240);
+        assert!(merge(&mut log, &[], 240 + LOG_KEEP_SECS + 1));
+        assert!(log.is_empty());
     }
 
     #[test]
