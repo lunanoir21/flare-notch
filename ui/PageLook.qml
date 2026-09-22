@@ -77,6 +77,21 @@ Flickable {
             }
 
             SettingsRow {
+                label: Strings.ringLabelTitle
+                hint: Strings.ringLabelHint
+
+                SettingsSegmented {
+                    options: [
+                        { value: "percent", label: Strings.labelPercent },
+                        { value: "time", label: Strings.labelTime },
+                        { value: "both", label: Strings.labelBoth }
+                    ]
+                    currentValue: FlareData.ringLabel
+                    onPicked: value => FlareData.set("notch.label", value)
+                }
+            }
+
+            SettingsRow {
                 label: Strings.languageLabel
 
                 SettingsSegmented {

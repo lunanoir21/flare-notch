@@ -101,7 +101,11 @@ Item {
 
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: chip.modelData.label
+                    text: {
+                        const main = Strings.ringMain(chip.modelData, FlareData.ringLabel, FlareData.now);
+                        const sub = Strings.ringSub(chip.modelData, FlareData.ringLabel, FlareData.now);
+                        return sub ? main + " · " + sub : main;
+                    }
                     color: chip.modelData.dimmed ? Theme.textSecondary : Theme.textPrimary
                     font.pixelSize: Math.max(9, Math.round(12.5 * view.size))
                     font.weight: Font.Medium

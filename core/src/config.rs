@@ -45,6 +45,19 @@ pub enum ThemeMode {
     Auto,
 }
 
+/// What sits under a ring in classic and beside it in compact.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Label {
+    /// How much of the window is used.
+    #[default]
+    Percent,
+    /// How long until the window resets.
+    Time,
+    /// Both, the time smaller under the percentage.
+    Both,
+}
+
 /// The widget's language. `auto` follows LC_ALL, LC_MESSAGES or LANG.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -186,6 +199,7 @@ pub struct Notch {
     pub scale: f64,
     /// Output name such as "eDP-1". Empty shows it on every screen.
     pub screen: String,
+    pub label: Label,
 }
 
 impl Default for Notch {
@@ -201,6 +215,7 @@ impl Default for Notch {
             offset: 0,
             scale: 1.0,
             screen: String::new(),
+            label: Label::Percent,
         }
     }
 }
@@ -344,6 +359,7 @@ pub const KEYS: &[&str] = &[
     "notch.offset",
     "notch.scale",
     "notch.screen",
+    "notch.label",
     "compact.edge",
     "compact.offset",
     "compact.open_on",
@@ -428,6 +444,8 @@ offset = 0
 scale = 1.0
 # Output to show it on, as `hyprctl monitors` names it. Empty: every screen.
 screen = ""
+# Under each ring: percent (used), time (until it resets), or both.
+label = "percent"
 
 [compact]
 # top or bottom.
@@ -862,11 +880,13 @@ mod tests {
         set_value(&path, "aura.cursor", "#abcdef").unwrap();
         set_value(&path, "theme.mode", "auto").unwrap();
         set_value(&path, "ui.language", "en").unwrap();
+        set_value(&path, "notch.label", "both").unwrap();
         assert!(set_value(&path, "ui.language", "de").is_err());
         let (config, problem) = Config::load_from(&path);
         assert!(problem.is_none(), "{problem:?}");
         assert_eq!(config.theme.mode, ThemeMode::Auto);
         assert_eq!(config.ui.language, Language::En);
+        assert_eq!(config.notch.label, Label::Both);
         assert_eq!(config.notch.offset, -40);
         assert_eq!(config.notch.scale, 1.0);
         assert!(!config.providers.codex);

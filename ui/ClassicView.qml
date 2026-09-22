@@ -31,7 +31,9 @@ Item {
     // ends on flares.
     readonly property real inset: mount === "floating" ? edgeGap : 0
     readonly property real ends: mount === "bridge" ? flare : 0
-    readonly property real cellHeight: ring + gap + metrics.height
+    readonly property bool twoLines: FlareData.ringLabel === "both"
+    readonly property int subPx: Math.max(8, Math.round(fontPx * 0.72))
+    readonly property real cellHeight: ring + gap + metrics.height + (twoLines ? subMetrics.height + 2 * u : 0)
     readonly property int count: FlareData.cells.length
     readonly property real length: 2 * ends + padLead + count * cellHeight + Math.max(0, count - 1) * spacing + padTrail
 
@@ -47,6 +49,11 @@ Item {
         id: metrics
         font.pixelSize: view.fontPx
         font.weight: Font.Medium
+    }
+
+    FontMetrics {
+        id: subMetrics
+        font.pixelSize: view.subPx
     }
 
     // A flush strip is drawn by the host along the whole edge.
@@ -103,12 +110,26 @@ Item {
                 }
 
                 Text {
+                    id: mainLabel
                     anchors.horizontalCenter: parent.horizontalCenter
                     y: ringItem.height + view.gap
-                    text: cell.modelData.label
+                    text: Strings.ringMain(cell.modelData, FlareData.ringLabel, FlareData.now)
                     color: cell.modelData.dimmed ? Theme.textSecondary : Theme.textPrimary
                     font.pixelSize: view.fontPx
                     font.weight: Font.Medium
+                    font.features: {
+                        "tnum": 1
+                    }
+                    Accessible.ignored: true
+                }
+
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    y: mainLabel.y + metrics.height + 2 * view.u
+                    visible: text !== ""
+                    text: Strings.ringSub(cell.modelData, FlareData.ringLabel, FlareData.now)
+                    color: Theme.textSecondary
+                    font.pixelSize: view.subPx
                     font.features: {
                         "tnum": 1
                     }

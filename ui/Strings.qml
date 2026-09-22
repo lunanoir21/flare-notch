@@ -74,6 +74,11 @@ Singleton {
     readonly property string colorTitle: tr ? "Renk" : "Colour"
     readonly property string themeModeLabel: tr ? "Tema" : "Theme"
     readonly property string languageLabel: tr ? "Dil" : "Language"
+    readonly property string ringLabelTitle: tr ? "Halkanın altında" : "Under the ring"
+    readonly property string ringLabelHint: tr ? "Kompakt şeritte halkanın yanında." : "Beside it on the compact strip."
+    readonly property string labelPercent: tr ? "Yüzde" : "Percent"
+    readonly property string labelTime: tr ? "Kalan süre" : "Time left"
+    readonly property string labelBoth: tr ? "İkisi" : "Both"
     readonly property string black: tr ? "Siyah" : "Black"
     readonly property string white: tr ? "Beyaz" : "White"
     readonly property string auto: tr ? "Otomatik" : "Auto"
@@ -217,6 +222,20 @@ Singleton {
         else
             when = date.getDate() + " " + months[date.getMonth()];
         return tr ? "Sıfırlanma " + when : "Resets " + when;
+    }
+
+    // What a ring's label says, by notch.label: the percentage, the time
+    // until the headline window resets, or (second line) that time under it.
+    function ringMain(cell, mode, now) {
+        if (mode === "time" && cell.metered && cell.head && cell.head.resets_at)
+            return timeLeft(cell.head.resets_at, now);
+        return cell.label;
+    }
+
+    function ringSub(cell, mode, now) {
+        if (mode !== "both" || !cell.metered || !cell.head || !cell.head.resets_at)
+            return "";
+        return timeLeft(cell.head.resets_at, now);
     }
 
     function timeLeft(resetsAt, now) {
