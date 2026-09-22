@@ -21,6 +21,15 @@ Item {
     readonly property real inset: mount === "floating" ? edgeGap : 0
     readonly property real ends: mount === "bridge" ? flare : 0
     property color tint: cell ? cell.aura : Theme.textSecondary
+    readonly property var sessions: cell && cell.sessions ? cell.sessions : []
+    readonly property real ringDiameter: 68 * size
+
+    // The same hover card as classic, opened from the one big ring.
+    signal cellHovered(string id, bool inside)
+
+    function cellCenter(id) {
+        return view.ends + view.pad + view.ringDiameter / 2;
+    }
 
     Behavior on tint {
         ColorAnimation {
@@ -57,7 +66,7 @@ Item {
 
         ProviderRing {
             anchors.horizontalCenter: parent.horizontalCenter
-            diameter: 68 * view.size
+            diameter: view.ringDiameter
             trackWidth: 5 * view.size
             arcWidth: 5 * view.size
             logoSize: 28 * view.size
@@ -71,6 +80,13 @@ Item {
 
             TapHandler {
                 onTapped: FlareData.openUsagePage(view.cell.id)
+            }
+
+            HoverHandler {
+                onHoveredChanged: {
+                    if (view.cell)
+                        view.cellHovered(view.cell.id, hovered);
+                }
             }
         }
 
@@ -107,6 +123,30 @@ Item {
             // a second, independently-thresholded red here would just repeat it.
             color: Qt.rgba(1, 1, 1, 0.55)
             font.pixelSize: Math.max(9, Math.round(11 * view.size))
+        }
+
+        // One dot per open session, in its state's colour; the hover card
+        // lists them.
+        Row {
+            anchors.horizontalCenter: parent.horizontalCenter
+            topPadding: 10 * view.size
+            spacing: 5 * view.size
+            visible: view.sessions.length > 0
+            Accessible.role: Accessible.StaticText
+            Accessible.name: Strings.sessions + ": " + view.sessions.length
+
+            Repeater {
+                model: view.sessions.slice(0, 6)
+
+                Rectangle {
+                    required property var modelData
+
+                    width: 6 * view.size
+                    height: width
+                    radius: width / 2
+                    color: modelData.state === "busy" ? Theme.barLow : modelData.state === "waiting" ? Theme.barMid : Theme.textSecondary
+                }
+            }
         }
 
         Item {

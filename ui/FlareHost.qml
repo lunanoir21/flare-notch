@@ -71,7 +71,8 @@ Scope {
             readonly property real bodySize: compact ? body.width : body.height
             readonly property real bodyAcross: compact ? body.height : body.width
             readonly property real along: Math.max(0, Math.min(span - bodySize, Math.round((span - bodySize) / 2 + baseOffset + dragDelta)))
-            readonly property real cardRoom: style === "classic" ? card.width + 28 * FlareData.scale : 0
+            readonly property bool hasCard: style === "classic" || style === "aura"
+            readonly property real cardRoom: hasCard ? card.width + 28 * FlareData.scale : 0
 
             // A hover reveal belongs to this screen; a shortcut shows every screen.
             property bool hoverShown: false
@@ -288,6 +289,7 @@ Scope {
                     size: FlareData.scale
                     mount: FlareData.mount
                     edgeGap: FlareData.gap
+                    onCellHovered: (id, inside) => win.hover(id, inside)
                 }
             }
 
@@ -307,7 +309,7 @@ Scope {
 
                 readonly property var hovered: FlareData.cellFor(win.cardId)
                 readonly property real liveAnchorY: body.y + (body.item && typeof body.item.cellCenter === "function" ? body.item.cellCenter(win.cardId) : 0)
-                readonly property bool wanted: win.style === "classic" && hovered !== null && win.slide > 0.99
+                readonly property bool wanted: win.hasCard && hovered !== null && win.slide > 0.99
 
                 // Held through the fade-out, so a closing card keeps its
                 // content and place instead of emptying or jumping.

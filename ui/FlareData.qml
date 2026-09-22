@@ -294,6 +294,8 @@ Singleton {
         }
         if (!cellFor(id))
             return;
+        if (style === "aura")
+            focusOn(id);
         if (pinnedCard === "") {
             pinnedBroughtIn = reveal !== "always" && !shown;
             shown = true;
