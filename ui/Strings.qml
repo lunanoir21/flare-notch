@@ -152,7 +152,7 @@ Singleton {
 
     function usedLine(fraction) {
         const used = Math.floor(fraction * 100);
-        return tr ? "%" + used + " kullanıldı · %" + (100 - used) + " kaldı" : used + "% used · " + (100 - used) + "% left";
+        return tr ? "%" + used + " kullanıldı" : used + "% used";
     }
 
     function tokens(count) {

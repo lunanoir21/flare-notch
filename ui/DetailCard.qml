@@ -13,7 +13,7 @@ Item {
     readonly property real s: FlareData.scale
     readonly property var windows: cell && cell.windows ? cell.windows : []
 
-    width: 258 * s
+    width: 276 * s
     implicitHeight: body.implicitHeight + 32 * s
     height: implicitHeight
 
@@ -57,10 +57,10 @@ Item {
 
             Image {
                 anchors.verticalCenter: parent.verticalCenter
-                width: 16 * card.s
-                height: 16 * card.s
+                width: 18 * card.s
+                height: 18 * card.s
                 source: Theme.logo(card.cell ? card.cell.id : "")
-                sourceSize: Qt.size(Math.ceil(32 * card.s), Math.ceil(32 * card.s))
+                sourceSize: Qt.size(Math.ceil(36 * card.s), Math.ceil(36 * card.s))
                 fillMode: Image.PreserveAspectFit
             }
 
@@ -68,8 +68,8 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 text: card.cell ? Strings.title(card.cell.name) : ""
                 color: Theme.textPrimary
-                font.pixelSize: Math.round(14 * card.s)
-                font.weight: Font.DemiBold
+                font.pixelSize: Math.round(16 * card.s)
+                font.weight: Font.Medium
             }
         }
 
@@ -106,7 +106,7 @@ Item {
                 readonly property bool opensGroup: modelData.group && (index === 0 || card.windows[index - 1].group !== modelData.group)
 
                 width: body.width
-                spacing: 5 * card.s
+                spacing: 6 * card.s
 
                 Text {
                     visible: block.opensGroup
@@ -126,37 +126,40 @@ Item {
                         width: parent.width - resetText.implicitWidth - 8 * card.s
                         text: Strings.windowLabel(block.modelData.label)
                         color: Theme.textPrimary
-                        font.pixelSize: Math.round(12 * card.s)
+                        font.pixelSize: Math.round(13 * card.s)
                         elide: Text.ElideRight
                     }
 
                     Text {
                         id: resetText
                         anchors.right: parent.right
+                        anchors.baseline: labelText.baseline
                         text: Strings.resetText(block.modelData.resets_at, FlareData.now, block.modelData.reset_elapsed)
                         color: Theme.textSecondary
-                        font.pixelSize: Math.max(8, Math.round(11 * card.s))
+                        font.pixelSize: Math.max(8, Math.round(12 * card.s))
                     }
                 }
 
                 Rectangle {
                     width: parent.width
-                    height: 4 * card.s
+                    height: 7 * card.s
                     radius: height / 2
                     color: Theme.barTrack
 
                     Rectangle {
-                        width: parent.width * Math.min(1, block.modelData.used)
+                        // A sliver still shows at 0%, as in Codenotch, so an
+                        // empty limit reads as fresh rather than missing.
+                        width: Math.max(height * 2, parent.width * Math.min(1, block.modelData.used))
                         height: parent.height
                         radius: parent.radius
-                        color: Theme.ringColor(block.modelData.used, block.modelData.used >= 1, card.cell ? card.cell.aura : "")
+                        color: Theme.usageColor(block.modelData.used, block.modelData.used >= 1)
                     }
                 }
 
                 Text {
                     text: Strings.usedLine(block.modelData.used)
-                    color: Theme.textSecondary
-                    font.pixelSize: Math.max(8, Math.round(11 * card.s))
+                    color: Theme.textSoft
+                    font.pixelSize: Math.max(8, Math.round(12 * card.s))
                     font.features: {
                         "tnum": 1
                     }

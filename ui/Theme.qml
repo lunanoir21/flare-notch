@@ -22,7 +22,7 @@ Singleton {
     readonly property color edgeLine: theme.light ? Qt.rgba(0, 0, 0, 0.10) : Qt.rgba(1, 1, 1, 0.07)
     readonly property color ringTrack: theme.light ? Qt.rgba(0, 0, 0, 0.16) : Qt.rgba(1, 1, 1, 0.188)
     readonly property color barTrack: theme.light ? "#E2E2E2" : "#2D2D2D"
-    readonly property color card: theme.light ? "#F2F2F2" : "#0A0A0A"
+    readonly property color card: theme.light ? "#F2F2F2" : "#000000"
     // Not a ring's default colour any more (see ringColor()) — critical is
     // still the one accent a ring can take on; ample/watch remain only as
     // decorative variety in the settings page's little preview art.
@@ -54,6 +54,20 @@ Singleton {
         if (exhausted || usedFraction >= 0.9)
             return theme.critical;
         return theme.textPrimary;
+    }
+
+    // The hover card's bars always read as a traffic light, whatever the
+    // rings do: a fresh limit is green, one nearly spent is red.
+    readonly property color barLow: "#2BD86B"
+    readonly property color barMid: "#FFB020"
+    readonly property color barHigh: "#F23A12"
+
+    function usageColor(usedFraction, exhausted) {
+        if (exhausted || usedFraction >= 0.7)
+            return theme.barHigh;
+        if (usedFraction >= 0.5)
+            return theme.barMid;
+        return theme.barLow;
     }
 
     function logo(provider) {

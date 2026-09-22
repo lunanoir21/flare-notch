@@ -298,10 +298,28 @@ Scope {
                 id: card
 
                 readonly property var hovered: FlareData.cellFor(win.hoverId)
-                readonly property real anchorY: body.y + (body.item && typeof body.item.cellCenter === "function" ? body.item.cellCenter(win.hoverId) : 0)
+                readonly property real liveAnchorY: body.y + (body.item && typeof body.item.cellCenter === "function" ? body.item.cellCenter(win.hoverId) : 0)
+                readonly property bool wanted: win.style === "classic" && hovered !== null && win.slide > 0.99
 
-                visible: win.style === "classic" && hovered !== null && win.slide > 0.99
-                cell: hovered
+                // Held through the fade-out, so a closing card keeps its
+                // content and place instead of emptying or jumping.
+                property var heldCell: null
+                property real anchorY: 0
+                onHoveredChanged: if (hovered !== null) heldCell = hovered
+                Binding on anchorY {
+                    when: card.hovered !== null
+                    value: card.liveAnchorY
+                    restoreMode: Binding.RestoreNone
+                }
+
+                opacity: wanted ? 1 : 0
+                scale: wanted ? 1 : 0.96
+                visible: opacity > 0.01
+                transformOrigin: win.edge === "right" ? Item.Right : Item.Left
+                Behavior on opacity { NumberAnimation { duration: 170; easing.type: Easing.OutCubic } }
+                Behavior on scale { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+
+                cell: hovered || heldCell
                 side: win.edge
                 x: win.edge === "right" ? body.x - width - 14 * FlareData.scale : body.x + body.width + 14 * FlareData.scale
                 y: Math.max(8, Math.min(win.height - height - 8, anchorY - height / 2))
@@ -309,6 +327,7 @@ Scope {
 
                 HoverHandler {
                     id: cardHover
+                    enabled: card.wanted
                     onHoveredChanged: {
                         win.hover(win.hoverId, hovered);
                         win.holdOpen(hovered);
