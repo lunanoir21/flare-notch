@@ -115,6 +115,7 @@ Singleton {
                 used: used,
                 head: head,
                 windows: p.windows,
+                sessions: p.sessions || [],
                 status: p.status,
                 note: p.note || "",
                 plan: p.plan || "",
@@ -233,6 +234,7 @@ Singleton {
         + '  case $mode in '
         + '    config) exec "$c" config get ;; '
         + '    set) exec "$c" config set "$key" "$value" ;; '
+        + '    focus) exec "$c" --provider "$value" focus "$key" ;; '
         + '    *) exec "$c" --provider all --format json ${key:+"$key"} ;; '
         + '  esac; '
         + 'done; exit 127'
@@ -265,6 +267,32 @@ Singleton {
     function refresh(force) {
         refreshConfig();
         refreshUsage(force);
+    }
+
+    // The hover card's session list starts folded; the header or the
+    // `toggleSessions` IPC call opens it, and it stays as left.
+    property bool sessionsOpen: false
+
+    function toggleSessions() {
+        sessionsOpen = !sessionsOpen;
+    }
+
+    function focusSession(provider, pid) {
+        if (focuser.running)
+            return;
+        focuser.command = command("focus", String(pid), provider);
+        focuser.running = true;
+        hideWidget();
+    }
+
+    Process {
+        id: focuser
+        stderr: StdioCollector {
+            onStreamFinished: {
+                if (text.trim() !== "")
+                    console.warn("flare focus:", text.trim());
+            }
+        }
     }
 
     property var pending: []

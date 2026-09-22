@@ -242,6 +242,24 @@ Singleton {
         return tr ? Math.round(hours / 24) + " gün önce" : Math.round(hours / 24) + "d ago";
     }
 
+    readonly property string sessions: tr ? "Oturumlar" : "Sessions"
+
+    function sessionState(state, waitingFor) {
+        if (state === "busy")
+            return tr ? "çalışıyor" : "working";
+        if (state === "waiting")
+            return tr ? "seni bekliyor" : (waitingFor || "waiting");
+        return tr ? "boşta" : "idle";
+    }
+
+    function duration(seconds) {
+        const minutes = Math.max(0, Math.floor(seconds / 60));
+        if (minutes < 60)
+            return tr ? minutes + " dk" : minutes + "m";
+        const hours = Math.floor(minutes / 60);
+        return tr ? hours + " sa " + (minutes % 60) + " dk" : hours + "h " + (minutes % 60) + "m";
+    }
+
     function status(value) {
         const table = tr ? {
             stale: "son okuma",

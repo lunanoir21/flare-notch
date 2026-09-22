@@ -32,6 +32,9 @@ Singleton {
     readonly property color textPrimary: theme.light ? "#0A0A0A" : "#FFFFFF"
     readonly property color textSecondary: theme.light ? "#5A5A5A" : "#808080"
     readonly property color textSoft: theme.light ? "#3A3A3A" : "#C8C8C8"
+    readonly property color divider: theme.light ? Qt.rgba(0, 0, 0, 0.08) : Qt.rgba(1, 1, 1, 0.08)
+    readonly property color rowHover: theme.light ? Qt.rgba(0, 0, 0, 0.05) : Qt.rgba(1, 1, 1, 0.07)
+    readonly property color chip: theme.light ? "#E4E4E4" : "#1A1A1A"
 
     // The settings page: near-monochrome, colour only in the small things
     // that are colour (a provider's tint, a ring).

@@ -11,7 +11,7 @@ use std::path::Path;
 
 use anyhow::{Context, Result, bail};
 use clap::{Parser, Subcommand, ValueEnum};
-use flare_core::{Config, Fetch, ProviderUsage, SOURCE_LOCAL, Status, UsageProvider, config, paths, providers};
+use flare_core::{Config, Fetch, ProviderUsage, SOURCE_LOCAL, Status, UsageProvider, config, paths, providers, sessions};
 
 #[derive(Debug, Parser)]
 #[command(name = "flare", version, about = "AI coding usage for Quickshell, read the way Codenotch reads it")]
@@ -37,6 +37,11 @@ struct Cli {
 enum Command {
     /// Print a human-readable report of what flare can and cannot find.
     Doctor,
+    /// Bring the terminal a live session runs in to the front (Hyprland).
+    Focus {
+        /// The session's pid, as listed under `sessions`.
+        pid: u32,
+    },
     /// Read or change the config file.
     Config {
         #[command(subcommand)]
@@ -104,6 +109,10 @@ fn main() -> Result<()> {
             return Ok(());
         }
         Some(Command::Config { action }) => return run_config(action, &config, config_problem),
+        Some(Command::Focus { pid }) => {
+            let provider = cli.provider.id().unwrap_or("claude");
+            return sessions::focus(provider, pid);
+        }
         None => {}
     }
 
@@ -136,9 +145,13 @@ fn fetch_all(list: &[Box<dyn UsageProvider>], ctx: &Fetch) -> Vec<ProviderUsage>
 }
 
 fn fetch(provider: &dyn UsageProvider, ctx: &Fetch) -> ProviderUsage {
-    provider
+    let mut usage = provider
         .fetch(ctx)
-        .unwrap_or_else(|err| failed(provider.id(), format!("{err:#}")))
+        .unwrap_or_else(|err| failed(provider.id(), format!("{err:#}")));
+    if usage.status != Status::Absent {
+        usage.sessions = sessions::live(provider.id());
+    }
+    usage
 }
 
 fn failed(id: &str, detail: String) -> ProviderUsage {

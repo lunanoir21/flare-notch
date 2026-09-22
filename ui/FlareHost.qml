@@ -21,6 +21,9 @@ Scope {
         function toggleVisible(): void {
             FlareData.toggleVisible();
         }
+        function toggleSessions(): void {
+            FlareData.toggleSessions();
+        }
         function show(): void {
             FlareData.shown = true;
         }

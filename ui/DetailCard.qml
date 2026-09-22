@@ -12,6 +12,7 @@ Item {
 
     readonly property real s: FlareData.scale
     readonly property var windows: cell && cell.windows ? cell.windows : []
+    readonly property var sessions: cell && cell.sessions ? cell.sessions : []
 
     width: 276 * s
     implicitHeight: body.implicitHeight + 32 * s
@@ -165,6 +166,15 @@ Item {
                     }
                 }
             }
+        }
+
+        SessionList {
+            width: body.width
+            visible: card.sessions.length > 0
+            sessions: card.sessions
+            provider: card.cell ? card.cell.id : ""
+            s: card.s
+            live: card.visible
         }
 
         Text {

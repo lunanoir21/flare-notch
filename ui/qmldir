@@ -10,6 +10,7 @@ DetailCard 1.0 DetailCard.qml
 FlareHost 1.0 FlareHost.qml
 FlareSettings 1.0 FlareSettings.qml
 Kbd 1.0 Kbd.qml
+SessionList 1.0 SessionList.qml
 LivePreview 1.0 LivePreview.qml
 NotchShape 1.0 NotchShape.qml
 PageAbout 1.0 PageAbout.qml

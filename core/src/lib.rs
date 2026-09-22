@@ -13,6 +13,7 @@ pub mod http;
 pub mod jsonl;
 pub mod paths;
 pub mod providers;
+pub mod sessions;
 pub mod store;
 #[cfg(test)]
 mod testutil;
@@ -169,6 +170,9 @@ pub struct ProviderUsage {
     pub cost_is_estimated: bool,
     /// Category-prefixed detail for doctor, e.g. "parse error: ...".
     pub error: Option<String>,
+    /// Sessions open right now. Read fresh on every run, never stored.
+    #[serde(default, skip_deserializing)]
+    pub sessions: Vec<sessions::Session>,
 }
 
 impl ProviderUsage {
@@ -189,6 +193,7 @@ impl ProviderUsage {
             cost_today_usd: None,
             cost_is_estimated: true,
             error: None,
+            sessions: Vec::new(),
         }
     }
 
