@@ -9,6 +9,7 @@
 //! Credentials are borrowed read-only and never written, printed or logged.
 
 pub mod config;
+pub mod history;
 pub mod http;
 pub mod jsonl;
 pub mod paths;
@@ -173,6 +174,10 @@ pub struct ProviderUsage {
     /// Sessions open right now. Read fresh on every run, never stored.
     #[serde(default, skip_deserializing)]
     pub sessions: Vec<sessions::Session>,
+    /// How each window filled over time, `[unix seconds, fraction used]` per
+    /// window id. Kept in its own file, not in the stored snapshot.
+    #[serde(default, skip_deserializing)]
+    pub history: history::History,
 }
 
 impl ProviderUsage {
@@ -194,6 +199,7 @@ impl ProviderUsage {
             cost_is_estimated: true,
             error: None,
             sessions: Vec::new(),
+            history: history::History::new(),
         }
     }
 

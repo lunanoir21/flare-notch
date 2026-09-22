@@ -63,7 +63,7 @@ fn file(provider: &str) -> Option<PathBuf> {
         .map(|dir| dir.join(format!("{provider}.json")))
 }
 
-fn write_private(path: &Path, text: &str) -> std::io::Result<()> {
+pub(crate) fn write_private(path: &Path, text: &str) -> std::io::Result<()> {
     let dir = path
         .parent()
         .ok_or_else(|| std::io::Error::other("state file has no parent directory"))?;

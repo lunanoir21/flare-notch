@@ -11,7 +11,7 @@ use std::path::Path;
 
 use anyhow::{Context, Result, bail};
 use clap::{Parser, Subcommand, ValueEnum};
-use flare_core::{Config, Fetch, ProviderUsage, SOURCE_LOCAL, Status, UsageProvider, config, paths, providers, sessions};
+use flare_core::{Config, Fetch, ProviderUsage, SOURCE_LOCAL, Status, UsageProvider, config, history, paths, providers, sessions};
 
 #[derive(Debug, Parser)]
 #[command(name = "flare", version, about = "AI coding usage for Quickshell, read the way Codenotch reads it")]
@@ -150,6 +150,7 @@ fn fetch(provider: &dyn UsageProvider, ctx: &Fetch) -> ProviderUsage {
         .unwrap_or_else(|err| failed(provider.id(), format!("{err:#}")));
     if usage.status != Status::Absent {
         usage.sessions = sessions::live(provider.id());
+        usage.history = history::record(&usage, ctx.now);
     }
     usage
 }
