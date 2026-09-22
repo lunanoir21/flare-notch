@@ -42,6 +42,8 @@ enum Command {
         /// The session's pid, as listed under `sessions`.
         pid: u32,
     },
+    /// Tokens and replies per hour over the last eight days, as JSON.
+    Activity,
     /// Read or change the config file.
     Config {
         #[command(subcommand)]
@@ -109,6 +111,15 @@ fn main() -> Result<()> {
             return Ok(());
         }
         Some(Command::Config { action }) => return run_config(action, &config, config_problem),
+        Some(Command::Activity) => {
+            let cutoff = ctx.now - 8 * 86_400;
+            let hours = match cli.provider.id() {
+                Some("claude") | None => providers::claude::hourly(cutoff),
+                _ => Vec::new(),
+            };
+            println!("{}", serde_json::to_string(&serde_json::json!({ "hours": hours }))?);
+            return Ok(());
+        }
         Some(Command::Focus { pid }) => {
             let provider = cli.provider.id().unwrap_or("claude");
             return sessions::focus(provider, pid);

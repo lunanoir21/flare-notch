@@ -500,40 +500,71 @@ struct Scan {
 /// since the cutoff are skipped without being opened.
 fn scan_tokens(projects: &Path, cutoff_secs: i64) -> Scan {
     let mut scan = Scan::default();
+    scan.parse_error = each_reply(projects, cutoff_secs, |_, tokens| {
+        scan.tokens = scan.tokens.saturating_add(tokens);
+    });
+    scan
+}
 
+/// Tokens and replies per hour since `cutoff_secs`, oldest first, as
+/// `(hour start, tokens, replies)` with hours on unix-hour boundaries.
+pub fn hourly(cutoff_secs: i64) -> Vec<(i64, u64, u32)> {
+    let Ok(home) = paths::claude_home() else {
+        return Vec::new();
+    };
+    let mut hours: std::collections::BTreeMap<i64, (u64, u32)> = std::collections::BTreeMap::new();
+    each_reply(&home.join("projects"), cutoff_secs, |at, tokens| {
+        let slot = hours.entry(at - at.rem_euclid(3600)).or_default();
+        slot.0 = slot.0.saturating_add(tokens);
+        slot.1 += 1;
+    });
+    hours.into_iter().map(|(at, (tokens, replies))| (at, tokens, replies)).collect()
+}
+
+/// Every assistant reply since `cutoff_secs`, once each, as (unix seconds,
+/// tokens). Claude Code writes one line per content block of a reply and
+/// repeats the reply's usage on each, so a reply is counted by its message
+/// id, across files too: a resumed session copies earlier replies into its
+/// new log. Returns the first parse error, if any.
+fn each_reply(projects: &Path, cutoff_secs: i64, mut visit: impl FnMut(i64, u64)) -> Option<String> {
+    let mut seen = std::collections::HashSet::new();
+    let mut parse_error = None;
     for path in paths::collect_files(projects, "jsonl") {
         if paths::mtime_secs(&path).is_some_and(|mtime| mtime < cutoff_secs) {
             continue;
         }
-
-        let mut file_tokens: u64 = 0;
         let result = jsonl::for_each(&path, |value| {
             if value.get("type").and_then(Value::as_str) != Some("assistant") {
                 return;
             }
-            let Some(timestamp) = value.get("timestamp").and_then(Value::as_str) else {
+            let Some(at) = value
+                .get("timestamp")
+                .and_then(Value::as_str)
+                .and_then(crate::time::rfc3339_to_unix)
+                .filter(|&at| at >= cutoff_secs)
+            else {
                 return;
             };
-            if crate::time::rfc3339_to_unix(timestamp).is_none_or(|at| at < cutoff_secs) {
-                return;
-            }
             let Some(usage) = value.pointer("/message/usage") else {
                 return;
             };
-            file_tokens = file_tokens.saturating_add(token_total(usage));
-        });
-
-        match result {
-            Ok(()) => scan.tokens = scan.tokens.saturating_add(file_tokens),
-            Err(err) => {
-                if scan.parse_error.is_none() {
-                    scan.parse_error = Some(format!("{err:#}"));
+            let id = value
+                .pointer("/message/id")
+                .or_else(|| value.get("uuid"))
+                .and_then(Value::as_str)
+                .map(str::to_string);
+            if let Some(id) = id {
+                if !seen.insert(id) {
+                    return;
                 }
             }
+            visit(at, token_total(usage));
+        });
+        if let Err(err) = result {
+            parse_error.get_or_insert_with(|| format!("{err:#}"));
         }
     }
-
-    scan
+    parse_error
 }
 
 /// Only the top-level counters: the sibling `iterations` array repeats the
@@ -732,6 +763,34 @@ mod tests {
         let scan = scan_tokens(&fixture("claude/sessions_ok"), NO_CUTOFF);
         assert_eq!(scan.tokens, 1026);
         assert!(scan.parse_error.is_none());
+    }
+
+    #[test]
+    fn a_reply_split_over_lines_or_files_counts_once() {
+        let dir = tempfile::tempdir().unwrap();
+        let project = dir.path().join("p");
+        std::fs::create_dir_all(&project).unwrap();
+        let line = |id: &str, at: &str, out: u64| {
+            format!(
+                r#"{{"type":"assistant","timestamp":"{at}","message":{{"id":"{id}","usage":{{"input_tokens":10,"output_tokens":{out}}}}}}}"#
+            )
+        };
+        // One reply written as two content-block lines, then a second reply.
+        std::fs::write(
+            project.join("a.jsonl"),
+            [line("m1", "2026-08-17T10:00:01Z", 90), line("m1", "2026-08-17T10:00:02Z", 90), line("m2", "2026-08-17T11:30:00Z", 40), String::new()].join("\n"),
+        )
+        .unwrap();
+        // A resumed session repeats m1 in its own file.
+        std::fs::write(project.join("b.jsonl"), [line("m1", "2026-08-17T10:00:01Z", 90), String::new()].join("\n")).unwrap();
+
+        assert_eq!(scan_tokens(dir.path(), NO_CUTOFF).tokens, 100 + 50);
+        let mut hours = Vec::new();
+        each_reply(dir.path(), NO_CUTOFF, |at, tokens| hours.push((at - at.rem_euclid(3600), tokens)));
+        hours.sort();
+        assert_eq!(hours.len(), 2);
+        assert_eq!(hours[0].1, 100);
+        assert_eq!(hours[1].1, 50);
     }
 
     #[test]

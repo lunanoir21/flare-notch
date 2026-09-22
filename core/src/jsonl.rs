@@ -19,11 +19,13 @@ use std::path::Path;
 use anyhow::{Context, Result, bail};
 use serde_json::Value;
 
-/// A single line longer than this is treated as damage, not read further.
-/// Session-log entries are small JSON objects; this is generous headroom.
+/// A line longer than this is skipped without being held in memory. The
+/// records flare reads are small; the lines this long are tool output such as
+/// a screenshot, and one of them must not cost the rest of the file.
 const MAX_LINE_BYTES: usize = 64 * 1024;
-/// Total bytes read from one file before the scan gives up on it.
-const MAX_TOTAL_BYTES: u64 = 64 * 1024 * 1024;
+/// Total bytes read from one file before the scan gives up on it. A long
+/// Claude Code session's log passes 64 MB.
+const MAX_TOTAL_BYTES: u64 = 256 * 1024 * 1024;
 
 /// Call `visit` for every JSON object in a JSONL file, oldest line first.
 ///
@@ -64,33 +66,35 @@ where
     Ok(())
 }
 
-/// Reads one line (without its trailing newline) into `reader`'s own buffer,
-/// bounded by `MAX_LINE_BYTES` per line and `MAX_TOTAL_BYTES` for the whole
-/// file. `Ok(None)` at a clean EOF with nothing pending; the final
+/// Reads one line (without its trailing newline), bounded by
+/// `MAX_TOTAL_BYTES` for the whole file. A line past `MAX_LINE_BYTES` is
+/// read through and dropped, coming back empty, which the caller skips like
+/// a blank line. `Ok(None)` at a clean EOF with nothing pending; the final
 /// unterminated fragment before EOF still comes back as a line, matching
 /// `BufRead::lines()`.
 fn read_bounded_line(reader: &mut BufReader<File>, path: &Path, total: &mut u64) -> Result<Option<Vec<u8>>> {
     let mut out = Vec::new();
+    let mut skipping = false;
     loop {
         let available = reader.fill_buf().with_context(|| format!("{}", path.display()))?;
         if available.is_empty() {
-            return Ok(if out.is_empty() { None } else { Some(out) });
+            return Ok(if out.is_empty() && !skipping { None } else { Some(out) });
         }
-        if let Some(pos) = available.iter().position(|&b| b == b'\n') {
-            out.extend_from_slice(&available[..pos]);
-            *total += (pos + 1) as u64;
-            reader.consume(pos + 1);
-            check_total(path, *total)?;
+        let newline = available.iter().position(|&b| b == b'\n');
+        let take = newline.unwrap_or(available.len());
+        if skipping || out.len() + take > MAX_LINE_BYTES {
+            skipping = true;
+            out = Vec::new();
+        } else {
+            out.extend_from_slice(&available[..take]);
+        }
+        let consumed = newline.map_or(take, |pos| pos + 1);
+        *total += consumed as u64;
+        reader.consume(consumed);
+        check_total(path, *total)?;
+        if newline.is_some() {
             return Ok(Some(out));
         }
-        if out.len() + available.len() > MAX_LINE_BYTES {
-            bail!("{}: a line is longer than {MAX_LINE_BYTES} bytes", path.display());
-        }
-        let read = available.len();
-        out.extend_from_slice(available);
-        *total += read as u64;
-        reader.consume(read);
-        check_total(path, *total)?;
     }
 }
 
@@ -147,15 +151,25 @@ mod tests {
     }
 
     #[test]
-    fn a_line_past_the_byte_cap_is_reported_not_read_unbounded() {
+    fn a_line_past_the_byte_cap_is_skipped_and_the_rest_still_read() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("huge.jsonl");
+        let huge = format!("{{\"pad\":\"{}\"}}", "a".repeat(MAX_LINE_BYTES * 4));
+        std::fs::write(&path, format!("{{\"n\":1}}\n{huge}\n{{\"n\":2}}\n{{\"n\":3}}\n")).unwrap();
+        let mut seen = Vec::new();
+        for_each(&path, |value| seen.push(value["n"].as_i64().unwrap())).unwrap();
+        assert_eq!(seen, vec![1, 2, 3]);
+    }
+
+    #[test]
+    fn a_huge_unterminated_last_line_is_dropped_quietly() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("huge.jsonl");
         // No newline at all: a pathological single "line" many times the cap.
         std::fs::write(&path, "a".repeat(MAX_LINE_BYTES * 4)).unwrap();
         let mut seen = 0;
-        let err = for_each(&path, |_| seen += 1).unwrap_err();
+        for_each(&path, |_| seen += 1).unwrap();
         assert_eq!(seen, 0);
-        assert!(format!("{err:#}").contains("longer than"), "{err:#}");
     }
 
     #[test]
