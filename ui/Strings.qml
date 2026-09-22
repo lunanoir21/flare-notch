@@ -164,6 +164,78 @@ Singleton {
     readonly property string allScreens: tr ? "Tümü" : "All"
     readonly property string refreshNow: tr ? "Şimdi yenile" : "Refresh now"
     readonly property string close: tr ? "Kapat" : "Close"
+    readonly property string usageTitle: tr ? "Kullanım" : "Usage"
+    readonly property string openUsage: tr ? "Kullanım panelini aç" : "Open the usage panel"
+    readonly property string sessionsClaudeOnly: tr ? "Yalnızca Claude Code" : "Claude Code only"
+
+
+    readonly property string rhythmHint: tr ? "Bu hafta saat saat ve bugünkü oturumlar." : "This week, hour by hour, and today's sessions."
+    readonly property string busiest: tr ? "En yoğun" : "Busiest"
+    readonly property string quietest: tr ? "En sakin" : "Quietest"
+    readonly property string weekResets: tr ? "Sıfırlanma" : "Resets"
+    readonly property string notEnoughYet: tr ? "Henüz yeterli okuma yok" : "Not enough readings yet"
+    readonly property string less: tr ? "az" : "less"
+    readonly property string more: tr ? "çok" : "more"
+    readonly property string noReadingHour: tr ? "okuma yok" : "no reading"
+    readonly property string todaysSessions: tr ? "Bugünkü oturumlar" : "Today's sessions"
+    readonly property string jumpHint: tr ? "Açık olana tıkla, terminaline geç" : "Click an open one to jump to its terminal"
+    readonly property string closed: tr ? "kapandı" : "closed"
+    readonly property string noSessionsToday: tr ? "Bugün oturum yok." : "No sessions today."
+    readonly property string noHeat: tr ? "Bu sağlayıcının okuması henüz yok." : "No readings for this provider yet."
+    readonly property string noHeatUnmetered: tr ? "Bu sağlayıcının limiti yok; bugünkü token sayısı kartta." : "This provider has no limit; today's tokens are on the card."
+
+    readonly property string noActivity: tr ? "Etkinlik yok" : "No activity"
+
+    function tokensCount(count) {
+        return tr ? tokens(count) + " token" : tokens(count) + " tokens";
+    }
+
+    function repliesCount(count) {
+        return tr ? count + " yanıt" : count + (count === 1 ? " reply" : " replies");
+    }
+
+    function weeklyRise(percent) {
+        return tr ? "Haftalık limitin +" + percent + "'i" : "+" + percent + " of the weekly limit";
+    }
+
+    function weekTokens(amount) {
+        return tr ? "Bu hafta " + amount + " token, saat saat; altta bugünkü oturumlar." : amount + " tokens this week, hour by hour; today's sessions below.";
+    }
+
+    function fromLogs(name) {
+        return tr ? "Token'lar " + name + " Code'un kendi kayıtlarından okunur; bir yanıt bir kez sayılır. Kareye gel ya da tıkla." : "Tokens are read from " + name + " Code's own logs, each reply counted once. Hover or click a square."
+    }
+
+    function hourLabel(start) {
+        const date = new Date(start * 1000);
+        const from = Qt.formatTime(date, "HH:mm");
+        const to = Qt.formatTime(new Date((start + 3600) * 1000), "HH:mm");
+        return days[date.getDay()] + " " + date.getDate() + " " + months[date.getMonth()] + " · " + from + "–" + to;
+    }
+
+    function rhythmTitle(name) {
+        return tr ? name + "'u ne zaman kullanıyorsun" : "When you use " + name;
+    }
+
+    function shareOfWeek(percent) {
+        return tr ? "Bu haftanın " + percent + "'i" : percent + " of this week's use";
+    }
+
+    function recordingSince(when) {
+        return tr ? "flare " + when + " tarihinden beri kaydediyor. Ölçülmemiş saatler boş kalır, tahmin edilmez." : "flare has been recording since " + when + ". Hours it did not see stay empty, never guessed.";
+    }
+
+    function runsOutAt(time) {
+        return tr ? "Bugünkü hızla " + time + " civarında biter" : "At today's pace it runs out around " + time;
+    }
+
+    function paceEndsAt(percent) {
+        return tr ? "Bugünkü hızla sıfırlanmaya kadar ~" + percent : "At today's pace, ~" + percent + " by the reset";
+    }
+
+    function waitingCount(count) {
+        return tr ? count + " oturum seni bekliyor" : count + " waiting on you";
+    }
     readonly property string file: tr ? "Dosya" : "File"
 
     function title(name) {

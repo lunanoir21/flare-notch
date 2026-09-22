@@ -53,7 +53,12 @@ Item {
         width: card.width - 32 * card.s
         spacing: 10 * card.s
 
+        Item {
+            width: body.width
+            height: titleRow.height
+
         Row {
+            id: titleRow
             spacing: 8 * card.s
 
             Image {
@@ -71,6 +76,57 @@ Item {
                 color: Theme.textPrimary
                 font.pixelSize: Math.round(16 * card.s)
                 font.weight: Font.Medium
+            }
+        }
+
+            // Opens the usage panel: the chart, every limit and the sessions.
+            Rectangle {
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                width: 26 * card.s
+                height: width
+                radius: width / 2
+                color: openHover.hovered ? Theme.rowHover : "transparent"
+                border.color: Theme.divider
+                Accessible.role: Accessible.Button
+                Accessible.name: Strings.openUsage
+
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 120
+                    }
+                }
+
+                Shape {
+                    id: openIcon
+                    anchors.centerIn: parent
+                    width: 10 * card.s
+                    height: 10 * card.s
+                    preferredRendererType: Shape.CurveRenderer
+
+                    ShapePath {
+                        strokeColor: Theme.textSoft
+                        strokeWidth: 1.5 * card.s
+                        fillColor: "transparent"
+                        capStyle: ShapePath.RoundCap
+                        joinStyle: ShapePath.RoundJoin
+                        startX: openIcon.width * 0.15
+                        startY: openIcon.height * 0.85
+                        PathLine { x: openIcon.width * 0.85; y: openIcon.height * 0.15 }
+                        PathMove { x: openIcon.width * 0.35; y: openIcon.height * 0.15 }
+                        PathLine { x: openIcon.width * 0.85; y: openIcon.height * 0.15 }
+                        PathLine { x: openIcon.width * 0.85; y: openIcon.height * 0.65 }
+                    }
+                }
+
+                HoverHandler {
+                    id: openHover
+                    cursorShape: Qt.PointingHandCursor
+                }
+
+                TapHandler {
+                    onTapped: FlareData.toggleUsage(card.cell ? card.cell.id : "")
+                }
             }
         }
 

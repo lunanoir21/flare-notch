@@ -27,6 +27,9 @@ Scope {
         function card(id: string): void {
             FlareData.toggleCard(id);
         }
+        function usage(id: string): void {
+            FlareData.toggleUsage(id);
+        }
         function show(): void {
             FlareData.shown = true;
         }
@@ -45,6 +48,7 @@ Scope {
     }
 
     FlareSettings {}
+    FlareUsage {}
 
     Variants {
         model: Quickshell.screens

@@ -26,6 +26,8 @@ Singleton {
     property string focusId: ""
     property bool compactOpen: false
     property bool settingsOpen: false
+    property bool usageOpen: false
+    property string usageProvider: ""
     // Live values while a settings slider is being dragged; NaN when not.
     property real previewOffset: NaN
     property real previewScale: NaN
@@ -121,6 +123,7 @@ Singleton {
                 head: head,
                 windows: p.windows,
                 sessions: root.showSessions ? (p.sessions || []) : [],
+                history: p.history || ({}),
                 sessionLog: p.session_log || [],
                 status: p.status,
                 note: p.note || "",
@@ -165,6 +168,42 @@ Singleton {
 
     function focusOn(id) {
         focusId = id;
+    }
+
+    // Hour-by-hour tokens per provider, read from disk by `flare activity`
+    // only while the usage panel wants them: too heavy for every refresh.
+    property var activity: ({})
+    property string activityFor: ""
+
+    function loadActivity(id) {
+        if (!id || activityReader.running)
+            return;
+        activityFor = id;
+        activityReader.command = command("activity", "", id);
+        activityReader.running = true;
+    }
+
+    Process {
+        id: activityReader
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const next = Object.assign({}, root.activity);
+                    next[root.activityFor] = JSON.parse(text).hours || [];
+                    root.activity = next;
+                } catch (e) {}
+            }
+        }
+    }
+
+    function toggleUsage(id) {
+        if (usageOpen && (!id || id === usageProvider)) {
+            usageOpen = false;
+            return;
+        }
+        if (id)
+            usageProvider = id;
+        usageOpen = true;
     }
 
     function toggleCompact() {
@@ -244,6 +283,7 @@ Singleton {
         + '    set) exec "$c" config set "$key" "$value" ;; '
         + '    focus) exec "$c" --provider "$value" focus "$key" ;; '
         + '    watch) exec "$c" watch ;; '
+        + '    activity) exec "$c" --provider "$value" activity ;; '
         + '    *) exec "$c" --provider all --format json ${key:+"$key"} ;; '
         + '  esac; '
         + 'done; exit 127'
@@ -503,7 +543,7 @@ Singleton {
     // official mode, an API call) each time.
     Timer {
         interval: root.pollMs
-        running: root.reveal === "always" || root.visibleWindows > 0 || root.shown
+        running: root.reveal === "always" || root.visibleWindows > 0 || root.shown || root.usageOpen
         repeat: true
         triggeredOnStart: true
         onTriggered: {
