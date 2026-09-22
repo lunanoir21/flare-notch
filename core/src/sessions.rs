@@ -45,16 +45,31 @@ pub struct Session {
 /// outlive its window (Orca's daemon keeps its shells running after the IDE
 /// closes), and a session nobody can reach is as good as closed.
 pub fn live(provider: &str) -> Vec<Session> {
-    let found = match provider {
-        "claude" => paths::claude_home()
-            .map(|home| claude(&home.join("sessions"), Path::new("/proc")))
-            .unwrap_or_default(),
-        _ => Vec::new(),
-    };
+    let found = scan(provider);
     if found.is_empty() {
         return found;
     }
     with_window(found, Path::new("/proc"), hypr_windows().as_deref())
+}
+
+/// Live sessions without the window check: no `hyprctl` call, so cheap
+/// enough to repeat every few seconds. Pair with `reachable` before acting.
+pub fn scan(provider: &str) -> Vec<Session> {
+    match provider {
+        "claude" => paths::claude_home()
+            .map(|home| claude(&home.join("sessions"), Path::new("/proc")))
+            .unwrap_or_default(),
+        _ => Vec::new(),
+    }
+}
+
+/// Whether a session's terminal still has a window. Off Hyprland there is no
+/// way to tell, so it counts as reachable.
+pub fn reachable(pid: u32) -> bool {
+    match hypr_windows() {
+        Some(windows) => window_for(Path::new("/proc"), pid, &windows).is_some(),
+        None => true,
+    }
 }
 
 /// Keeps the sessions that run under a window. With no window list (not on

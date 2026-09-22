@@ -36,6 +36,12 @@ Rectangle {
             page: Strings.pageProvidersHint
         },
         {
+            key: "alerts",
+            label: Strings.navAlerts,
+            hint: Strings.navAlertsHint,
+            page: Strings.pageAlertsHint
+        },
+        {
             key: "data",
             label: Strings.navData,
             hint: Strings.navDataHint,
@@ -263,6 +269,8 @@ Rectangle {
                         return visibilityPage;
                     case "providers":
                         return providersPage;
+                    case "alerts":
+                        return alertsPage;
                     case "data":
                         return dataPage;
                     case "about":
@@ -328,6 +336,10 @@ Rectangle {
     Component {
         id: providersPage
         PageProviders {}
+    }
+    Component {
+        id: alertsPage
+        PageAlerts {}
     }
     Component {
         id: dataPage

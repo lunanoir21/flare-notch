@@ -6,6 +6,7 @@
 //! terminal, never for a parser.
 
 mod doctor;
+mod watch;
 
 use std::path::Path;
 
@@ -42,6 +43,8 @@ enum Command {
         /// The session's pid, as listed under `sessions`.
         pid: u32,
     },
+    /// Stay running and send desktop notifications, as `[notify]` sets them.
+    Watch,
     /// Tokens and replies per hour over the last eight days, as JSON.
     Activity,
     /// Read or change the config file.
@@ -111,6 +114,7 @@ fn main() -> Result<()> {
             return Ok(());
         }
         Some(Command::Config { action }) => return run_config(action, &config, config_problem),
+        Some(Command::Watch) => return watch::run(config),
         Some(Command::Activity) => {
             let cutoff = ctx.now - 8 * 86_400;
             let hours = match cli.provider.id() {

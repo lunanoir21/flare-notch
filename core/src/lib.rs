@@ -12,6 +12,7 @@ pub mod config;
 pub mod history;
 pub mod http;
 pub mod jsonl;
+pub mod notify;
 pub mod paths;
 pub mod providers;
 pub mod sessions;

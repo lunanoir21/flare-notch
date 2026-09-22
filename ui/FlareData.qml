@@ -37,6 +37,9 @@ Singleton {
     readonly property string themeMode: section("theme").mode || "black"
     readonly property string language: section("ui").language || "auto"
     readonly property string ringLabel: section("notch").label || "percent"
+    readonly property bool showSessions: section("sessions").show !== false
+    readonly property var notifyRules: section("notify")
+    readonly property bool notifyOn: root.config !== null && (notifyRules.waiting !== false || notifyRules.limit !== false || notifyRules.reset !== false)
     readonly property string ringColorMode: section("theme").ring_color || "monochrome"
     readonly property string style: section("notch").style || "classic"
     readonly property string notchEdge: section("notch").edge || "left"
@@ -117,7 +120,7 @@ Singleton {
                 used: used,
                 head: head,
                 windows: p.windows,
-                sessions: p.sessions || [],
+                sessions: root.showSessions ? (p.sessions || []) : [],
                 sessionLog: p.session_log || [],
                 status: p.status,
                 note: p.note || "",
@@ -240,6 +243,7 @@ Singleton {
         + '    config) exec "$c" config get ;; '
         + '    set) exec "$c" config set "$key" "$value" ;; '
         + '    focus) exec "$c" --provider "$value" focus "$key" ;; '
+        + '    watch) exec "$c" watch ;; '
         + '    *) exec "$c" --provider all --format json ${key:+"$key"} ;; '
         + '  esac; '
         + 'done; exit 127'
@@ -319,6 +323,37 @@ Singleton {
         focuser.running = true;
         compactOpen = false;
         hideWidget();
+    }
+
+    // Notifications come from `flare watch`, one long-running process that
+    // lives only while some notification is switched on. It rereads the
+    // config itself and exits once they are all off; it is restarted if it
+    // ever stops while they are on.
+    Process {
+        id: watcher
+        stderr: SplitParser {
+            onRead: line => console.warn("flare watch:", line)
+        }
+    }
+
+    function syncWatcher() {
+        const want = root.notifyOn && root.ready;
+        if (want && !watcher.running) {
+            watcher.command = command("watch");
+            watcher.running = true;
+        } else if (!want && watcher.running) {
+            watcher.running = false;
+        }
+    }
+
+    onNotifyOnChanged: syncWatcher()
+    onReadyChanged: syncWatcher()
+
+    Timer {
+        interval: 30000
+        running: root.notifyOn
+        repeat: true
+        onTriggered: root.syncWatcher()
     }
 
     Process {

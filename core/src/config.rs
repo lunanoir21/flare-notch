@@ -275,6 +275,44 @@ impl Default for Aura {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
+pub struct Sessions {
+    /// List open sessions in the widget at all.
+    pub show: bool,
+}
+
+impl Default for Sessions {
+    fn default() -> Self {
+        Self { show: true }
+    }
+}
+
+/// Desktop notifications, sent by `flare watch`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Notify {
+    /// A session starts waiting on you.
+    pub waiting: bool,
+    /// A limit crosses `limit_at` percent.
+    pub limit: bool,
+    pub limit_at: u32,
+    /// A limit that had been used resets.
+    pub reset: bool,
+}
+
+impl Default for Notify {
+    fn default() -> Self {
+        Self { waiting: true, limit: true, limit_at: 90, reset: true }
+    }
+}
+
+impl Notify {
+    pub fn any(&self) -> bool {
+        self.waiting || self.limit || self.reset
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Poll {
     pub interval_secs: u64,
 }
@@ -323,6 +361,8 @@ pub struct Config {
     pub notch: Notch,
     pub compact: Compact,
     pub providers: Providers,
+    pub sessions: Sessions,
+    pub notify: Notify,
     pub aura: Aura,
     pub poll: Poll,
     pub scan: Scan,
@@ -341,6 +381,7 @@ pub const SCALE_RANGE: RangeInclusive<f64> = 0.5..=2.0;
 pub const MIN_POLL_SECS: u64 = 5;
 pub const MAX_GAP: u32 = 64;
 pub const MAX_DELAY_MS: u32 = 5000;
+pub const LIMIT_AT_RANGE: RangeInclusive<u32> = 50..=100;
 
 /// Every key `flare config set` accepts.
 pub const KEYS: &[&str] = &[
@@ -368,6 +409,11 @@ pub const KEYS: &[&str] = &[
     "providers.cursor",
     "providers.opencode",
     "providers.order",
+    "sessions.show",
+    "notify.waiting",
+    "notify.limit",
+    "notify.limit_at",
+    "notify.reset",
     "aura.claude",
     "aura.codex",
     "aura.cursor",
@@ -470,6 +516,21 @@ codex = "#6E7BFF"
 cursor = "#3DD6C6"
 opencode = "#C9CED6"
 
+[sessions]
+# List the Claude Code sessions running right now in the widget.
+show = true
+
+[notify]
+# Desktop notifications, sent by `flare watch`, which the widget starts while
+# any of these is on.
+#   waiting   a session stops and waits on you; the notification jumps to it
+#   limit     a limit reaches limit_at percent (50 to 100)
+#   reset     a limit you had been using resets
+waiting = true
+limit = true
+limit_at = 90
+reset = true
+
 [poll]
 # Seconds between widget refreshes, at least 5. Network reads keep their own
 # slower pace: Claude every minute, Codex and Cursor every five.
@@ -553,6 +614,13 @@ impl Config {
         );
         ensure!(self.scan.window_days >= 1, "scan.window_days must be at least 1");
         ensure!(
+            LIMIT_AT_RANGE.contains(&self.notify.limit_at),
+            "notify.limit_at must be between {} and {}, got {}",
+            LIMIT_AT_RANGE.start(),
+            LIMIT_AT_RANGE.end(),
+            self.notify.limit_at
+        );
+        ensure!(
             self.notch.gap <= MAX_GAP,
             "notch.gap must be at most {MAX_GAP}, got {}",
             self.notch.gap
@@ -593,6 +661,7 @@ impl Config {
         };
         self.poll.interval_secs = self.poll.interval_secs.max(MIN_POLL_SECS);
         self.scan.window_days = self.scan.window_days.max(1);
+        self.notify.limit_at = self.notify.limit_at.clamp(*LIMIT_AT_RANGE.start(), *LIMIT_AT_RANGE.end());
         self.notch.gap = self.notch.gap.min(MAX_GAP);
         self.notch.reveal_delay_ms = self.notch.reveal_delay_ms.min(MAX_DELAY_MS);
         self.notch.hide_delay_ms = self.notch.hide_delay_ms.min(MAX_DELAY_MS);
@@ -881,12 +950,17 @@ mod tests {
         set_value(&path, "theme.mode", "auto").unwrap();
         set_value(&path, "ui.language", "en").unwrap();
         set_value(&path, "notch.label", "both").unwrap();
+        set_value(&path, "notify.limit_at", "80").unwrap();
+        set_value(&path, "sessions.show", "false").unwrap();
+        assert!(set_value(&path, "notify.limit_at", "20").is_err());
         assert!(set_value(&path, "ui.language", "de").is_err());
         let (config, problem) = Config::load_from(&path);
         assert!(problem.is_none(), "{problem:?}");
         assert_eq!(config.theme.mode, ThemeMode::Auto);
         assert_eq!(config.ui.language, Language::En);
         assert_eq!(config.notch.label, Label::Both);
+        assert_eq!(config.notify.limit_at, 80);
+        assert!(!config.sessions.show);
         assert_eq!(config.notch.offset, -40);
         assert_eq!(config.notch.scale, 1.0);
         assert!(!config.providers.codex);
