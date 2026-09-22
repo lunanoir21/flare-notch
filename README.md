@@ -5,6 +5,11 @@ Cursor and OpenCode allowance is left, welded to the edge of the screen.
 
 [Türkçe README](README.tr.md)
 
+<p align="center">
+  <img src="docs/screenshots/card.png" width="380" alt="The hover card beside the notch">
+  <img src="docs/screenshots/sessions.png" width="380" alt="The hover card with its session list open">
+</p>
+
 ## Three looks
 
 | Style | What it is |

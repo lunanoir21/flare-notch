@@ -5,6 +5,11 @@ OpenCode haklarından ne kadarının kaldığını ekranın kenarında gösterir
 
 [English README](README.md)
 
+<p align="center">
+  <img src="docs/screenshots/card.png" width="380" alt="Notch yanında hover kartı">
+  <img src="docs/screenshots/sessions.png" width="380" alt="Oturum listesi açık hover kartı">
+</p>
+
 ## Üç görünüm
 
 | Stil | Nedir |

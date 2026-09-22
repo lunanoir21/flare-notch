@@ -14,6 +14,9 @@ The first release.
 - **Open sessions:** the card lists the Claude Code sessions running right now,
   whether each is working or waiting on you, and clicking one brings its terminal
   to the front (Hyprland).
+- **Keyboard only:** `qs ipc call flare card claude` opens the hover card without the
+  pointer; `toggleSessions` folds the session list.
+- **English and Turkish:** follows the locale, or `ui.language`.
 - **Settings page:** every option, with a live preview; it writes the same
   `~/.config/flare/config.toml` that `flare config set` does.
 - **Light on resources:** nothing is read while the widget is out of sight, and
