@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.1
+
+- **Sessions in every look:** aura opens the same hover card as classic from its
+  ring, with a dot per open session under it, and compact lists the sessions under
+  its provider rows.
+- **Smoother compact panel:** opening the session list no longer resizes the
+  panel's window on every frame, and the panel opens and closes faster.
+- **`card` in aura** switches to that provider before opening its card.
+- **A website:** [lunanoir21.github.io/quickshell-flare](https://lunanoir21.github.io/quickshell-flare/),
+  with a working copy of the notch, the credits and this changelog, in black or
+  white.
+- `install.sh` suggests setting `flare.binary_path` when it installs somewhere the
+  widget does not look.
+
 ## 0.1.0
 
 The first release.
