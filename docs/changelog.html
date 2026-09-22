@@ -4,7 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Changelog — flare</title>
+  <meta name="theme-color" content="#000000">
   <meta name="description" content="Every flare release and what changed in it.">
+  <script>try { if (localStorage.getItem("flare-theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
   <link rel="icon" href="assets/logos/claude.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,12 +21,16 @@
     <nav aria-label="Site">
       <a href="changelog.html" aria-current="page">Changelog</a>
       <a href="credits.html">Credits</a>
-      <a href="https://github.com/lunanoir21/quickshell-flare">GitHub</a>
+      <a class="wide" href="https://github.com/lunanoir21/quickshell-flare">GitHub</a>
+      <button class="theme" type="button" aria-label="Switch to the white theme">
+        <svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.6A5.6 5.6 0 0 1 6.4 2.5a5.6 5.6 0 1 0 7.1 7.1Z"/></svg>
+        <svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3 3l1.1 1.1M11.9 11.9 13 13M3 13l1.1-1.1M11.9 4.1 13 3"/></svg>
+      </button>
     </nav>
   </header>
 
   <main id="main">
-    <div class="credits-head">
+    <div class="page-head">
       <span class="tag">CHANGELOG.md</span>
       <h1>Changelog</h1>
       <p class="lede">Every release and what changed in it, newest first. This page reads the changelog straight from the repository.</p>

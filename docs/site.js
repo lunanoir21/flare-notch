@@ -90,9 +90,49 @@
 
   // ---------- side notch: classic and aura ----------
 
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const px = (name) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) || 0;
+
+  // A filled shape plus an open hairline along its screen-facing edges; the
+  // hairline stops where the shape meets the screen edge, as flare's does.
+  function shapeSvg() {
+    const svgEl = document.createElementNS(SVGNS, "svg");
+    svgEl.setAttribute("class", "shape");
+    svgEl.setAttribute("aria-hidden", "true");
+    const fill = document.createElementNS(SVGNS, "path");
+    fill.setAttribute("class", "fill");
+    const edge = document.createElementNS(SVGNS, "path");
+    edge.setAttribute("class", "edge");
+    svgEl.append(fill, edge);
+    return { svgEl, fill, edge };
+  }
+
+  function drawShape(shape, left, top, width, height, outline) {
+    shape.svgEl.style.left = `${left}px`;
+    shape.svgEl.style.top = `${top}px`;
+    shape.svgEl.setAttribute("width", width);
+    shape.svgEl.setAttribute("height", height);
+    shape.svgEl.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    shape.fill.setAttribute("d", outline + " Z");
+    shape.edge.setAttribute("d", outline);
+  }
+
   const side = el("div", { class: "flare flare-side", "data-style": style });
   const body = el("div", { class: "body", role: "group", "aria-label": "flare notch (a demo)" });
-  side.append(body);
+  const sideShape = shapeSvg();
+  side.append(sideShape.svgEl, body);
+
+  // Welded to the left edge: a concave flare above and below, rounded body.
+  function drawSide() {
+    const W = body.offsetWidth;
+    const H = body.offsetHeight;
+    if (!W || !H) return;
+    const r = px("--flare-r");
+    const R = px("--body-r");
+    const d = `M0 0 A${r} ${r} 0 0 0 ${r} ${r} L${W - R} ${r} A${R} ${R} 0 0 1 ${W} ${r + R} L${W} ${r + H - R} A${R} ${R} 0 0 1 ${W - R} ${r + H} L${r} ${r + H} A${r} ${r} 0 0 0 0 ${H + 2 * r}`;
+    drawShape(sideShape, 0, -r, W, H + 2 * r, d);
+  }
+  new ResizeObserver(drawSide).observe(body);
 
   function ring(p, isLead) {
     const arc = svg(
@@ -155,7 +195,10 @@
   // ---------- the hover card ----------
 
   const card = el("div", { class: "card", id: "flare-card", role: "region", "aria-label": "Usage detail" });
-  const tail = svg('<svg viewBox="0 0 26 36" aria-hidden="true"><path d="M26 0C26 9 12.6 13.7 0 18C12.6 22.3 26 27 26 36Z"/></svg>', "tail");
+  const tail = svg(
+    '<svg viewBox="0 0 26 36" aria-hidden="true"><path class="fill" d="M26 0C26 9 12.6 13.7 0 18C12.6 22.3 26 27 26 36Z"/><path class="edge" d="M26 0C26 9 12.6 13.7 0 18C12.6 22.3 26 27 26 36"/></svg>',
+    "tail"
+  );
   const cardInner = el("div");
   card.append(tail, cardInner);
   card.addEventListener("pointerenter", () => clearTimeout(closeTimer));
@@ -318,17 +361,31 @@
     ),
   ]);
   panel.firstElementChild.inert = true;
+  const topShape = shapeSvg();
+
+  // Welded to the top edge; the panel grows the same shape downward.
+  function drawTop() {
+    const W = top.offsetWidth;
+    const H = top.offsetHeight;
+    if (!W || !H) return;
+    const r = 16;
+    const R = 16;
+    const d = `M0 0 A${r} ${r} 0 0 1 ${r} ${r} L${r} ${H - R} A${R} ${R} 0 0 0 ${r + R} ${H} L${r + W - R} ${H} A${R} ${R} 0 0 0 ${r + W} ${H - R} L${r + W} ${r} A${r} ${r} 0 0 1 ${2 * r + W} 0`;
+    drawShape(topShape, -r, 0, W + 2 * r, H, d);
+  }
+  new ResizeObserver(drawTop).observe(top);
   strip.addEventListener("click", () => {
     const opening = strip.getAttribute("aria-expanded") !== "true";
     strip.setAttribute("aria-expanded", String(opening));
     panel.classList.toggle("open", opening);
     panel.firstElementChild.inert = !opening;
   });
-  top.append(strip, panel);
+  top.append(topShape.svgEl, strip, panel);
 
   // ---------- switching looks ----------
 
   const pointer = document.querySelector(".pointer");
+  const touch = window.matchMedia("(hover: none)").matches;
 
   function apply(next) {
     style = next;
@@ -348,13 +405,29 @@
       pointer.dataset.dir = compact ? "up" : "left";
       pointer.querySelector(".words").textContent = compact
         ? "Now it is a strip on the top edge. Click it."
-        : style === "aura"
-          ? "The notch on this page's left edge works. Hover the ring."
-          : "The notch on this page's left edge works. Hover a ring.";
+        : `The notch on this page's left edge works. ${touch ? "Tap" : "Hover"} ${style === "aura" ? "the ring" : "a ring"}.`;
     }
   }
 
   for (const b of document.querySelectorAll(".look")) b.addEventListener("click", () => apply(b.dataset.look));
+
+  // ---------- theme ----------
+
+  const themeButton = document.querySelector(".theme");
+  function syncThemeLabel() {
+    const light = document.documentElement.dataset.theme === "light";
+    if (themeButton) themeButton.setAttribute("aria-label", light ? "Switch to the black theme" : "Switch to the white theme");
+  }
+  if (themeButton) {
+    syncThemeLabel();
+    themeButton.addEventListener("click", () => {
+      const light = document.documentElement.dataset.theme !== "light";
+      if (light) document.documentElement.dataset.theme = "light";
+      else delete document.documentElement.dataset.theme;
+      storage.set("flare-theme", light ? "light" : "black");
+      syncThemeLabel();
+    });
+  }
 
   // ---------- copy buttons ----------
 

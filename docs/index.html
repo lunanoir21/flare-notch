@@ -5,9 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>flare — AI usage notch for Hyprland</title>
   <meta name="description" content="flare is a notch for Quickshell on Hyprland that shows how much of your Claude Code, Codex, Cursor and OpenCode allowance is left, and which Claude sessions are running.">
+  <meta name="theme-color" content="#000000">
   <meta property="og:title" content="flare — AI usage notch for Hyprland">
   <meta property="og:description" content="Your Claude Code, Codex, Cursor and OpenCode limits, on the edge of the screen.">
   <meta property="og:image" content="https://lunanoir21.github.io/quickshell-flare/screenshots/sessions.png">
+  <script>try { if (localStorage.getItem("flare-theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
   <link rel="icon" href="assets/logos/claude.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,14 +24,18 @@
     <nav aria-label="Site">
       <a href="changelog.html">Changelog</a>
       <a href="credits.html">Credits</a>
-      <a href="https://github.com/lunanoir21/quickshell-flare">GitHub</a>
+      <a class="wide" href="https://github.com/lunanoir21/quickshell-flare">GitHub</a>
+      <button class="theme" type="button" aria-label="Switch to the white theme">
+        <svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.6A5.6 5.6 0 0 1 6.4 2.5a5.6 5.6 0 1 0 7.1 7.1Z"/></svg>
+        <svg class="sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M3 3l1.1 1.1M11.9 11.9 13 13M3 13l1.1-1.1M11.9 4.1 13 3"/></svg>
+      </button>
     </nav>
   </header>
 
   <main id="main">
     <section class="hero" aria-labelledby="title">
-      <h1 id="title">Your AI limits, on the edge of the screen</h1>
-      <p class="lede">flare is a notch for Quickshell on Hyprland. It shows how much of your Claude Code, Codex, Cursor and OpenCode allowance is left, and which Claude sessions are running right now.</p>
+      <h1 id="title">Your AI limits, <span class="quiet">on the edge of the screen</span></h1>
+      <p class="lede">flare is a notch for Quickshell on Hyprland. It shows how much of your <strong>Claude Code, Codex, Cursor and OpenCode</strong> allowance is left, and which Claude sessions are running right now.</p>
       <p class="pointer" data-dir="left"><span class="arrow" aria-hidden="true">←</span> <span class="words">The notch on this page's left edge works. Hover a ring.</span></p>
       <div class="actions">
         <a class="button solid" href="#install">Install</a>
@@ -39,9 +45,11 @@
     </section>
 
     <section class="section" id="install" aria-labelledby="install-title">
-      <div class="measure">
+      <div class="section-head">
         <span class="tag">install.sh</span>
         <h2 id="install-title">Install</h2>
+      </div>
+      <div class="section-body">
 <pre class="copyable"><code><span class="prompt">$ </span>git clone https://github.com/lunanoir21/quickshell-flare</code>
 <code><span class="prompt">$ </span>cd quickshell-flare</code>
 <code><span class="prompt">$ </span>./install.sh</code></pre>
@@ -61,87 +69,100 @@ ShellRoot {
     </section>
 
     <section class="section" id="looks" aria-labelledby="looks-title">
-      <span class="tag">notch.style</span>
-      <h2 id="looks-title">Three looks</h2>
-      <p class="measure">Picking one here changes the notch on this page.</p>
-      <div class="looks" role="group" aria-label="Notch style">
-        <button class="look" type="button" data-look="classic" aria-pressed="true">
-          <span class="name">classic</span>
-          <span class="what">Codenotch's notch. One ring per provider; hover a ring for its card.</span>
-        </button>
-        <button class="look" type="button" data-look="aura" aria-pressed="false">
-          <span class="name">aura</span>
-          <span class="what">One provider at a time, tinted with its colour. The others wait below.</span>
-        </button>
-        <button class="look" type="button" data-look="compact" aria-pressed="false">
-          <span class="name">compact</span>
-          <span class="what">A thin strip on the top or bottom edge that opens into a panel.</span>
-        </button>
+      <div class="section-head">
+        <span class="tag">notch.style</span>
+        <h2 id="looks-title">Three looks</h2>
       </div>
-      <div class="measure">
+      <div class="section-body">
+        <p class="lead">Picking one here changes the notch on this page.</p>
+        <div class="looks" role="group" aria-label="Notch style">
+          <button class="look" type="button" data-look="classic" aria-pressed="true">
+            <span class="pic" aria-hidden="true"><svg viewBox="0 0 120 48" preserveAspectRatio="xMinYMid meet"><path class="n" d="M0 2a7 7 0 0 0 7 7h4a8 8 0 0 1 8 8v14a8 8 0 0 1-8 8H7a7 7 0 0 0-7 7Z"/><circle class="d" cx="9" cy="19" r="3.6"/><circle class="d" cx="9" cy="29.5" r="3.6"/></svg></span>
+            <span class="name">classic</span>
+            <span class="what">Codenotch's notch. One ring per provider; hover a ring for its card.</span>
+          </button>
+          <button class="look" type="button" data-look="aura" aria-pressed="false">
+            <span class="pic" aria-hidden="true"><svg viewBox="0 0 120 48" preserveAspectRatio="xMinYMid meet"><path class="n" d="M0 2a7 7 0 0 0 7 7h4a8 8 0 0 1 8 8v14a8 8 0 0 1-8 8H7a7 7 0 0 0-7 7Z"/><circle class="a" cx="9" cy="21" r="5"/><path class="d" d="M5 32h8"/></svg></span>
+            <span class="name">aura</span>
+            <span class="what">One provider at a time, tinted with its colour. The others wait below.</span>
+          </button>
+          <button class="look" type="button" data-look="compact" aria-pressed="false">
+            <span class="pic" aria-hidden="true"><svg viewBox="0 0 120 48" preserveAspectRatio="xMidYMin meet"><path class="n" d="M30 0a7 7 0 0 1 7 7v1a7 7 0 0 0 7 7h32a7 7 0 0 0 7-7V7a7 7 0 0 1 7-7Z"/><circle class="f" cx="50" cy="7.5" r="2.2"/><circle class="f" cx="60" cy="7.5" r="2.2"/><circle class="f" cx="70" cy="7.5" r="2.2"/></svg></span>
+            <span class="name">compact</span>
+            <span class="what">A thin strip on the top or bottom edge that opens into a panel.</span>
+          </button>
+        </div>
         <p>Each look meets the screen edge one of three ways: <strong>bridge</strong> welds it on with inverse rounded corners, <strong>floating</strong> holds it off the edge as a panel, and <strong>flush</strong> runs a strip along the whole edge.</p>
         <p>It can stay out of the way, too. With <code>notch.reveal = "hover"</code> it waits past the edge and slides in when the pointer gets there; with <code>"shortcut"</code>, a key brings it in and sends it away.</p>
       </div>
     </section>
 
     <section class="section" id="sessions" aria-labelledby="sessions-title">
-      <div class="measure">
+      <div class="section-head">
         <span class="tag">~/.claude/sessions</span>
         <h2 id="sessions-title">Open sessions</h2>
-        <p>Under the limits, the card lists the Claude Code sessions running right now: each one's name, project and age, and whether it is working, <strong>waiting on you</strong> or idle. Click a row and the session's terminal comes to the front.</p>
-        <p>The list is read from the records Claude Code keeps for itself. A session whose process has exited, or whose terminal no longer has a window, is left out, so what you see is what you can switch to.</p>
       </div>
-      <figure class="shot">
-        <img src="screenshots/sessions.png" width="504" height="520" alt="flare's hover card on a desktop, showing two limits and two open sessions" loading="lazy">
-        <figcaption>The real thing, captured on Hyprland.</figcaption>
-      </figure>
+      <div class="section-body">
+        <p class="lead">Under the limits, the card lists the Claude Code sessions running right now: each one's name, project and age, and whether it is working, <strong>waiting on you</strong> or idle.</p>
+        <p>Click a row and the session's terminal comes to the front. The list is read from the records Claude Code keeps for itself; a session whose process has exited, or whose terminal no longer has a window, is left out, so what you see is what you can switch to.</p>
+        <figure class="shot">
+          <img src="screenshots/sessions.png" width="504" height="520" alt="flare's hover card on a desktop, showing two limits and two open sessions" loading="lazy">
+          <figcaption>The real thing, captured on Hyprland.</figcaption>
+        </figure>
+      </div>
     </section>
 
     <section class="section" id="numbers" aria-labelledby="numbers-title">
-      <span class="tag">data.mode</span>
-      <h2 id="numbers-title">Where the numbers come from</h2>
-      <div class="modes">
-        <div>
-          <h3>official</h3>
-          <p>The default. Each provider's own usage endpoint, asked with the sign-in its CLI already keeps, the way Codenotch does it. Network reads keep their own pace: Claude once a minute, Codex and Cursor every five.</p>
-        </div>
-        <div>
-          <h3>local</h3>
-          <p>Never opens a network connection. Reads only what each tool already wrote to disk, so a provider that keeps nothing there shows nothing.</p>
-        </div>
+      <div class="section-head">
+        <span class="tag">data.mode</span>
+        <h2 id="numbers-title">Where the numbers come from</h2>
       </div>
-      <table class="table">
-        <thead>
-          <tr><th scope="col">Provider</th><th scope="col">official</th><th scope="col">local</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Claude Code</td><td>Its usage endpoint, with the token in <code>~/.claude/.credentials.json</code></td><td>A status line capture</td></tr>
-          <tr><td>Codex</td><td>Its usage endpoint, with the session in <code>~/.codex/auth.json</code></td><td>Its newest rollout log</td></tr>
-          <tr><td>Cursor</td><td>Its usage endpoint, with the editor's own session, after asking you once</td><td>Nothing on disk to read</td></tr>
-          <tr><td>OpenCode</td><td colspan="2">Its local database. It runs on your own API keys, so it shows tokens today, not a limit.</td></tr>
-        </tbody>
-      </table>
-      <p class="measure">Credentials are read, never written and never printed. A reading that could not be refreshed is dimmed, not guessed.</p>
+      <div class="section-body">
+        <div class="modes">
+          <div>
+            <h3>official</h3>
+            <p>The default. Each provider's own usage endpoint, asked with the sign-in its CLI already keeps, the way Codenotch does it. Network reads keep their own pace: Claude once a minute, Codex and Cursor every five.</p>
+          </div>
+          <div>
+            <h3>local</h3>
+            <p>Never opens a network connection. Reads only what each tool already wrote to disk, so a provider that keeps nothing there shows nothing.</p>
+          </div>
+        </div>
+        <table class="table">
+          <thead>
+            <tr><th scope="col">Provider</th><th scope="col">official</th><th scope="col">local</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Claude Code</td><td>Its usage endpoint, with the token in <code>~/.claude/.credentials.json</code></td><td>A status line capture</td></tr>
+            <tr><td>Codex</td><td>Its usage endpoint, with the session in <code>~/.codex/auth.json</code></td><td>Its newest rollout log</td></tr>
+            <tr><td>Cursor</td><td>Its usage endpoint, with the editor's own session, after asking you once</td><td>Nothing on disk to read</td></tr>
+            <tr><td>OpenCode</td><td colspan="2">Its local database. It runs on your own API keys, so it shows tokens today, not a limit.</td></tr>
+          </tbody>
+        </table>
+        <p>Credentials are read, never written and never printed. A reading that could not be refreshed is dimmed, not guessed.</p>
+      </div>
     </section>
 
     <section class="section" id="keys" aria-labelledby="keys-title">
-      <span class="tag">qs ipc call flare</span>
-      <h2 id="keys-title">Keys</h2>
-      <table class="table">
-        <thead>
-          <tr><th scope="col">Call</th><th scope="col">Does</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><code>card claude</code></td><td>Opens a provider's card without the pointer; call it again to close</td></tr>
-          <tr><td><code>toggleSessions</code></td><td>Opens or folds the session list</td></tr>
-          <tr><td><code>toggleVisible</code></td><td>Brings the notch in or tucks it away</td></tr>
-          <tr><td><code>next</code>, <code>prev</code></td><td>Steps aura to the next or previous provider</td></tr>
-          <tr><td><code>toggle</code></td><td>Opens or closes the compact panel</td></tr>
-          <tr><td><code>settings</code></td><td>Opens the settings page</td></tr>
-          <tr><td><code>refresh</code></td><td>Reads now</td></tr>
-        </tbody>
-      </table>
-      <div class="measure">
+      <div class="section-head">
+        <span class="tag">qs ipc call flare</span>
+        <h2 id="keys-title">Keys</h2>
+      </div>
+      <div class="section-body">
+        <table class="table">
+          <thead>
+            <tr><th scope="col">Call</th><th scope="col">Does</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>card claude</code></td><td>Opens a provider's card without the pointer; call it again to close</td></tr>
+            <tr><td><code>toggleSessions</code></td><td>Opens or folds the session list</td></tr>
+            <tr><td><code>toggleVisible</code></td><td>Brings the notch in or tucks it away</td></tr>
+            <tr><td><code>next</code>, <code>prev</code></td><td>Steps aura to the next or previous provider</td></tr>
+            <tr><td><code>toggle</code></td><td>Opens or closes the compact panel</td></tr>
+            <tr><td><code>settings</code></td><td>Opens the settings page</td></tr>
+            <tr><td><code>refresh</code></td><td>Reads now</td></tr>
+          </tbody>
+        </table>
         <p>In <code>hyprland.conf</code>:</p>
 <pre class="copyable"><code>bind = SUPER, U,       exec, qs ipc call flare card claude</code>
 <code>bind = SUPER SHIFT, U, exec, qs ipc call flare toggleVisible</code></pre>
@@ -149,10 +170,12 @@ ShellRoot {
     </section>
 
     <section class="section" id="settings" aria-labelledby="settings-title">
-      <div class="measure">
+      <div class="section-head">
         <span class="tag">~/.config/flare/config.toml</span>
         <h2 id="settings-title">Settings</h2>
-        <p>Right-click the notch for its settings page, or change a key from a terminal. Both write the same file, and the widget picks up a change within a second.</p>
+      </div>
+      <div class="section-body">
+        <p class="lead">Right-click the notch for its settings page, or change a key from a terminal. Both write the same file, and the widget picks up a change within a second.</p>
 <pre class="copyable"><code><span class="prompt">$ </span>flare config set notch.style aura</code>
 <code><span class="prompt">$ </span>flare config set notch.edge right</code>
 <code><span class="prompt">$ </span>flare config set data.mode local</code>
