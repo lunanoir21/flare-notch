@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>flare — AI usage notch for Hyprland</title>
+  <meta name="description" content="flare is a notch for Quickshell on Hyprland that shows how much of your Claude Code, Codex, Cursor and OpenCode allowance is left, and which Claude sessions are running.">
+  <meta property="og:title" content="flare — AI usage notch for Hyprland">
+  <meta property="og:description" content="Your Claude Code, Codex, Cursor and OpenCode limits, on the edge of the screen.">
+  <meta property="og:image" content="https://lunanoir21.github.io/quickshell-flare/screenshots/sessions.png">
+  <link rel="icon" href="assets/logos/claude.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600&family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="top">
+    <a class="wordmark" href="./">flare</a>
+    <nav aria-label="Site">
+      <a href="changelog.html">Changelog</a>
+      <a href="credits.html">Credits</a>
+      <a href="https://github.com/lunanoir21/quickshell-flare">GitHub</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="title">
+      <h1 id="title">Your AI limits, on the edge of the screen</h1>
+      <p class="lede">flare is a notch for Quickshell on Hyprland. It shows how much of your Claude Code, Codex, Cursor and OpenCode allowance is left, and which Claude sessions are running right now.</p>
+      <p class="pointer" data-dir="left"><span class="arrow" aria-hidden="true">←</span> <span class="words">The notch on this page's left edge works. Hover a ring.</span></p>
+      <div class="actions">
+        <a class="button solid" href="#install">Install</a>
+        <a class="button line" href="https://github.com/lunanoir21/quickshell-flare">Source on GitHub</a>
+        <span class="meta">v0.1.0 · MIT · Rust and QML</span>
+      </div>
+    </section>
+
+    <section class="section" id="install" aria-labelledby="install-title">
+      <div class="measure">
+        <span class="tag">install.sh</span>
+        <h2 id="install-title">Install</h2>
+<pre class="copyable"><code><span class="prompt">$ </span>git clone https://github.com/lunanoir21/quickshell-flare</code>
+<code><span class="prompt">$ </span>cd quickshell-flare</code>
+<code><span class="prompt">$ </span>./install.sh</code></pre>
+        <p>The script builds the <code>flare</code> binary if Rust 1.85 or newer is installed, and otherwise downloads the <a href="https://github.com/lunanoir21/quickshell-flare/releases/latest">latest release build</a>. It puts it in <code>~/.local/bin</code> and runs <code>flare doctor</code>, which lists what flare can and cannot find on your machine.</p>
+        <p>Run the widget on its own with <code>quickshell -p ui</code>, or add it to the shell you already have:</p>
+<pre class="copyable"><code>import "path/to/quickshell-flare/ui" as Flare
+
+ShellRoot {
+    Flare.FlareHost {}
+}</code></pre>
+        <dl class="needs">
+          <dt>Quickshell 0.3+</dt><dd>and Qt 6.6 or newer.</dd>
+          <dt>Hyprland</dt><dd>flare is built and tested there. Jumping to a session's terminal uses <code>hyprctl</code>.</dd>
+          <dt>x86_64, glibc 2.39+</dt><dd>only for the prebuilt binary (Arch, Fedora 40+, Ubuntu 24.04+). Building from source has no such limit.</dd>
+        </dl>
+      </div>
+    </section>
+
+    <section class="section" id="looks" aria-labelledby="looks-title">
+      <span class="tag">notch.style</span>
+      <h2 id="looks-title">Three looks</h2>
+      <p class="measure">Picking one here changes the notch on this page.</p>
+      <div class="looks" role="group" aria-label="Notch style">
+        <button class="look" type="button" data-look="classic" aria-pressed="true">
+          <span class="name">classic</span>
+          <span class="what">Codenotch's notch. One ring per provider; hover a ring for its card.</span>
+        </button>
+        <button class="look" type="button" data-look="aura" aria-pressed="false">
+          <span class="name">aura</span>
+          <span class="what">One provider at a time, tinted with its colour. The others wait below.</span>
+        </button>
+        <button class="look" type="button" data-look="compact" aria-pressed="false">
+          <span class="name">compact</span>
+          <span class="what">A thin strip on the top or bottom edge that opens into a panel.</span>
+        </button>
+      </div>
+      <div class="measure">
+        <p>Each look meets the screen edge one of three ways: <strong>bridge</strong> welds it on with inverse rounded corners, <strong>floating</strong> holds it off the edge as a panel, and <strong>flush</strong> runs a strip along the whole edge.</p>
+        <p>It can stay out of the way, too. With <code>notch.reveal = "hover"</code> it waits past the edge and slides in when the pointer gets there; with <code>"shortcut"</code>, a key brings it in and sends it away.</p>
+      </div>
+    </section>
+
+    <section class="section" id="sessions" aria-labelledby="sessions-title">
+      <div class="measure">
+        <span class="tag">~/.claude/sessions</span>
+        <h2 id="sessions-title">Open sessions</h2>
+        <p>Under the limits, the card lists the Claude Code sessions running right now: each one's name, project and age, and whether it is working, <strong>waiting on you</strong> or idle. Click a row and the session's terminal comes to the front.</p>
+        <p>The list is read from the records Claude Code keeps for itself. A session whose process has exited, or whose terminal no longer has a window, is left out, so what you see is what you can switch to.</p>
+      </div>
+      <figure class="shot">
+        <img src="screenshots/sessions.png" width="504" height="520" alt="flare's hover card on a desktop, showing two limits and two open sessions" loading="lazy">
+        <figcaption>The real thing, captured on Hyprland.</figcaption>
+      </figure>
+    </section>
+
+    <section class="section" id="numbers" aria-labelledby="numbers-title">
+      <span class="tag">data.mode</span>
+      <h2 id="numbers-title">Where the numbers come from</h2>
+      <div class="modes">
+        <div>
+          <h3>official</h3>
+          <p>The default. Each provider's own usage endpoint, asked with the sign-in its CLI already keeps, the way Codenotch does it. Network reads keep their own pace: Claude once a minute, Codex and Cursor every five.</p>
+        </div>
+        <div>
+          <h3>local</h3>
+          <p>Never opens a network connection. Reads only what each tool already wrote to disk, so a provider that keeps nothing there shows nothing.</p>
+        </div>
+      </div>
+      <table class="table">
+        <thead>
+          <tr><th scope="col">Provider</th><th scope="col">official</th><th scope="col">local</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Claude Code</td><td>Its usage endpoint, with the token in <code>~/.claude/.credentials.json</code></td><td>A status line capture</td></tr>
+          <tr><td>Codex</td><td>Its usage endpoint, with the session in <code>~/.codex/auth.json</code></td><td>Its newest rollout log</td></tr>
+          <tr><td>Cursor</td><td>Its usage endpoint, with the editor's own session, after asking you once</td><td>Nothing on disk to read</td></tr>
+          <tr><td>OpenCode</td><td colspan="2">Its local database. It runs on your own API keys, so it shows tokens today, not a limit.</td></tr>
+        </tbody>
+      </table>
+      <p class="measure">Credentials are read, never written and never printed. A reading that could not be refreshed is dimmed, not guessed.</p>
+    </section>
+
+    <section class="section" id="keys" aria-labelledby="keys-title">
+      <span class="tag">qs ipc call flare</span>
+      <h2 id="keys-title">Keys</h2>
+      <table class="table">
+        <thead>
+          <tr><th scope="col">Call</th><th scope="col">Does</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>card claude</code></td><td>Opens a provider's card without the pointer; call it again to close</td></tr>
+          <tr><td><code>toggleSessions</code></td><td>Opens or folds the session list</td></tr>
+          <tr><td><code>toggleVisible</code></td><td>Brings the notch in or tucks it away</td></tr>
+          <tr><td><code>next</code>, <code>prev</code></td><td>Steps aura to the next or previous provider</td></tr>
+          <tr><td><code>toggle</code></td><td>Opens or closes the compact panel</td></tr>
+          <tr><td><code>settings</code></td><td>Opens the settings page</td></tr>
+          <tr><td><code>refresh</code></td><td>Reads now</td></tr>
+        </tbody>
+      </table>
+      <div class="measure">
+        <p>In <code>hyprland.conf</code>:</p>
+<pre class="copyable"><code>bind = SUPER, U,       exec, qs ipc call flare card claude</code>
+<code>bind = SUPER SHIFT, U, exec, qs ipc call flare toggleVisible</code></pre>
+      </div>
+    </section>
+
+    <section class="section" id="settings" aria-labelledby="settings-title">
+      <div class="measure">
+        <span class="tag">~/.config/flare/config.toml</span>
+        <h2 id="settings-title">Settings</h2>
+        <p>Right-click the notch for its settings page, or change a key from a terminal. Both write the same file, and the widget picks up a change within a second.</p>
+<pre class="copyable"><code><span class="prompt">$ </span>flare config set notch.style aura</code>
+<code><span class="prompt">$ </span>flare config set notch.edge right</code>
+<code><span class="prompt">$ </span>flare config set data.mode local</code>
+<code><span class="prompt">$ </span>flare config set ui.language tr</code></pre>
+        <p>Every key is listed in the <a href="https://github.com/lunanoir21/quickshell-flare#configuration">README</a>.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>flare is MIT licensed. The notch is Codenotch's design, brought to Hyprland; <a href="credits.html">credits</a> lists where every part came from.</p>
+    <nav aria-label="Footer">
+      <a href="changelog.html">Changelog</a>
+      <a href="credits.html">Credits</a>
+      <a href="https://github.com/lunanoir21/quickshell-flare/releases">Releases</a>
+      <a href="https://github.com/lunanoir21/quickshell-flare/blob/main/README.tr.md">Türkçe</a>
+    </nav>
+  </footer>
+
+  <script src="news.js" defer></script>
+  <script src="site.js" defer></script>
+</body>
+</html>
