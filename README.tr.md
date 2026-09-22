@@ -58,17 +58,22 @@ olarak hangisinin çalışacağı sabitlenebilir.
 
 ## Kurulum
 
-Rust 1.85+, Quickshell 0.3+ ve Qt 6.6+ gerekir.
+Quickshell 0.3+ ve Qt 6.6+ gerekir.
 
 ```sh
 git clone https://github.com/lunanoir21/quickshell-flare
 cd quickshell-flare
-cargo build --release
-./target/release/flare doctor
+./install.sh
 ```
 
-Widget, yanında derlendiği binary'yi kendisi bulur. Başka bir yere kurmak için
-`PATH`'e ya da `~/.local/bin`'e koyun veya `flare.binary_path` ayarını kullanın.
+`install.sh`, Rust 1.85+ kuruluysa `flare` binary'sini derler, değilse
+[son sürümün](https://github.com/lunanoir21/quickshell-flare/releases/latest) hazır
+binary'sini indirir (x86_64, glibc 2.39+), `~/.local/bin`'e koyar (değiştirmek için
+`FLARE_BIN_DIR`) ve `flare doctor`'ı çalıştırır.
+
+Elle kurmak için `cargo build --release` yeterlidir: widget yanında derlendiği
+binary'yi, `PATH`'teki ya da `~/.local/bin`'deki binary'yi veya `flare.binary_path`
+ayarının gösterdiğini kendisi bulur.
 
 ### Tek başına çalıştırmak
 

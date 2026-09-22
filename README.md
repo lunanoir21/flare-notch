@@ -58,17 +58,22 @@ the exact one to run.
 
 ## Install
 
-Requires Rust 1.85+, Quickshell 0.3+ and Qt 6.6+.
+Requires Quickshell 0.3+ and Qt 6.6+.
 
 ```sh
 git clone https://github.com/lunanoir21/quickshell-flare
 cd quickshell-flare
-cargo build --release
-./target/release/flare doctor
+./install.sh
 ```
 
-The widget finds the binary it was built next to. To install it elsewhere, put it on
-`PATH` or in `~/.local/bin`, or set `flare.binary_path`.
+`install.sh` builds the `flare` binary when Rust 1.85+ is installed and otherwise
+downloads the [latest release](https://github.com/lunanoir21/quickshell-flare/releases/latest)'s
+build (x86_64, glibc 2.39+), puts it in `~/.local/bin` (`FLARE_BIN_DIR` to change
+that) and runs `flare doctor`.
+
+By hand, `cargo build --release` is enough: the widget finds the binary it was built
+next to, as well as one on `PATH` or in `~/.local/bin`, or the one
+`flare.binary_path` names.
 
 ### Run it on its own
 

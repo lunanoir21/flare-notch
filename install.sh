@@ -1,0 +1,38 @@
+#!/bin/sh
+# Installs the flare binary to ~/.local/bin (or $FLARE_BIN_DIR): built from
+# this checkout when cargo is available, otherwise the latest release build.
+set -eu
+
+repo="lunanoir21/quickshell-flare"
+bin_dir="${FLARE_BIN_DIR:-$HOME/.local/bin}"
+here=$(cd "$(dirname "$0")" && pwd)
+
+say() { printf '%s\n' "$*" >&2; }
+
+mkdir -p "$bin_dir"
+
+if command -v cargo >/dev/null 2>&1 && [ -f "$here/Cargo.toml" ]; then
+    say "building flare from $here"
+    cargo build --release --manifest-path "$here/Cargo.toml"
+    install -m 755 "$here/target/release/flare" "$bin_dir/flare"
+else
+    [ "$(uname -m)" = "x86_64" ] || { say "no release build for $(uname -m); install Rust and run this again"; exit 1; }
+    command -v curl >/dev/null 2>&1 || { say "curl is needed to download the release build"; exit 1; }
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' EXIT
+    say "downloading the latest release build"
+    curl -fsSL "https://github.com/$repo/releases/latest/download/flare-x86_64-linux.tar.gz" -o "$tmp/flare.tar.gz"
+    tar -xzf "$tmp/flare.tar.gz" -C "$tmp"
+    install -m 755 "$tmp/flare" "$bin_dir/flare"
+fi
+
+say "installed $bin_dir/flare"
+case ":$PATH:" in
+    *":$bin_dir:"*) ;;
+    *) say "note: $bin_dir is not on PATH; the widget still finds it there" ;;
+esac
+
+"$bin_dir/flare" doctor || true
+
+say ""
+say "run the widget on its own:   quickshell -p $here/ui"
