@@ -68,6 +68,26 @@ listen_on unix:@kitty
 
 Without it, flare brings the kitty window forward and leaves the tab as it is.
 
+## Notifications
+
+`flare watch` is a long-running process the widget starts on its own, only while at
+least one notification is switched on in `[notify]`:
+
+- a session stops and waits on you — the notification's action jumps to it
+- a limit reaches `notify.limit_at` percent (once per limit period)
+- a limit you had been using resets
+
+It sends these with `notify-send` and needs nothing else running. `sessions.show`
+turns the card's session list off entirely, if you'd rather not see it at all.
+
+## The usage panel
+
+Click the arrow at the top of a provider's hover card, or `qs ipc call flare usage
+<provider>`, for the full picture: an hour-by-hour heatmap of its busiest limit's
+current week (token counts, read straight from Claude Code's own logs, each reply
+counted once), the busiest hours and quietest day, and today's sessions on a
+timeline — click an open one to jump to its terminal.
+
 ## Where the numbers come from
 
 `data.mode` picks one of two ways.
@@ -179,11 +199,15 @@ comments. The widget picks up a saved change within a second.
 | `notch.offset` | pixels from the centre, along the edge |
 | `notch.scale` | `0.5` to `2.0` |
 | `notch.screen` | output name, or empty for every screen |
+| `notch.label` | under a ring: `percent` (used), `time` (until it resets), `both` |
 | `compact.edge` | `top`, `bottom` |
 | `compact.offset` | pixels from the centre, along the edge |
 | `compact.open_on` | `click`, `hover` |
 | `providers.claude` … `providers.opencode` | `true`, `false` |
 | `providers.order` | the order cells are drawn and aura steps through |
+| `sessions.show` | `true`, `false` — the hover card's session list |
+| `notify.waiting`, `notify.limit`, `notify.reset` | `true`, `false` |
+| `notify.limit_at` | `50` to `100` |
 | `aura.claude` … `aura.opencode` | `#RRGGBB` |
 | `poll.interval_secs` | widget refresh, at least 5 |
 | `scan.window_days` | days of logs counted toward token totals |
@@ -200,6 +224,7 @@ flare listens on Quickshell IPC as `flare`:
 | `toggleVisible`, `show`, `hide` | bring the widget in or tuck it away (hover and shortcut reveal) |
 | `toggleSessions` | open or fold the hover card's session list |
 | `card <provider>` | open the hover card for a provider without the pointer, bringing the notch in; again to close |
+| `usage <provider>` | open the usage panel on a provider; again to close |
 | `style classic\|aura\|compact` | switch style |
 | `settings` | open or close the settings page |
 | `refresh` | read now |

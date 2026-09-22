@@ -69,6 +69,26 @@ listen_on unix:@kitty
 
 Bu olmadan flare kitty penceresini öne getirir, sekmeye dokunmaz.
 
+## Bildirimler
+
+`flare watch`, `[notify]` içinde en az bir bildirim açıksa widget'ın kendiliğinden
+başlattığı, uzun ömürlü bir process:
+
+- bir oturum durup sizi beklemeye geçince — bildirimin eylemi o oturuma geçirir
+- bir limit `notify.limit_at` yüzdesine gelince (her limit döneminde bir kez)
+- kullandığınız bir limit yenilenince
+
+Bunları `notify-send` ile gönderir, başka bir şeye ihtiyaç duymaz. `sessions.show`
+ise kartın oturum listesini tamamen kapatır, hiç görmek istemiyorsanız.
+
+## Kullanım paneli
+
+Bir sağlayıcının hover kartının üstündeki oku tıklayın, ya da
+`qs ipc call flare usage <sağlayıcı>`: en yoğun limitinin bu haftasının saat saat ısı
+haritasını (token sayıları doğrudan Claude Code'un kendi kayıtlarından, her yanıt bir
+kez sayılarak), en yoğun saatleri ve en sakin günü, altında da bugünkü oturumları bir
+zaman çizelgesinde görürsünüz — açık birine tıklamak terminaline geçer.
+
 ## Sayılar nereden gelir
 
 `data.mode` iki yoldan birini seçer.
@@ -177,6 +197,7 @@ flare Quickshell IPC'de `flare` adıyla dinler:
 | `toggleVisible`, `show`, `hide` | widget'ı getirir ya da saklar (hover ve shortcut modlarında) |
 | `toggleSessions` | hover kartındaki oturum listesini açar ya da katlar |
 | `card <sağlayıcı>` | bir sağlayıcının hover kartını fareye gerek kalmadan açar, notch'u da getirir; tekrar çağırmak kapatır |
+| `usage <sağlayıcı>` | o sağlayıcının kullanım panelini açar; tekrar çağırmak kapatır |
 | `style classic\|aura\|compact` | stili değiştirir |
 | `settings` | ayarlar sayfasını açar ya da kapatır |
 | `refresh` | hemen okur |
