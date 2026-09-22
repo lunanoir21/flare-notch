@@ -29,7 +29,13 @@ fi
 say "installed $bin_dir/flare"
 case ":$PATH:" in
     *":$bin_dir:"*) ;;
-    *) say "note: $bin_dir is not on PATH; the widget still finds it there" ;;
+    *)
+        if [ "$bin_dir" = "$HOME/.local/bin" ]; then
+            say "note: $bin_dir is not on PATH; the widget still finds it there"
+        else
+            say "note: $bin_dir is not on PATH; run: flare config set flare.binary_path $bin_dir/flare"
+        fi
+        ;;
 esac
 
 "$bin_dir/flare" doctor || true
