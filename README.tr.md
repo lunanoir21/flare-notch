@@ -3,7 +3,7 @@
 Hyprland'de Quickshell için bir kullanım notch'u: Claude Code, Codex, Cursor ve
 OpenCode haklarından ne kadarının kaldığını ekranın kenarında gösterir.
 
-[English README](README.md)
+[Web sitesi](https://lunanoir21.github.io/quickshell-flare/) · [English README](README.md)
 
 <p align="center">
   <img src="docs/screenshots/card.png" width="380" alt="Notch yanında hover kartı">
