@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.2.0
+
+- **The usage panel:** an hour-by-hour heatmap of the week, token counts read
+  straight from a provider's own logs (each reply counted once), busiest hours,
+  quietest day and today's sessions on a timeline. Open it from the arrow on a
+  provider's hover card, or `qs ipc call flare usage <provider>`.
+- **Notifications:** `flare watch` runs in the background, only while `[notify]`
+  has something switched on, and tells you when a session starts waiting on you,
+  a limit reaches its threshold, or a limit you had been using resets.
+- **`notch.label`:** show the time left under a ring instead of (or beside) the
+  percentage.
+- **Session log:** flare now remembers a session for a week after it closes, so
+  the usage panel's timeline has something to draw for earlier today.
+- **Fixed:** Claude token counts were inflated, sometimes by a lot — Claude Code
+  writes a reply's usage on every content-block line, and a resumed session
+  copies old replies into its new log. Both are now counted once. A single very
+  long line (tool output) no longer stops the rest of a log file from being read.
+
 ## 0.1.1
 
 - **Sessions in every look:** aura opens the same hover card as classic from its
