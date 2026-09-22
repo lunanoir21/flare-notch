@@ -14,6 +14,9 @@ Column {
 
     readonly property bool open: FlareData.sessionsOpen
     readonly property int waiting: sessions.filter(session => session.state === "waiting").length
+    // Its height with the list open, whatever it is now: a host whose own
+    // surface must fit it can reserve this once instead of resizing per frame.
+    readonly property real expandedHeight: 1 + header.height + rows.implicitHeight + 4 * s
 
     spacing: 0
 
@@ -112,8 +115,8 @@ Column {
         clip: true
         opacity: list.open ? 1 : 0
 
-        Behavior on height { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
-        Behavior on opacity { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+        Behavior on height { NumberAnimation { duration: 240; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
 
         Column {
             id: rows

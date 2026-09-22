@@ -315,6 +315,7 @@ Singleton {
             return;
         focuser.command = command("focus", String(pid), provider);
         focuser.running = true;
+        compactOpen = false;
         hideWidget();
     }
 

@@ -20,14 +20,30 @@ Item {
     readonly property real ends: mount === "bridge" ? flare : 0
     readonly property real length: Math.max(strip.implicitWidth, panel.width) + 2 * ends + 2 * sidePad
     readonly property real fullDepth: stripHeight + panel.implicitHeight + 8 * size
-    // What the surface has to hold when open: the gap, and a flush strip's flare.
-    readonly property real fullReach: fullDepth + inset + (mount === "flush" ? 18 * size : 0)
+    // The session lists at their open height, not their animated one.
+    readonly property real sessionsSlack: {
+        let slack = 0;
+        for (let i = 0; i < sessionLists.count; i++) {
+            const item = sessionLists.itemAt(i);
+            if (item)
+                slack += item.expandedHeight - item.height;
+        }
+        return slack;
+    }
+    // What the surface has to hold when open: the gap, a flush strip's flare,
+    // and room for every session list fully open. Reserving that up front
+    // keeps the layer surface from resizing on every frame of a fold.
+    readonly property real fullReach: fullDepth + sessionsSlack + inset + (mount === "flush" ? 18 * size : 0)
     readonly property real bodyDepth: depth
-    property real depth: open ? fullDepth : stripHeight
+    // Only opening and closing animate here. Once open, the body follows
+    // fullDepth directly, so the session list's own fold is the one
+    // animation instead of the body chasing it a step behind.
+    property real progress: open ? 1 : 0
+    readonly property real depth: stripHeight + (fullDepth - stripHeight) * progress
 
-    Behavior on depth {
+    Behavior on progress {
         NumberAnimation {
-            duration: 260
+            duration: 200
             easing.type: Easing.OutCubic
         }
     }
@@ -113,7 +129,7 @@ Item {
 
         Behavior on opacity {
             OpacityAnimator {
-                duration: 180
+                duration: 140
             }
         }
 
@@ -206,6 +222,22 @@ Item {
                 TapHandler {
                     onTapped: FlareData.openUsagePage(row.modelData.id)
                 }
+            }
+        }
+
+        Repeater {
+            id: sessionLists
+
+            model: FlareData.cells.filter(c => c.sessions && c.sessions.length > 0)
+
+            SessionList {
+                required property var modelData
+
+                width: panel.width
+                sessions: modelData.sessions
+                provider: modelData.id
+                s: view.size
+                live: view.open
             }
         }
     }
