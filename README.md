@@ -57,6 +57,17 @@ flare focus <pid>      # pid as listed under "sessions" in flare's JSON
 Jumping to a session and hiding windowless ones use `hyprctl`; on another compositor
 the list still shows, without either.
 
+In kitty, the jump can also bring the session's tab (or split) to the front. That
+needs kitty's remote control on a socket, which lets any program running as you
+control kitty, so it is left to you. In `kitty.conf`:
+
+```
+allow_remote_control socket-only
+listen_on unix:@kitty
+```
+
+Without it, flare brings the kitty window forward and leaves the tab as it is.
+
 ## Where the numbers come from
 
 `data.mode` picks one of two ways.

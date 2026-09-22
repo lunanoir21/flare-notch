@@ -184,6 +184,9 @@ pub fn focus(provider: &str, pid: u32) -> anyhow::Result<()> {
     let Some(address) = window_for(Path::new("/proc"), pid, &windows) else {
         bail!("no window found for session {pid}");
     };
+    if let Some(tab) = kitty_tab(Path::new("/proc"), pid) {
+        focus_kitty_tab(&tab);
+    }
     let status = Command::new("hyprctl")
         .args(["dispatch", "focuswindow", &format!("address:{address}")])
         .stdout(std::process::Stdio::null())
@@ -193,6 +196,51 @@ pub fn focus(provider: &str, pid: u32) -> anyhow::Result<()> {
         bail!("hyprctl could not focus {address}");
     }
     Ok(())
+}
+
+/// Where a session sits inside kitty: its remote control socket and the
+/// kitty window (a split or a tab) it runs in.
+#[derive(Debug, PartialEq, Eq)]
+struct KittyTab {
+    socket: String,
+    window: String,
+}
+
+/// Read from the session's own environment. Kitty sets KITTY_WINDOW_ID in
+/// every window, and KITTY_LISTEN_ON only when remote control has a socket
+/// (`allow_remote_control` and `listen_on` in kitty.conf); without it there
+/// is no way to pick a tab, and the jump stops at the OS window.
+fn kitty_tab(proc_root: &Path, pid: u32) -> Option<KittyTab> {
+    let environ = fs::read(proc_root.join(pid.to_string()).join("environ")).ok()?;
+    let mut socket = None;
+    let mut window = None;
+    for entry in environ.split(|b| *b == 0) {
+        let entry = String::from_utf8_lossy(entry);
+        if let Some(value) = entry.strip_prefix("KITTY_LISTEN_ON=") {
+            socket = Some(value.to_string()).filter(|v| !v.is_empty());
+        } else if let Some(value) = entry.strip_prefix("KITTY_WINDOW_ID=") {
+            window = Some(value.to_string()).filter(|v| !v.is_empty() && v.bytes().all(|b| b.is_ascii_digit()));
+        }
+    }
+    Some(KittyTab { socket: socket?, window: window? })
+}
+
+/// Best effort: a kitty that refuses (remote control off after all, an old
+/// kitty) still gets its OS window focused by the caller.
+fn focus_kitty_tab(tab: &KittyTab) {
+    use std::process::{Command, Stdio};
+
+    let args = ["@", "--to", tab.socket.as_str(), "focus-window", "--match", &format!("id:{}", tab.window)];
+    let ran = Command::new("kitten")
+        .args(args)
+        .stdout(Stdio::null())
+        .status()
+        .or_else(|_| Command::new("kitty").args(args).stdout(Stdio::null()).status());
+    match ran {
+        Ok(status) if status.success() => {}
+        Ok(status) => eprintln!("kitty could not focus window {} ({status})", tab.window),
+        Err(err) => eprintln!("could not run kitten or kitty: {err}"),
+    }
 }
 
 #[cfg(test)]
@@ -231,6 +279,26 @@ mod tests {
         let kept = with_window(vec![session(10), session(20)], &procfs, Some(&windows));
         assert_eq!(kept.iter().map(|s| s.pid).collect::<Vec<_>>(), vec![10]);
         assert_eq!(with_window(vec![session(10), session(20)], &procfs, None).len(), 2);
+    }
+
+    #[test]
+    fn a_kitty_tab_needs_both_the_socket_and_the_window() {
+        let (_root, _sessions, procfs) = setup();
+        let write = |pid: u32, env: &str| {
+            let dir = procfs.join(pid.to_string());
+            fs::create_dir_all(&dir).unwrap();
+            fs::write(dir.join("environ"), env.replace('|', "\0")).unwrap();
+        };
+        write(1, "HOME=/h|KITTY_WINDOW_ID=4|KITTY_LISTEN_ON=unix:@kitty-12|");
+        write(2, "KITTY_WINDOW_ID=4|");
+        write(3, "KITTY_WINDOW_ID=4; rm|KITTY_LISTEN_ON=unix:@k|");
+        assert_eq!(
+            kitty_tab(&procfs, 1),
+            Some(KittyTab { socket: "unix:@kitty-12".into(), window: "4".into() })
+        );
+        assert_eq!(kitty_tab(&procfs, 2), None);
+        assert_eq!(kitty_tab(&procfs, 3), None);
+        assert_eq!(kitty_tab(&procfs, 9), None);
     }
 
     #[test]

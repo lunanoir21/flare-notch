@@ -57,6 +57,18 @@ flare focus <pid>      # pid, flare'in JSON çıktısında "sessions" altındaki
 Oturuma geçiş ve penceresiz oturumları gizleme `hyprctl` kullanır; başka bir
 compositor'da liste yine görünür, bu ikisi olmadan.
 
+Kitty'de geçiş, oturumun sekmesini (ya da bölmesini) de öne getirebilir. Bunun için
+kitty'nin remote control'ünün bir soket üzerinden açık olması gerekir; bu, sizin
+kullanıcınızla çalışan her programın kitty'yi yönetebilmesi demektir, o yüzden karar
+sizde. `kitty.conf` içinde:
+
+```
+allow_remote_control socket-only
+listen_on unix:@kitty
+```
+
+Bu olmadan flare kitty penceresini öne getirir, sekmeye dokunmaz.
+
 ## Sayılar nereden gelir
 
 `data.mode` iki yoldan birini seçer.
