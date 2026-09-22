@@ -159,6 +159,7 @@ flare Quickshell IPC'de `flare` adıyla dinler:
 | `toggle` | kompakt paneli açar ya da kapatır |
 | `toggleVisible`, `show`, `hide` | widget'ı getirir ya da saklar (hover ve shortcut modlarında) |
 | `toggleSessions` | hover kartındaki oturum listesini açar ya da katlar |
+| `card <sağlayıcı>` | bir sağlayıcının hover kartını fareye gerek kalmadan açar, notch'u da getirir; tekrar çağırmak kapatır |
 | `style classic\|aura\|compact` | stili değiştirir |
 | `settings` | ayarlar sayfasını açar ya da kapatır |
 | `refresh` | hemen okur |

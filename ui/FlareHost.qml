@@ -24,6 +24,9 @@ Scope {
         function toggleSessions(): void {
             FlareData.toggleSessions();
         }
+        function card(id: string): void {
+            FlareData.toggleCard(id);
+        }
         function show(): void {
             FlareData.shown = true;
         }
@@ -61,6 +64,8 @@ Scope {
             property real dragDelta: 0
             property point pressAt: Qt.point(0, 0)
             property string hoverId: ""
+            // A card pinned from the keyboard (the `card` IPC call) wins over hover.
+            readonly property string cardId: FlareData.pinnedCard !== "" ? FlareData.pinnedCard : hoverId
 
             readonly property real span: compact ? width : height
             readonly property real bodySize: compact ? body.width : body.height
@@ -300,8 +305,8 @@ Scope {
             DetailCard {
                 id: card
 
-                readonly property var hovered: FlareData.cellFor(win.hoverId)
-                readonly property real liveAnchorY: body.y + (body.item && typeof body.item.cellCenter === "function" ? body.item.cellCenter(win.hoverId) : 0)
+                readonly property var hovered: FlareData.cellFor(win.cardId)
+                readonly property real liveAnchorY: body.y + (body.item && typeof body.item.cellCenter === "function" ? body.item.cellCenter(win.cardId) : 0)
                 readonly property bool wanted: win.style === "classic" && hovered !== null && win.slide > 0.99
 
                 // Held through the fade-out, so a closing card keeps its
@@ -394,7 +399,7 @@ Scope {
                 id: hideTimer
                 interval: FlareData.hideDelay
                 onTriggered: {
-                    if (FlareData.reveal !== "hover" || drag.active || FlareData.settingsOpen || bodyHover.hovered || cardHover.hovered)
+                    if (FlareData.reveal !== "hover" || drag.active || FlareData.settingsOpen || FlareData.pinnedCard !== "" || bodyHover.hovered || cardHover.hovered)
                         return;
                     win.hoverShown = false;
                     FlareData.shown = false;

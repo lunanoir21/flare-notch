@@ -183,6 +183,7 @@ flare listens on Quickshell IPC as `flare`:
 | `toggle` | open or close the compact panel |
 | `toggleVisible`, `show`, `hide` | bring the widget in or tuck it away (hover and shortcut reveal) |
 | `toggleSessions` | open or fold the hover card's session list |
+| `card <provider>` | open the hover card for a provider without the pointer, bringing the notch in; again to close |
 | `style classic\|aura\|compact` | switch style |
 | `settings` | open or close the settings page |
 | `refresh` | read now |

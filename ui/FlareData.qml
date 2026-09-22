@@ -177,6 +177,8 @@ Singleton {
     }
 
     function hideWidget() {
+        pinnedCard = "";
+        pinnedBroughtIn = false;
         if (reveal === "always")
             return;
         if (reveal === "hover")
@@ -276,6 +278,34 @@ Singleton {
 
     function toggleSessions() {
         sessionsOpen = !sessionsOpen;
+    }
+
+    // The hover card opened from the keyboard: the notch comes in and the
+    // card stays until the same call, `hide`, or a session jump closes it.
+    property string pinnedCard: ""
+    property bool pinnedBroughtIn: false
+
+    function toggleCard(id) {
+        if (!id)
+            id = providers.length > 0 ? providers[0].provider : "";
+        if (pinnedCard !== "" && (pinnedCard === id || !cellFor(id))) {
+            unpinCard();
+            return;
+        }
+        if (!cellFor(id))
+            return;
+        if (pinnedCard === "") {
+            pinnedBroughtIn = reveal !== "always" && !shown;
+            shown = true;
+        }
+        pinnedCard = id;
+    }
+
+    function unpinCard() {
+        pinnedCard = "";
+        if (pinnedBroughtIn)
+            shown = false;
+        pinnedBroughtIn = false;
     }
 
     function focusSession(provider, pid) {
