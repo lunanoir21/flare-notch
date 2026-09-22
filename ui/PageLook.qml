@@ -76,6 +76,20 @@ Flickable {
                 }
             }
 
+            SettingsRow {
+                label: Strings.languageLabel
+
+                SettingsSegmented {
+                    options: [
+                        { value: "auto", label: Strings.auto },
+                        { value: "en", label: "English" },
+                        { value: "tr", label: "Türkçe" }
+                    ]
+                    currentValue: FlareData.language
+                    onPicked: value => FlareData.set("ui.language", value)
+                }
+            }
+
             RowLayout {
                 Layout.fillWidth: true
                 Layout.topMargin: 4

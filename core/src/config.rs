@@ -45,6 +45,16 @@ pub enum ThemeMode {
     Auto,
 }
 
+/// The widget's language. `auto` follows LC_ALL, LC_MESSAGES or LANG.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Language {
+    #[default]
+    Auto,
+    En,
+    Tr,
+}
+
 /// How a ring shows usage.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -143,6 +153,12 @@ pub enum Consent {
 pub struct Data {
     pub mode: DataMode,
     pub cursor_consent: Consent,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Ui {
+    pub language: Language,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -288,6 +304,7 @@ impl Binary {
 pub struct Config {
     pub data: Data,
     pub theme: Theme,
+    pub ui: Ui,
     pub notch: Notch,
     pub compact: Compact,
     pub providers: Providers,
@@ -316,6 +333,7 @@ pub const KEYS: &[&str] = &[
     "data.cursor_consent",
     "theme.mode",
     "theme.ring_color",
+    "ui.language",
     "notch.style",
     "notch.mount",
     "notch.gap",
@@ -376,6 +394,10 @@ mode = "black"
 #               critical state (90% used, or exhausted)
 #   provider    each provider's own [aura] colour, on its ring too
 ring_color = "monochrome"
+
+[ui]
+# auto (follow LC_ALL / LC_MESSAGES / LANG), en or tr.
+language = "auto"
 
 [notch]
 # classic  Codenotch's notch, every provider as a ring
@@ -839,9 +861,12 @@ mod tests {
         set_value(&path, "providers.order", "cursor, opencode claude").unwrap();
         set_value(&path, "aura.cursor", "#abcdef").unwrap();
         set_value(&path, "theme.mode", "auto").unwrap();
+        set_value(&path, "ui.language", "en").unwrap();
+        assert!(set_value(&path, "ui.language", "de").is_err());
         let (config, problem) = Config::load_from(&path);
         assert!(problem.is_none(), "{problem:?}");
         assert_eq!(config.theme.mode, ThemeMode::Auto);
+        assert_eq!(config.ui.language, Language::En);
         assert_eq!(config.notch.offset, -40);
         assert_eq!(config.notch.scale, 1.0);
         assert!(!config.providers.codex);

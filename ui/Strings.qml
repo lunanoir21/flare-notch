@@ -3,11 +3,15 @@ pragma Singleton
 import QtQuick
 import Quickshell
 
-// Every user-visible string, in English and Turkish, picked from the locale.
+// Every user-visible string, in English and Turkish: ui.language, or the locale.
 Singleton {
     id: s
 
     readonly property bool tr: {
+        if (FlareData.language === "tr")
+            return true;
+        if (FlareData.language === "en")
+            return false;
         const locale = Quickshell.env("LC_ALL") || Quickshell.env("LC_MESSAGES") || Quickshell.env("LANG") || "";
         return locale.toLowerCase().startsWith("tr");
     }
@@ -69,6 +73,7 @@ Singleton {
     readonly property string compactShort: tr ? "Kenarda ince şerit" : "A thin strip on the edge"
     readonly property string colorTitle: tr ? "Renk" : "Colour"
     readonly property string themeModeLabel: tr ? "Tema" : "Theme"
+    readonly property string languageLabel: tr ? "Dil" : "Language"
     readonly property string black: tr ? "Siyah" : "Black"
     readonly property string white: tr ? "Beyaz" : "White"
     readonly property string auto: tr ? "Otomatik" : "Auto"

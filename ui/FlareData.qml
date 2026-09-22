@@ -35,6 +35,7 @@ Singleton {
 
     readonly property var section: name => root.config && root.config[name] ? root.config[name] : ({})
     readonly property string themeMode: section("theme").mode || "black"
+    readonly property string language: section("ui").language || "auto"
     readonly property string ringColorMode: section("theme").ring_color || "monochrome"
     readonly property string style: section("notch").style || "classic"
     readonly property string notchEdge: section("notch").edge || "left"
