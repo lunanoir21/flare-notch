@@ -138,6 +138,7 @@
     .then((markdown) => {
       const releases = parse(markdown);
       if (releases.length === 0) throw new Error("empty");
+      for (const node of document.querySelectorAll("[data-version]")) node.textContent = `v${releases[0].version}`;
       if (log) {
         renderLog(log, releases);
         storage.set(releases[0].version);
