@@ -9,6 +9,12 @@ import Quickshell.Io
 Singleton {
     id: root
 
+    // Both halves, once, regardless of whether anything is on screen yet —
+    // the poll timer below only keeps usage current after this; it does not
+    // replace this first read, or a hover reveal's first paint would be
+    // empty.
+    Component.onCompleted: root.refresh(false)
+
     property var providers: []
     property var config: null
     property var order: ["claude", "codex", "opencode", "cursor"]
@@ -49,6 +55,15 @@ Singleton {
     // Set by a manual hide while the pointer is still at the edge, so the same
     // pointer does not bring it straight back.
     property bool hoverSuppressed: false
+
+    // How many of the per-screen windows currently have their body on
+    // screen (hover reveals are decided per screen, in the host). The poll
+    // timer above reads this; each window syncs it through noteVisible().
+    property int visibleWindows: 0
+
+    function noteVisible(visible) {
+        root.visibleWindows += visible ? 1 : -1;
+    }
 
     onRevealChanged: {
         shown = false;
@@ -226,15 +241,30 @@ Singleton {
         return ["sh", "-c", root.resolver, "sh", mode, key || "", value || ""].concat(root.candidates);
     }
 
-    function refresh(force) {
+    function refreshConfig() {
         if (!configReader.running) {
             configReader.command = command("config");
             configReader.running = true;
         }
+    }
+
+    property real lastUsageAt: 0
+
+    function refreshUsage(force) {
         if (!usageReader.running) {
+            root.lastUsageAt = Date.now();
             usageReader.command = command("usage", force ? "--refresh" : "");
             usageReader.running = true;
         }
+    }
+
+    // Both at once — a config change can also mean different providers or a
+    // different data.mode, so a manual "read now" (the IPC call, the
+    // settings page's button) still wants both. The poll timer and the
+    // config file watcher below each want only their own half.
+    function refresh(force) {
+        refreshConfig();
+        refreshUsage(force);
     }
 
     property var pending: []
@@ -350,7 +380,7 @@ Singleton {
             root.previewGap = NaN;
             if (root.refreshAfterSet && root.pending.length === 0) {
                 root.refreshAfterSet = false;
-                root.refresh(false);
+                root.refreshUsage(false);
             }
             root.pump();
         }
@@ -360,15 +390,27 @@ Singleton {
         path: root.configPath
         watchChanges: true
         printErrors: false
-        onFileChanged: root.refresh(false)
+        onFileChanged: root.refreshConfig()
     }
 
+    // Quiet while nothing is on screen to show a fresh number for: every
+    // tick otherwise spawns a flare process (and, for providers with no
+    // caching of their own, real file/database reads) whether or not
+    // anyone is looking. "always" is always on screen by definition;
+    // "shortcut" and "hover" register through noteVisible() below.
+    // Turning running back on fires immediately (triggeredOnStart), but
+    // only reads if the last reading is at least an interval old — so
+    // hovering in and out every few seconds doesn't spawn a read (or, in
+    // official mode, an API call) each time.
     Timer {
         interval: root.pollMs
-        running: true
+        running: root.reveal === "always" || root.visibleWindows > 0 || root.shown
         repeat: true
         triggeredOnStart: true
-        onTriggered: root.refresh(false)
+        onTriggered: {
+            if (Date.now() - root.lastUsageAt >= root.pollMs - 1000)
+                root.refreshUsage(false);
+        }
     }
 
     Timer {

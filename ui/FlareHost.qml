@@ -89,6 +89,27 @@ Scope {
                     holdOpen(bodyHover.hovered);
             }
 
+            // Whether this screen's body is actually seen — not just
+            // onScreen, which stays computed even for a window `visible:`
+            // below has filtered out entirely (a screen `notch.screen`
+            // doesn't name). FlareData's poll timer reads the tally.
+            readonly property bool reallyVisible: win.visible && win.onScreen
+            property bool countedVisible: false
+
+            function syncVisibleCount() {
+                if (win.reallyVisible === win.countedVisible)
+                    return;
+                FlareData.noteVisible(win.reallyVisible);
+                win.countedVisible = win.reallyVisible;
+            }
+
+            onReallyVisibleChanged: win.syncVisibleCount()
+            Component.onCompleted: win.syncVisibleCount()
+            Component.onDestruction: {
+                if (win.countedVisible)
+                    FlareData.noteVisible(false);
+            }
+
             function hover(id, inside) {
                 if (inside) {
                     cardTimer.stop();
