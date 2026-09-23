@@ -18,11 +18,15 @@ if command -v cargo >/dev/null 2>&1 && [ -f "$here/Cargo.toml" ]; then
 else
     [ "$(uname -m)" = "x86_64" ] || { say "no release build for $(uname -m); install Rust and run this again"; exit 1; }
     command -v curl >/dev/null 2>&1 || { say "curl is needed to download the release build"; exit 1; }
+    command -v sha256sum >/dev/null 2>&1 || { say "sha256sum is needed to verify the release build"; exit 1; }
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
     say "downloading the latest release build"
-    curl -fsSL "https://github.com/$repo/releases/latest/download/flare-x86_64-linux.tar.gz" -o "$tmp/flare.tar.gz"
-    tar -xzf "$tmp/flare.tar.gz" -C "$tmp"
+    asset="flare-x86_64-linux.tar.gz"
+    curl -fsSL "https://github.com/$repo/releases/latest/download/$asset" -o "$tmp/$asset"
+    curl -fsSL "https://github.com/$repo/releases/latest/download/$asset.sha256" -o "$tmp/$asset.sha256"
+    ( cd "$tmp" && sha256sum -c "$asset.sha256" ) || { say "checksum mismatch; not installing"; exit 1; }
+    tar -xzf "$tmp/$asset" -C "$tmp"
     install -m 755 "$tmp/flare" "$bin_dir/flare"
 fi
 

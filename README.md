@@ -186,8 +186,8 @@ cd flare-notch
 
 `install.sh` builds the `flare` binary when Rust 1.85+ is installed and otherwise
 downloads the [latest release](https://github.com/lunanoir21/flare-notch/releases/latest)'s
-build (x86_64, glibc 2.39+), puts it in `~/.local/bin` (`FLARE_BIN_DIR` to change
-that) and runs `flare doctor`.
+build (x86_64, glibc 2.39+), checks it against the release's published `.sha256`,
+puts it in `~/.local/bin` (`FLARE_BIN_DIR` to change that) and runs `flare doctor`.
 
 It also adds **flare** to your app launcher (rofi, wofi, fuzzel and the like): a
 `flare.desktop` entry and its icon under `~/.local/share`, and `flare-settings` next to
