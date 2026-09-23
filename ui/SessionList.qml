@@ -197,6 +197,7 @@ Column {
                         Text {
                             width: parent.width
                             text: row.modelData.name
+                            textFormat: Text.PlainText
                             color: Theme.textPrimary
                             font.pixelSize: Math.round(13 * list.s)
                             elide: Text.ElideRight
@@ -212,6 +213,7 @@ Column {
                                     parts.push(Strings.duration(FlareData.now - row.modelData.started_at));
                                 return parts.join(" · ");
                             }
+                            textFormat: Text.PlainText
                             color: Theme.textSecondary
                             font.pixelSize: Math.max(8, Math.round(11 * list.s))
                             elide: Text.ElideRight
@@ -233,6 +235,7 @@ Column {
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
                             text: Strings.sessionState(row.phase, row.modelData.waiting_for)
+                            textFormat: Text.PlainText
                             color: row.phase === "waiting" ? Theme.barMid : Theme.textSecondary
                             font.pixelSize: Math.max(8, Math.round(11 * list.s))
                             opacity: rowHover.hovered ? 0 : 1

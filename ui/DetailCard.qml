@@ -251,6 +251,7 @@ Item {
             width: body.width
             visible: text !== ""
             text: card.cell ? Strings.note(card.cell.note) : ""
+            textFormat: Text.PlainText
             color: Theme.textSoft
             font.pixelSize: Math.round(12 * card.s)
             lineHeight: 1.3

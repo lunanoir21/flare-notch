@@ -947,6 +947,7 @@ Rectangle {
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: lane.labelW - 16
                                 text: entry.modelData.name
+                                textFormat: Text.PlainText
                                 color: entry.modelData.live ? Theme.sheetText : Theme.sheetSubtext
                                 font.pixelSize: 12
                                 elide: Text.ElideRight
@@ -1666,6 +1667,7 @@ Rectangle {
                                     Text {
                                         Layout.fillWidth: true
                                         text: sessionRow.modelData.name
+                                        textFormat: Text.PlainText
                                         color: Theme.sheetText
                                         font.pixelSize: 13
                                         elide: Text.ElideRight
@@ -1675,6 +1677,7 @@ Rectangle {
                                     Layout.fillWidth: true
                                     Layout.preferredWidth: 1
                                     text: sessionRow.modelData.project
+                                    textFormat: Text.PlainText
                                     color: Theme.sheetSubtext
                                     font.pixelSize: 13
                                     elide: Text.ElideRight

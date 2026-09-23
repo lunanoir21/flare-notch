@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+**Proactive audit ahead of an Omarchy marketplace submission** — Before
+submitting to the Omarchy marketplace, everything flare takes from the
+outside world was re-read against a hostile/malformed-input lens: every
+provider's log and session files, HTTP replies, the config file, process
+output. No changes were needed there — the existing bounds (line/file size
+caps, no symlink following, parameterized queries, whitelisted config keys,
+credentials never logged) already held. The one thing the pass did change:
+session names, project names, "waiting for" text and provider error notes
+are strings a provider's own session files hand flare, so the widget now
+renders all of them as `Text.PlainText` instead of Qt Quick's default
+auto-detected rich text — no visual change for the normal case, just no
+chance of a string like a project folder name being read as markup.
+
 ## 1.0.0
 
 flare is stable. From here on the config keys, the IPC calls and the JSON
