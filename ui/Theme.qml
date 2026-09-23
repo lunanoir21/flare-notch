@@ -73,9 +73,16 @@ Singleton {
         return theme.barLow;
     }
 
+    // Logos drawn white for flare's black, with a dark copy for the white theme.
+    readonly property var whiteLogos: ["cursor", "opencode", "antigravity"]
+
     // Every login of a provider shares its logo: `claude:work` is Claude's.
     function logo(provider) {
-        return provider ? Qt.resolvedUrl("assets/logos/" + provider.split(":")[0] + ".svg") : "";
+        if (!provider)
+            return "";
+        const kind = provider.split(":")[0];
+        const variant = theme.light && whiteLogos.indexOf(kind) >= 0 ? "-light" : "";
+        return Qt.resolvedUrl("assets/logos/" + kind + variant + ".svg");
     }
 
     readonly property bool followingSystem: FlareData.themeMode === "auto"
