@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    # 24.04 builds against glibc 2.39, the floor the README promises.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Check the tag against Cargo.toml and CHANGELOG.md
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          cargo_version=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n 1)
+          if [ "$version" != "$cargo_version" ]; then
+            echo "::error::tag $GITHUB_REF_NAME, but Cargo.toml says $cargo_version"
+            exit 1
+          fi
+          if ! grep -qx "## $version" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no '## $version' section"
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - run: cargo test --locked
+      - run: cargo clippy --locked -- -D warnings
+      - run: cargo build --release --locked
+
+      - name: Package
+        run: |
+          mkdir dist
+          cp target/release/flare LICENSE dist/
+          tar -czf flare-x86_64-linux.tar.gz -C dist flare LICENSE
+          sha256sum flare-x86_64-linux.tar.gz > flare-x86_64-linux.tar.gz.sha256
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          awk -v head="## $VERSION" '$0 == head { on = 1; next } on && /^## / { exit } on' CHANGELOG.md > notes.md
+          cat .github/release-footer.md >> notes.md
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            flare-x86_64-linux.tar.gz flare-x86_64-linux.tar.gz.sha256 \
+            --title "flare $VERSION" --notes-file notes.md --verify-tag
