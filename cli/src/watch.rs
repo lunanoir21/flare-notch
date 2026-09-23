@@ -75,6 +75,8 @@ fn name(provider: &str) -> &str {
         "codex" => "Codex",
         "cursor" => "Cursor",
         "opencode" => "OpenCode",
+        "antigravity" => "Antigravity",
+        "kiro" => "Kiro",
         other => other,
     }
 }

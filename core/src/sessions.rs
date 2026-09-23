@@ -166,9 +166,41 @@ pub struct Logged {
     /// Open right now. Worked out on every run, never stored.
     #[serde(default, skip_deserializing)]
     pub live: bool,
+    /// Known to be over. A session read from a provider's own history is
+    /// taken as over once it has been quiet for `QUIET_SECS`.
+    #[serde(default, skip_deserializing)]
+    pub ended: bool,
 }
 
-const LOG_KEEP_SECS: i64 = 8 * 86_400;
+/// Sessions seen since this long ago are kept in a log.
+pub const LOG_KEEP_SECS: i64 = 8 * 86_400;
+/// A session nothing has been written to for this long counts as over.
+pub const QUIET_SECS: i64 = 10 * 60;
+
+impl Logged {
+    /// A session as a provider's own history records it. There is no process
+    /// to jump to, so it is never live.
+    pub fn from_history(name: String, project: String, started_at: i64, last_seen: i64, now: i64) -> Self {
+        Self {
+            pid: 0,
+            name: if name.trim().is_empty() { project.clone() } else { name },
+            project,
+            started_at,
+            last_seen,
+            state: SessionState::Idle,
+            live: false,
+            ended: now - last_seen >= QUIET_SECS,
+        }
+    }
+}
+
+/// The last path component, for naming a session after its folder.
+pub fn folder_name(path: &str) -> String {
+    Path::new(path.trim_end_matches('/'))
+        .file_name()
+        .map(|name| name.to_string_lossy().into_owned())
+        .unwrap_or_default()
+}
 /// A still-open session's last_seen is rewritten at most this often.
 const LOG_TOUCH_SECS: i64 = 60;
 
@@ -193,6 +225,7 @@ pub fn record(provider: &str, open: &[Session], now: i64) -> Vec<Logged> {
     }
     for entry in &mut log {
         entry.live = open.iter().any(|s| s.pid == entry.pid && s.started_at.unwrap_or(entry.started_at) == entry.started_at);
+        entry.ended = !entry.live;
     }
     log
 }
@@ -219,6 +252,7 @@ fn merge(log: &mut Vec<Logged>, open: &[Session], now: i64) -> bool {
                     last_seen: now,
                     state: session.state,
                     live: false,
+                    ended: false,
                 });
                 changed = true;
             }

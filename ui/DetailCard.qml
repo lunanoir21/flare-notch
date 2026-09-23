@@ -214,7 +214,7 @@ Item {
                 }
 
                 Text {
-                    text: Strings.usedLine(block.modelData.used)
+                    text: block.modelData.amount ? Strings.creditsLeftOf(block.modelData.amount) : Strings.usedLine(block.modelData.used)
                     color: Theme.textSoft
                     font.pixelSize: Math.max(8, Math.round(12 * card.s))
                     font.features: {
@@ -236,7 +236,7 @@ Item {
         Text {
             width: body.width
             visible: card.cell !== null && !card.cell.metered
-            text: card.cell ? Strings.tokensToday(card.cell.tokens) : ""
+            text: card.cell ? card.cell.todayText : ""
             color: Theme.textSoft
             font.pixelSize: Math.round(12 * card.s)
             wrapMode: Text.WordWrap

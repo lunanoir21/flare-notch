@@ -1,7 +1,8 @@
 # flare
 
 A usage notch for Quickshell on Hyprland: how much of your Claude Code, Codex,
-Cursor and OpenCode allowance is left, welded to the edge of the screen.
+Cursor, OpenCode, Antigravity and Kiro allowance is left, welded to the edge of the
+screen.
 
 [Website](https://lunanoir21.github.io/quickshell-flare/) · [Türkçe README](README.tr.md)
 
@@ -84,9 +85,16 @@ turns the card's session list off entirely, if you'd rather not see it at all.
 
 Click the arrow at the top of a provider's hover card, or `qs ipc call flare usage
 <provider>`, for the full picture: an hour-by-hour heatmap of its busiest limit's
-current week (token counts, read straight from Claude Code's own logs, each reply
-counted once), the busiest hours and quietest day, and today's sessions on a
-timeline — click an open one to jump to its terminal.
+current week, or the last seven days for a provider with no limit (token counts —
+credits for Kiro — read straight from the provider's own logs, each reply counted
+once), the busiest hours and quietest day, and today's sessions on a timeline —
+click an open Claude Code one to jump to its terminal. OpenCode, Antigravity and
+Kiro sessions come from their own history, closed ones included.
+
+Pick a provider from the cards across the top (or with ← / →); the rest scrolls.
+Further down: each limit with how much of its time has gone and where today's pace
+takes it, how the longest limit filled, the last seven days, the hours of the day,
+the models that took the most, and the week's sessions.
 
 ## Where the numbers come from
 
@@ -100,14 +108,18 @@ timeline — click an open one to jump to its terminal.
 | Codex | `GET chatgpt.com/backend-api/wham/usage` with the session in `~/.codex/auth.json`, falling back to the limits Codex wrote into its newest rollout log. |
 | Cursor | `GET cursor.com/api/usage-summary` with the editor's own session from `~/.config/Cursor/User/globalStorage/state.vscdb`. Reading this is the one case where official mode borrows more than a stored token — a live session cookie — so the widget asks once before ever doing it; declining leaves Cursor out of official mode until `data.cursor_consent` is changed. |
 | OpenCode | Its local database. OpenCode runs on your own API keys, so it shows tokens today rather than a limit. |
+| Antigravity | Each model group's quota (Gemini, and other models) and its refill time, from the status line capture (below): agy keeps quotas in memory only. Tokens and the models used come from the per-conversation databases in `~/.gemini/antigravity-cli/conversations`. |
+| Kiro | `GET q.<region>.amazonaws.com/getUsageLimits` with the sign-in `kiro-cli` keeps in `~/.local/share/kiro-cli/data.sqlite3`: the month's credits, shown as credits left, and when they refill. The sign-in lives an hour and is renewed shortly before it runs out by running `kiro-cli whoami`. Credits per request come from `~/.kiro/sessions/cli`. |
 
 **local** never opens a network connection. Claude comes from the status line
-capture (below), Codex from its rollout logs, OpenCode from its database. Cursor
+capture (below), Codex from its rollout logs, OpenCode and Antigravity from their
+own files as in official mode, Kiro from its session files (credits today, no
+allowance). Cursor
 keeps no usage on disk, so it shows nothing in this mode.
 
 Credentials are read, never written, and never printed: `flare doctor` describes a
-token by its length. Network reads keep their own pace — Claude every minute, Codex
-and Cursor every five — however often the widget refreshes.
+token by its length. Network reads keep their own pace — Claude every minute, Codex,
+Cursor and Kiro every five — however often the widget refreshes.
 
 Renewing Claude's token runs `claude -p`, found by searching `PATH` and then a fixed
 list of well-known install directories — the same trust any shell's own `PATH` lookup
@@ -165,6 +177,23 @@ already use, in `~/.claude/settings.json`:
 
 Official mode does not need it, but uses a fresh capture when the endpoint is down.
 
+### Antigravity's quotas: its status line capture
+
+agy hands each model group's quota only to its status line command.
+`hooks/agy-statusline-capture.sh` saves it the same way; point agy at it in
+`~/.gemini/antigravity-cli/settings.json`, keeping agy's own line with
+`stack_with_default`:
+
+```json
+"statusLine": {
+  "command": "/path/to/quickshell-flare/hooks/agy-statusline-capture.sh",
+  "enabled": true,
+  "stack_with_default": true
+}
+```
+
+The quotas then refresh every time agy runs; between runs the last ones stand.
+
 ## Configuration
 
 Everything lives in `~/.config/flare/config.toml`. The settings page writes the same
@@ -203,15 +232,16 @@ comments. The widget picks up a saved change within a second.
 | `compact.edge` | `top`, `bottom` |
 | `compact.offset` | pixels from the centre, along the edge |
 | `compact.open_on` | `click`, `hover` |
-| `providers.claude` … `providers.opencode` | `true`, `false` |
+| `providers.claude`, `.codex`, `.cursor`, `.opencode`, `.antigravity`, `.kiro` | `true`, `false` |
 | `providers.order` | the order cells are drawn and aura steps through |
 | `sessions.show` | `true`, `false` — the hover card's session list |
+| `usage.all_providers` | `true`, `false` — also list (and read) switched-off providers in the usage panel |
 | `notify.waiting`, `notify.limit`, `notify.reset` | `true`, `false` |
 | `notify.limit_at` | `50` to `100` |
-| `aura.claude` … `aura.opencode` | `#RRGGBB` |
+| `aura.claude` … `aura.kiro` (one per provider) | `#RRGGBB` |
 | `poll.interval_secs` | widget refresh, at least 5 |
-| `scan.window_days` | days of logs counted toward token totals |
-| `claude.binary_path`, `opencode.binary_path`, `codex.binary_path`, `flare.binary_path` | pin a program instead of searching `PATH` |
+| `scan.window_days` | days of logs counted toward token (and credit) totals |
+| `claude.binary_path`, `kiro.binary_path`, `opencode.binary_path`, `codex.binary_path`, `flare.binary_path` | pin a program instead of searching `PATH` |
 
 ## Keybinds
 

@@ -1,0 +1,48 @@
+{
+  "daysUntilReset": 0,
+  "limits": [],
+  "nextDateReset": 1790812800.0,
+  "overageConfiguration": { "overageLimit": null, "overageStatus": "DISABLED" },
+  "subscriptionInfo": {
+    "overageCapability": "OVERAGE_INCAPABLE",
+    "subscriptionManagementTarget": "PURCHASE",
+    "subscriptionTitle": "KIRO FREE",
+    "type": "Q_DEVELOPER_STANDALONE_FREE",
+    "upgradeCapability": "UPGRADE_CAPABLE"
+  },
+  "totalUsage": null,
+  "usageBreakdown": null,
+  "usageBreakdownList": [
+    {
+      "addOnMetadata": null,
+      "bonuses": [],
+      "currency": "USD",
+      "currentOverages": 0,
+      "currentOveragesWithPrecision": 0.0,
+      "currentUsage": 0,
+      "currentUsageWithPrecision": 0.17,
+      "dimensionType": null,
+      "displayName": "Credit",
+      "displayNamePlural": "Credits",
+      "freeTrialInfo": {
+        "currentUsage": 495,
+        "currentUsageWithPrecision": 495.52,
+        "freeTrialExpiry": 1778061012.684,
+        "freeTrialStatus": "EXPIRED",
+        "usageLimit": 500,
+        "usageLimitWithPrecision": 500.0
+      },
+      "nextDateReset": 1790812800.0,
+      "overageCap": 10000,
+      "overageCapWithPrecision": 10000.0,
+      "overageCharges": 0.0,
+      "overageCredits": [],
+      "overageRate": 0.04,
+      "resourceType": "CREDIT",
+      "unit": "INVOCATIONS",
+      "usageLimit": 50,
+      "usageLimitWithPrecision": 50.0
+    }
+  ],
+  "userInfo": { "email": "user@example.com", "userId": "user-0000" }
+}

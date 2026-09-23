@@ -45,7 +45,7 @@ enum Command {
     },
     /// Stay running and send desktop notifications, as `[notify]` sets them.
     Watch,
-    /// Tokens and replies per hour over the last eight days, as JSON.
+    /// Tokens (or credits) and replies per hour over the last eight days, as JSON.
     Activity,
     /// Read or change the config file.
     Config {
@@ -80,6 +80,8 @@ enum ProviderArg {
     Codex,
     Cursor,
     Opencode,
+    Antigravity,
+    Kiro,
     All,
 }
 
@@ -90,6 +92,8 @@ impl ProviderArg {
             Self::Codex => Some("codex"),
             Self::Cursor => Some("cursor"),
             Self::Opencode => Some("opencode"),
+            Self::Antigravity => Some("antigravity"),
+            Self::Kiro => Some("kiro"),
             Self::All => None,
         }
     }
@@ -117,11 +121,13 @@ fn main() -> Result<()> {
         Some(Command::Watch) => return watch::run(config),
         Some(Command::Activity) => {
             let cutoff = ctx.now - 8 * 86_400;
-            let hours = match cli.provider.id() {
-                Some("claude") | None => providers::claude::hourly(cutoff),
-                _ => Vec::new(),
+            let activity = providers::by_id(cli.provider.id().unwrap_or("claude"), &config)
+                .and_then(|provider| provider.activity(cutoff));
+            let json = match activity {
+                Some(activity) => serde_json::to_string(&activity)?,
+                None => serde_json::json!({ "unit": "tokens", "hours": null }).to_string(),
             };
-            println!("{}", serde_json::to_string(&serde_json::json!({ "hours": hours }))?);
+            println!("{json}");
             return Ok(());
         }
         Some(Command::Focus { pid }) => {
@@ -132,7 +138,13 @@ fn main() -> Result<()> {
     }
 
     let json = match cli.provider.id() {
-        None => render(cli.format, &fetch_all(&providers::all(&config), &ctx)),
+        None => {
+            let mut all = fetch_all(&providers::for_widget(&config), &ctx);
+            for usage in &mut all {
+                usage.hidden = !config.enabled(&usage.provider);
+            }
+            render(cli.format, &all)
+        }
         Some(id) => {
             let provider = providers::by_id(id, &config).with_context(|| format!("unknown provider: {id}"))?;
             render(cli.format, &fetch(provider.as_ref(), &ctx))
@@ -166,7 +178,9 @@ fn fetch(provider: &dyn UsageProvider, ctx: &Fetch) -> ProviderUsage {
     if usage.status != Status::Absent {
         usage.sessions = sessions::live(provider.id());
         usage.history = history::record(&usage, ctx.now);
-        usage.session_log = sessions::record(provider.id(), &usage.sessions, ctx.now);
+        usage.session_log = provider
+            .session_log(ctx.now)
+            .unwrap_or_else(|| sessions::record(provider.id(), &usage.sessions, ctx.now));
     }
     usage
 }

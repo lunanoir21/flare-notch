@@ -214,7 +214,7 @@ Item {
                     text: {
                         const cell = row.modelData;
                         if (!cell.metered)
-                            return Strings.tokensToday(cell.tokens);
+                            return cell.todayText;
                         if (!cell.head)
                             return Strings.status(cell.status) || Strings.noReading;
                         return Strings.windowLabel(cell.head.label) + " · " + Strings.resetText(cell.head.resets_at, FlareData.now, cell.head.reset_elapsed);

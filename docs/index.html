@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>flare — AI usage notch for Hyprland</title>
-  <meta name="description" content="flare is a notch for Quickshell on Hyprland that shows how much of your Claude Code, Codex, Cursor and OpenCode allowance is left, and which Claude sessions are running.">
+  <meta name="description" content="flare is a notch for Quickshell on Hyprland that shows how much of your Claude Code, Codex, Cursor, OpenCode, Antigravity and Kiro allowance is left, and which Claude sessions are running.">
   <meta name="theme-color" content="#000000">
   <meta property="og:title" content="flare — AI usage notch for Hyprland">
-  <meta property="og:description" content="Your Claude Code, Codex, Cursor and OpenCode limits, on the edge of the screen.">
+  <meta property="og:description" content="Your Claude Code, Codex, Cursor, OpenCode, Antigravity and Kiro limits, on the edge of the screen.">
   <meta property="og:image" content="https://lunanoir21.github.io/quickshell-flare/screenshots/sessions.png">
   <script>try { if (localStorage.getItem("flare-theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
   <link rel="icon" href="assets/logos/claude.svg" type="image/svg+xml">
@@ -35,7 +35,7 @@
   <main id="main">
     <section class="hero" aria-labelledby="title">
       <h1 id="title">Your AI limits, <span class="quiet">on the edge of the screen</span></h1>
-      <p class="lede">flare is a notch for Quickshell on Hyprland. It shows how much of your <strong>Claude Code, Codex, Cursor and OpenCode</strong> allowance is left, and which Claude sessions are running right now.</p>
+      <p class="lede">flare is a notch for Quickshell on Hyprland. It shows how much of your <strong>Claude Code, Codex, Cursor, OpenCode, Antigravity and Kiro</strong> allowance is left, and which Claude sessions are running right now.</p>
       <p class="pointer" data-dir="left"><span class="arrow" aria-hidden="true">←</span> <span class="words">The notch on this page's left edge works. Hover a ring.</span></p>
       <div class="actions">
         <a class="button solid" href="#install">Install</a>
@@ -112,6 +112,52 @@ ShellRoot {
       </div>
     </section>
 
+    <section class="section" id="providers" aria-labelledby="providers-title">
+      <div class="section-head">
+        <span class="tag">providers</span>
+        <h2 id="providers-title">What each one shows</h2>
+      </div>
+      <div class="section-body wide">
+        <p class="lead">Six tools, each read the way it keeps its own numbers: a rate limit as a ring, a pay-as-you-go tool as today's tokens, a credit plan as the credits it has left this month.</p>
+        <ul class="cap-legend" aria-label="Legend">
+          <li><span class="cap full" aria-hidden="true"></span>read directly</li>
+          <li><span class="cap ring" aria-hidden="true"></span>from flare’s own readings</li>
+          <li><span class="cap none" aria-hidden="true"></span>not available</li>
+        </ul>
+        <table class="matrix">
+          <thead>
+            <tr><th scope="col">provider</th><th scope="col">limit ring</th><th scope="col">reset time</th><th scope="col">usage today</th><th scope="col">local mode</th><th scope="col">sessions</th><th scope="col">heatmap</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row"><span class="who"><span class="tile"><img src="assets/logos/claude.svg" alt="" width="22" height="22"></span><span><span class="name">Claude Code</span><span class="unit">limits · tokens</span></span></span></th>
+              <td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>5h, weekly</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>tokens</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>status line</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>jump to it</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>from logs</small></td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="who"><span class="tile"><img src="assets/logos/codex.svg" alt="" width="22" height="22"></span><span><span class="name">Codex</span><span class="unit">limits</span></span></span></th>
+              <td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>primary, weekly</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span></td><td><span class="cap none" aria-hidden="true"></span><span class="sr">Not available</span></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>rollout log</small></td><td><span class="cap none" aria-hidden="true"></span><span class="sr">Not available</span></td><td><span class="cap ring" aria-hidden="true"></span><span class="sr">From flare’s own readings</span></td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="who"><span class="tile"><img src="assets/logos/cursor.svg" alt="" width="22" height="22"></span><span><span class="name">Cursor</span><span class="unit">included usage</span></span></span></th>
+              <td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>asks first</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span></td><td><span class="cap none" aria-hidden="true"></span><span class="sr">Not available</span></td><td><span class="cap none" aria-hidden="true"></span><span class="sr">Not available</span></td><td><span class="cap none" aria-hidden="true"></span><span class="sr">Not available</span></td><td><span class="cap ring" aria-hidden="true"></span><span class="sr">From flare’s own readings</span></td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="who"><span class="tile"><img src="assets/logos/opencode.svg" alt="" width="22" height="22"></span><span><span class="name">OpenCode</span><span class="unit">tokens</span></span></span></th>
+              <td><span class="cap none" aria-hidden="true"></span><span class="sr">Not available</span><small>own API keys</small></td><td><span class="cap none" aria-hidden="true"></span><span class="sr">Not available</span></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>tokens</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>history</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>from db</small></td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="who"><span class="tile"><img src="assets/logos/antigravity.svg" alt="" width="22" height="22"></span><span><span class="name">Antigravity</span><span class="unit">quotas · tokens</span></span></span></th>
+              <td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>per model</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>tokens</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>history</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>from db</small></td>
+            </tr>
+            <tr>
+              <th scope="row"><span class="who"><span class="tile"><img src="assets/logos/kiro.svg" alt="" width="22" height="22"></span><span><span class="name">Kiro</span><span class="unit">credits</span></span></span></th>
+              <td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>monthly</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>credits</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>credits</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>history</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>credits</small></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <section class="section" id="numbers" aria-labelledby="numbers-title">
       <div class="section-head">
         <span class="tag">data.mode</span>
@@ -121,7 +167,7 @@ ShellRoot {
         <div class="modes">
           <div>
             <h3>official</h3>
-            <p>The default. Each provider's own usage endpoint, asked with the sign-in its CLI already keeps, the way Codenotch does it. Network reads keep their own pace: Claude once a minute, Codex and Cursor every five.</p>
+            <p>The default. Each provider's own usage endpoint, asked with the sign-in its CLI already keeps, the way Codenotch does it. Network reads keep their own pace: Claude once a minute, Codex, Cursor and Kiro every five.</p>
           </div>
           <div>
             <h3>local</h3>
@@ -137,6 +183,8 @@ ShellRoot {
             <tr><td>Codex</td><td>Its usage endpoint, with the session in <code>~/.codex/auth.json</code></td><td>Its newest rollout log</td></tr>
             <tr><td>Cursor</td><td>Its usage endpoint, with the editor's own session, after asking you once</td><td>Nothing on disk to read</td></tr>
             <tr><td>OpenCode</td><td colspan="2">Its local database. It runs on your own API keys, so it shows tokens today, not a limit.</td></tr>
+            <tr><td>Antigravity</td><td colspan="2">Each model group's quota, from agy's status line through the bundled capture hook; tokens and models from the conversation databases in <code>~/.gemini/antigravity-cli</code>.</td></tr>
+            <tr><td>Kiro</td><td>Its usage-limits endpoint, with the sign-in <code>kiro-cli</code> keeps; the month's credits and when they refill</td><td>The credits each request used, from <code>~/.kiro/sessions/cli</code></td></tr>
           </tbody>
         </table>
         <p>Credentials are read, never written and never printed. A reading that could not be refreshed is dimmed, not guessed.</p>

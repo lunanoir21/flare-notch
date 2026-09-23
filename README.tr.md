@@ -1,7 +1,8 @@
 # flare
 
-Hyprland'de Quickshell için bir kullanım notch'u: Claude Code, Codex, Cursor ve
-OpenCode haklarından ne kadarının kaldığını ekranın kenarında gösterir.
+Hyprland'de Quickshell için bir kullanım notch'u: Claude Code, Codex, Cursor,
+OpenCode, Antigravity ve Kiro haklarından ne kadarının kaldığını ekranın kenarında
+gösterir.
 
 [Web sitesi](https://lunanoir21.github.io/quickshell-flare/) · [English README](README.md)
 
@@ -85,9 +86,16 @@ ise kartın oturum listesini tamamen kapatır, hiç görmek istemiyorsanız.
 
 Bir sağlayıcının hover kartının üstündeki oku tıklayın, ya da
 `qs ipc call flare usage <sağlayıcı>`: en yoğun limitinin bu haftasının saat saat ısı
-haritasını (token sayıları doğrudan Claude Code'un kendi kayıtlarından, her yanıt bir
-kez sayılarak), en yoğun saatleri ve en sakin günü, altında da bugünkü oturumları bir
-zaman çizelgesinde görürsünüz — açık birine tıklamak terminaline geçer.
+haritasını, limiti olmayan bir sağlayıcıda son yedi günü (token sayıları — Kiro'da
+krediler — doğrudan sağlayıcının kendi kayıtlarından, her yanıt bir kez sayılarak), en
+yoğun saatleri ve en sakin günü, altında da bugünkü oturumları bir zaman çizelgesinde
+görürsünüz — açık bir Claude Code oturumuna tıklamak terminaline geçer. OpenCode,
+Antigravity ve Kiro oturumları, kapanmış olanlar dahil, kendi geçmişlerinden gelir.
+
+Sağlayıcıyı üstteki kartlardan (ya da ← / → ile) seçin; gerisi kaydırılır. Aşağıda:
+her limit, süresinin ne kadarının geçtiği ve bugünkü hızın onu nereye götürdüğüyle;
+en uzun limitin nasıl dolduğu, son yedi gün, günün saatleri, en çok kullanılan
+modeller ve haftanın oturumları.
 
 ## Sayılar nereden gelir
 
@@ -101,14 +109,18 @@ zaman çizelgesinde görürsünüz — açık birine tıklamak terminaline geçe
 | Codex | `~/.codex/auth.json`'daki oturumla `GET chatgpt.com/backend-api/wham/usage`; olmazsa Codex'in son rollout kaydına yazdığı limitler. |
 | Cursor | Editörün `~/.config/Cursor/User/globalStorage/state.vscdb` içindeki kendi oturumuyla `GET cursor.com/api/usage-summary`. Bu, official modun bir saklı token'dan fazlasını — canlı bir oturum çerezini — ödünç aldığı tek durum, bu yüzden widget bunu yapmadan önce bir kez soruyor; reddetmek, `data.cursor_consent` değiştirilene kadar Cursor'ı official moddan çıkarır. |
 | OpenCode | Kendi yerel veritabanı. OpenCode sizin API anahtarlarınızla çalıştığı için limit değil bugünkü token sayısını gösterir. |
+| Antigravity | Her model grubunun (Gemini ve diğer modeller) kotası ve yenilenme zamanı, durum satırı kaydından (aşağıda): agy kotaları yalnızca bellekte tutar. Token'lar ve kullanılan modeller `~/.gemini/antigravity-cli/conversations` altındaki konuşma veritabanlarından gelir. |
+| Kiro | `kiro-cli`'ın `~/.local/share/kiro-cli/data.sqlite3` içinde tuttuğu girişle `GET q.<bölge>.amazonaws.com/getUsageLimits`: ayın kredileri, kalan kredi olarak, ve ne zaman yenilendiği. Giriş bir saat geçerlidir; bitmeden kısa süre önce `kiro-cli whoami` çalıştırılarak yenilenir. İstek başına krediler `~/.kiro/sessions/cli`'dan okunur. |
 
 **local** hiçbir zaman ağ bağlantısı açmaz. Claude durum satırı kaydından (aşağıda),
-Codex rollout kayıtlarından, OpenCode veritabanından okunur. Cursor diske kullanım
+Codex rollout kayıtlarından; OpenCode ve Antigravity official moddaki gibi kendi
+dosyalarından, Kiro oturum dosyalarından (bugünkü kredi, hak bilgisi olmadan) okunur.
+Cursor diske kullanım
 yazmadığı için bu modda bir şey göstermez.
 
 Kimlik bilgileri okunur, asla yazılmaz ve yazdırılmaz: `flare doctor` bir token'ı
 yalnızca uzunluğuyla tarif eder. Ağ okumaları, widget ne sıklıkla yenilenirse
-yenilensin kendi hızında kalır: Claude dakikada bir, Codex ve Cursor beş dakikada bir.
+yenilensin kendi hızında kalır: Claude dakikada bir, Codex, Cursor ve Kiro beş dakikada bir.
 
 Claude'un token'ını yenilemek `claude -p` çalıştırır; bu ikili önce `PATH`'te, sonra
 bilinen bir dizi kurulum dizininde aranır — herhangi bir kabuğun kendi `PATH`
@@ -165,6 +177,23 @@ kullandığınız komutun önüne ekleyin:
 ```
 
 official mod buna ihtiyaç duymaz, ama uç nokta çalışmadığında taze bir kaydı kullanır.
+
+### Antigravity kotaları: durum satırı kaydı
+
+agy her model grubunun kotasını yalnızca durum satırı komutuna verir.
+`hooks/agy-statusline-capture.sh` bunu aynı şekilde kaydeder; agy'yi
+`~/.gemini/antigravity-cli/settings.json` içinde ona yönlendirin, agy'nin kendi
+satırı `stack_with_default` ile kalır:
+
+```json
+"statusLine": {
+  "command": "/path/to/quickshell-flare/hooks/agy-statusline-capture.sh",
+  "enabled": true,
+  "stack_with_default": true
+}
+```
+
+Kotalar agy her çalıştığında yenilenir; aradaki sürede son okunanlar geçerli kalır.
 
 ## Ayarlar
 

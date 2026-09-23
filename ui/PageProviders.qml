@@ -19,7 +19,7 @@ Flickable {
         if (!cell)
             return Strings.status(snapshot.status) || Strings.noReading;
         if (!cell.metered)
-            return Strings.tokensToday(cell.tokens);
+            return cell.todayText;
         if (cell.head && cell.used !== null)
             return cell.label + " · " + Strings.windowLabel(cell.head.label);
         return Strings.status(cell.status) || Strings.noReading;
@@ -35,6 +35,21 @@ Flickable {
         width: page.width
         spacing: 12
 
+        SettingsCard {
+            title: Strings.usagePanelTitle
+
+            SettingsRow {
+                label: Strings.usageAll
+                hint: Strings.usageAllHint
+
+                SettingsToggle {
+                    checked: FlareData.usageAllProviders
+                    Accessible.name: Strings.usageAll
+                    onToggled: FlareData.set("usage.all_providers", !FlareData.usageAllProviders)
+                }
+            }
+        }
+
         Repeater {
             model: FlareData.allIds()
 
@@ -47,7 +62,7 @@ Flickable {
                 readonly property bool enabledHere: FlareData.section("providers")[modelData] !== false
                 readonly property color tint: FlareData.auraColour(modelData)
                 readonly property string tintText: tint.toString().toUpperCase()
-                readonly property bool last: index === 3
+                readonly property bool last: index === FlareData.allIds().length - 1
 
                 Layout.fillWidth: true
                 implicitHeight: body.implicitHeight + 32

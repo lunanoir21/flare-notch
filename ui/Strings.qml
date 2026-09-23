@@ -138,7 +138,7 @@ Singleton {
     readonly property string localShort: tr ? "Yalnızca diskteki kayıtlar" : "Only what is on disk"
     readonly property string readings: tr ? "Son okumalar" : "Latest readings"
     readonly property string doctorHint: tr ? "Bir sağlayıcı boş mu görünüyor? Terminalde flare doctor çalıştır; nereye baktığını ve ne bulduğunu yazar." : "A provider looks empty? Run flare doctor in a terminal; it says where it looked and what it found."
-    readonly property string aboutText: tr ? "flare, Codenotch'tan ilham alan ve Hyprland için yazılmış bir AI kullanım notch'u. Claude Code, Codex, Cursor ve OpenCode haklarından ne kadarının kaldığını ekranın kenarında gösterir." : "flare is an AI usage notch for Hyprland, inspired by Codenotch. It shows how much of your Claude Code, Codex, Cursor and OpenCode allowance is left, on the edge of the screen."
+    readonly property string aboutText: tr ? "flare, Codenotch'tan ilham alan ve Hyprland için yazılmış bir AI kullanım notch'u. Claude Code, Codex, Cursor, OpenCode, Antigravity ve Kiro haklarından ne kadarının kaldığını ekranın kenarında gösterir." : "flare is an AI usage notch for Hyprland, inspired by Codenotch. It shows how much of your Claude Code, Codex, Cursor, OpenCode, Antigravity and Kiro allowance is left, on the edge of the screen."
     readonly property string openGithub: tr ? "GitHub'da aç" : "Open on GitHub"
     readonly property string copyPath: tr ? "Yolu kopyala" : "Copy path"
     readonly property string copied: tr ? "Kopyalandı" : "Copied"
@@ -166,7 +166,7 @@ Singleton {
     readonly property string close: tr ? "Kapat" : "Close"
     readonly property string usageTitle: tr ? "Kullanım" : "Usage"
     readonly property string openUsage: tr ? "Kullanım panelini aç" : "Open the usage panel"
-    readonly property string sessionsClaudeOnly: tr ? "Yalnızca Claude Code" : "Claude Code only"
+    readonly property string noSessionSource: tr ? "Bu sağlayıcı oturumlarını diske yazmıyor." : "This provider does not write its sessions to disk."
 
 
     readonly property string rhythmHint: tr ? "Bu hafta saat saat ve bugünkü oturumlar." : "This week, hour by hour, and today's sessions."
@@ -182,12 +182,60 @@ Singleton {
     readonly property string closed: tr ? "kapandı" : "closed"
     readonly property string noSessionsToday: tr ? "Bugün oturum yok." : "No sessions today."
     readonly property string noHeat: tr ? "Bu sağlayıcının okuması henüz yok." : "No readings for this provider yet."
-    readonly property string noHeatUnmetered: tr ? "Bu sağlayıcının limiti yok; bugünkü token sayısı kartta." : "This provider has no limit; today's tokens are on the card."
+    readonly property string noHeatUnmetered: tr ? "Bu sağlayıcının limiti yok; bugünkü kullanımı kartta." : "This provider has no limit; today's use is on the card."
 
     readonly property string noActivity: tr ? "Etkinlik yok" : "No activity"
+    readonly property string deckHint: tr ? "← / → ile geç" : "← / → to switch"
+    readonly property string limitsTitle: tr ? "Limitler" : "Limits"
+    readonly property string sourceOfficial: tr ? "resmi uç nokta" : "official endpoint"
+    readonly property string sourceLocal: tr ? "yerel kayıtlar" : "local files"
+    readonly property string weekBuildUp: tr ? "Haftanın birikimi" : "The week's build-up"
+    readonly property string dashedPace: tr ? "kesik çizgi: bugünkü hızla" : "dashed: at today's pace"
+    readonly property string lastSevenDays: tr ? "Son 7 gün" : "Last 7 days"
+    readonly property string hoursOfDay: tr ? "Günün saatleri" : "Hours of the day"
+    readonly property string weekSessions: tr ? "Bu haftanın oturumları" : "This week's sessions"
+    readonly property string fromHistory: tr ? "sağlayıcının kendi geçmişinden" : "from the provider's own history"
+    readonly property string colSession: tr ? "Oturum" : "Session"
+    readonly property string colProject: tr ? "Proje" : "Project"
+    readonly property string colWhen: tr ? "Başlangıç" : "Started"
+    readonly property string colLength: tr ? "Süre" : "Length"
+    readonly property string noSessionsWeek: tr ? "Bu hafta oturum yok." : "No sessions this week."
+    readonly property string usagePanelTitle: tr ? "Kullanım paneli" : "Usage panel"
+    readonly property string usageAll: tr ? "Kapalı sağlayıcıları da göster" : "Show switched-off providers too"
+    readonly property string usageAllHint: tr ? "Widget'ta kapattıkların panelde, açıkların ardından listelenir; onlar da okunur." : "Those switched off in the widget are listed after the rest in the panel, and read like them."
+    readonly property string hiddenInWidget: tr ? "widget'ta gizli" : "hidden in the widget"
+    readonly property string topModels: tr ? "En çok kullanılan modeller" : "Most used models"
+    readonly property string thisWeek: tr ? "bu hafta" : "this week"
+    readonly property string noModels: tr ? "Bu sağlayıcı kayıtlarına modeli yazmıyor." : "This provider does not record the model in its logs."
+    readonly property string perModelLimits: tr ? "her model grubunun kendi limiti var" : "each model group has its own limit"
+
+    function howItFilled(label) {
+        return tr ? label + " nasıl doldu" : "How " + label.toLowerCase() + " filled";
+    }
+
+    function dayAverage(amount) {
+        return tr ? "günlük ort. " + amount : amount + " a day on average";
+    }
+
+    function busiestAt(range) {
+        return tr ? "en yoğun " + range : "busiest " + range;
+    }
+
+    function timeGone(percent) {
+        return tr ? "sürenin " + percent + "'i geçti" : percent + " of the time gone";
+    }
+
 
     function tokensCount(count) {
         return tr ? tokens(count) + " token" : tokens(count) + " tokens";
+    }
+
+    function creditsCount(amount) {
+        return tr ? creditAmount(amount) + " kredi" : creditAmount(amount) + (amount === 1 ? " credit" : " credits");
+    }
+
+    function requestsCount(count) {
+        return tr ? count + " istek" : count + (count === 1 ? " request" : " requests");
     }
 
     function repliesCount(count) {
@@ -202,8 +250,16 @@ Singleton {
         return tr ? "Bu hafta " + amount + " token, saat saat; altta bugünkü oturumlar." : amount + " tokens this week, hour by hour; today's sessions below.";
     }
 
+    function weekCredits(amount) {
+        return tr ? "Bu hafta " + amount + " kredi, saat saat; altta bugünkü oturumlar." : amount + " credits this week, hour by hour; today's sessions below.";
+    }
+
     function fromLogs(name) {
-        return tr ? "Token'lar " + name + " Code'un kendi kayıtlarından okunur; bir yanıt bir kez sayılır. Kareye gel ya da tıkla." : "Tokens are read from " + name + " Code's own logs, each reply counted once. Hover or click a square."
+        return tr ? "Token'lar doğrudan " + name + " kayıtlarından okunur; bir yanıt bir kez sayılır. Kareye gel ya da tıkla." : "Tokens are read from " + name + "'s own logs, each reply counted once. Hover or click a square."
+    }
+
+    function creditsFromLogs(name) {
+        return tr ? "Krediler doğrudan " + name + " oturum dosyalarından okunur; her tur bittiği saate yazılır. Kareye gel ya da tıkla." : "Credits are read from " + name + "'s own session files, each counted in the hour its turn ended. Hover or click a square."
     }
 
     function hourLabel(start) {
@@ -214,7 +270,8 @@ Singleton {
     }
 
     function rhythmTitle(name) {
-        return tr ? name + "'u ne zaman kullanıyorsun" : "When you use " + name;
+        const accusative = { Claude: "Claude'u", Codex: "Codex'i", Cursor: "Cursor'u", OpenCode: "OpenCode'u", Antigravity: "Antigravity'yi", Kiro: "Kiro'yu" };
+        return tr ? (accusative[name] || name) + " ne zaman kullanıyorsun" : "When you use " + name;
     }
 
     function shareOfWeek(percent) {
@@ -265,6 +322,32 @@ Singleton {
         return String(count);
     }
 
+    function creditAmount(amount) {
+        if (amount === null || amount === undefined)
+            return "—";
+        if (amount >= 100)
+            return String(Math.round(amount));
+        return amount.toFixed(amount >= 10 ? 1 : 2);
+    }
+
+    // "0.17 / 50 credits" for a limit counted in credits.
+    function amountOf(amount) {
+        return creditAmount(amount.used) + " / " + creditAmount(amount.limit) + (tr ? " kredi" : " credits");
+    }
+
+    function creditsLeft(amount) {
+        const left = creditAmount(Math.max(0, amount.limit - amount.used));
+        return tr ? left + " kredi kaldı" : left + " credits left";
+    }
+
+    function creditsLeftOf(amount) {
+        return creditsLeft(amount) + (tr ? " · " + creditAmount(amount.limit) + " krediden" : " · of " + creditAmount(amount.limit));
+    }
+
+    function creditsToday(amount) {
+        return tr ? "Bugün " + creditAmount(amount) + " kredi · " + noLimit : creditAmount(amount) + " credits today · " + noLimit;
+    }
+
     function tokensToday(count) {
         return tr ? "Bugün " + tokens(count) + " token · " + noLimit : tokens(count) + " tokens today · " + noLimit;
     }
@@ -278,6 +361,9 @@ Singleton {
             "Weekly (model-scoped)": "Modele özel",
             "Weekly limit": "Haftalık limit",
             "Monthly limit": "Aylık limit",
+            "Monthly credits": "Aylık kredi",
+            "Gemini models": "Gemini modelleri",
+            "Other models": "Diğer modeller",
             "Longer window": "Uzun pencere",
             "Included usage": "Dahil kullanım",
             "API usage": "API kullanımı",

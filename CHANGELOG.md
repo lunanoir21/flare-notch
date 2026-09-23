@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.0
+
+- **Antigravity and Kiro:** two more providers. Antigravity reads each model
+  group's quota from its own status line capture (`hooks/agy-statusline-capture.sh`)
+  and today's tokens and models from its conversation databases; Kiro reads the
+  month's credits from AWS, or from its session files alone in `local` mode.
+- **The usage panel, redone:** a deck of provider cards across the top — step
+  through with the arrows — and, for the one picked, its limits, how the
+  longest one filled, the last seven days, the hours of the day, the models
+  that took the most and the week's sessions.
+- **Sessions from a provider's own history:** OpenCode, Antigravity and Kiro
+  now list closed sessions on the timeline too, not just ones still running.
+- **`usage.all_providers`:** list, and read, providers switched off in the
+  widget in the usage panel too.
+- A provider that meters in credits (Kiro) shows credits, not tokens,
+  throughout the panel and its cards.
+
 ## 0.2.0
 
 - **The usage panel:** an hour-by-hour heatmap of the week, token counts read

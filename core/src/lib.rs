@@ -14,6 +14,7 @@ pub mod http;
 pub mod jsonl;
 pub mod notify;
 pub mod paths;
+mod proto;
 pub mod providers;
 pub mod sessions;
 pub mod store;
@@ -88,6 +89,17 @@ pub struct UsageWindow {
     /// The reset time has passed since the reading was taken, so the provider
     /// is already in a fresh window; `used` then reads 0.
     pub reset_elapsed: bool,
+    /// What `used` is a share of, for a limit counted in credits.
+    #[serde(default)]
+    pub amount: Option<Amount>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Amount {
+    pub used: f64,
+    pub limit: f64,
+    /// `credits`.
+    pub unit: String,
 }
 
 impl UsageWindow {
@@ -107,6 +119,7 @@ impl UsageWindow {
             resets_at,
             resets_in_secs: None,
             reset_elapsed: false,
+            amount: None,
         }
     }
 
@@ -121,6 +134,9 @@ impl UsageWindow {
         self.resets_in_secs = self.resets_at.map(|at| time::secs_until(at, now));
         if self.reset_elapsed {
             self.used = 0.0;
+            if let Some(amount) = &mut self.amount {
+                amount.used = 0.0;
+            }
         }
     }
 
@@ -144,7 +160,7 @@ impl UsageWindow {
 /// A normalized usage snapshot for a single provider.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProviderUsage {
-    /// "claude", "codex", "cursor" or "opencode".
+    /// One of `providers::IDS`.
     pub provider: String,
     pub status: Status,
     /// One line on why the status is what it is, for the hover card.
@@ -157,6 +173,9 @@ pub struct ProviderUsage {
     /// Whether the provider enforces a rate-limit window at all. OpenCode runs
     /// on the user's own API keys and never does.
     pub metered: bool,
+    /// Switched off in the widget, read only for the usage panel.
+    #[serde(default)]
+    pub hidden: bool,
     pub windows: Vec<UsageWindow>,
     /// The window the ring draws, by id.
     pub headline: Option<String>,
@@ -167,6 +186,9 @@ pub struct ProviderUsage {
     pub backoff_until: Option<i64>,
     /// Tokens over the scanned window (`scan.window_days`).
     pub tokens_today: Option<u64>,
+    /// Credits over the scanned window, for a provider that meters in
+    /// credits rather than tokens (Kiro).
+    pub credits_today: Option<f64>,
     pub cost_today_usd: Option<f64>,
     /// Locally derived costs are estimates and must never be shown as a bill.
     pub cost_is_estimated: bool,
@@ -194,11 +216,13 @@ impl ProviderUsage {
             account: None,
             plan: None,
             metered: true,
+            hidden: false,
             windows: Vec::new(),
             headline: None,
             fetched_at: None,
             backoff_until: None,
             tokens_today: None,
+            credits_today: None,
             cost_today_usd: None,
             cost_is_estimated: true,
             error: None,
@@ -251,6 +275,86 @@ impl ProviderUsage {
 pub trait UsageProvider: Send + Sync {
     fn id(&self) -> &'static str;
     fn fetch(&self, ctx: &Fetch) -> anyhow::Result<ProviderUsage>;
+
+    /// Use per hour since `cutoff_secs`, read from the provider's own logs,
+    /// for the usage panel. None where the logs carry no per-reply amounts.
+    fn activity(&self, _cutoff_secs: i64) -> Option<Activity> {
+        None
+    }
+
+    /// The provider's own record of recent sessions, closed ones included,
+    /// where it keeps one. None leaves the log to flare's own sightings of
+    /// live sessions.
+    fn session_log(&self, _now: i64) -> Option<Vec<sessions::Logged>> {
+        None
+    }
+}
+
+/// What the usage panel's heatmap counts.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Unit {
+    Tokens,
+    Credits,
+}
+
+/// `(hour start, amount, replies)`, hours on unix-hour boundaries.
+pub type Hour = (i64, f64, u32);
+
+#[derive(Debug, Clone, Serialize)]
+pub struct Activity {
+    pub unit: Unit,
+    pub hours: Vec<Hour>,
+    /// What each model took over the same span, most first. Empty where the
+    /// logs do not name the model.
+    pub models: Vec<ModelUse>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct ModelUse {
+    pub model: String,
+    pub amount: f64,
+    pub replies: u32,
+}
+
+/// One reply as a provider's logs record it.
+pub struct Reply {
+    pub at: i64,
+    pub amount: f64,
+    pub model: Option<String>,
+}
+
+impl Activity {
+    /// Buckets `(unix seconds, amount)` samples by hour, oldest first.
+    pub fn from_samples(unit: Unit, samples: impl IntoIterator<Item = (i64, f64)>) -> Self {
+        Self::from_replies(unit, samples.into_iter().map(|(at, amount)| Reply { at, amount, model: None }))
+    }
+
+    /// Hours as `from_samples` makes them, and each named model's share.
+    pub fn from_replies(unit: Unit, replies: impl IntoIterator<Item = Reply>) -> Self {
+        let mut hours: std::collections::BTreeMap<i64, (f64, u32)> = std::collections::BTreeMap::new();
+        let mut models: std::collections::HashMap<String, (f64, u32)> = std::collections::HashMap::new();
+        for reply in replies {
+            let slot = hours.entry(reply.at - reply.at.rem_euclid(3600)).or_default();
+            slot.0 += reply.amount;
+            slot.1 += 1;
+            if let Some(model) = reply.model.filter(|m| !m.trim().is_empty()) {
+                let entry = models.entry(model).or_default();
+                entry.0 += reply.amount;
+                entry.1 += 1;
+            }
+        }
+        let mut models: Vec<ModelUse> = models
+            .into_iter()
+            .map(|(model, (amount, replies))| ModelUse { model, amount, replies })
+            .collect();
+        models.sort_by(|a, b| b.amount.total_cmp(&a.amount).then_with(|| a.model.cmp(&b.model)));
+        Self {
+            unit,
+            hours: hours.into_iter().map(|(at, (amount, replies))| (at, amount, replies)).collect(),
+            models,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -265,6 +369,23 @@ mod tests {
         assert_eq!(UsageWindow::label_for_minutes(Some(30), "primary"), "30m limit");
         assert_eq!(UsageWindow::label_for_minutes(None, "primary"), "Current session");
         assert_eq!(UsageWindow::label_for_minutes(None, "secondary"), "Longer window");
+    }
+
+    #[test]
+    fn models_are_summed_most_first_and_unnamed_replies_only_count_in_hours() {
+        let reply = |at, amount, model: Option<&str>| Reply { at, amount, model: model.map(str::to_string) };
+        let activity = Activity::from_replies(
+            Unit::Tokens,
+            [reply(3600, 10.0, Some("a")), reply(3700, 30.0, Some("b")), reply(7300, 5.0, Some("a")), reply(7400, 1.0, None)],
+        );
+        assert_eq!(activity.hours, vec![(3600, 40.0, 2), (7200, 6.0, 2)]);
+        assert_eq!(
+            activity.models,
+            vec![
+                ModelUse { model: "b".into(), amount: 30.0, replies: 1 },
+                ModelUse { model: "a".into(), amount: 15.0, replies: 2 },
+            ]
+        );
     }
 
     #[test]

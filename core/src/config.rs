@@ -236,6 +236,8 @@ pub struct Providers {
     pub codex: bool,
     pub cursor: bool,
     pub opencode: bool,
+    pub antigravity: bool,
+    pub kiro: bool,
     /// Drawing order, and the order aura steps through.
     pub order: Vec<String>,
 }
@@ -247,10 +249,14 @@ impl Default for Providers {
             codex: true,
             cursor: true,
             opencode: true,
-            order: ["claude", "codex", "opencode", "cursor"].map(String::from).to_vec(),
+            antigravity: true,
+            kiro: true,
+            order: DEFAULT_ORDER.map(String::from).to_vec(),
         }
     }
 }
+
+const DEFAULT_ORDER: [&str; 6] = ["claude", "codex", "opencode", "cursor", "antigravity", "kiro"];
 
 /// The colour aura takes on for each provider, as `#RRGGBB`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -260,6 +266,8 @@ pub struct Aura {
     pub codex: String,
     pub cursor: String,
     pub opencode: String,
+    pub antigravity: String,
+    pub kiro: String,
 }
 
 impl Default for Aura {
@@ -269,6 +277,8 @@ impl Default for Aura {
             codex: "#6E7BFF".into(),
             cursor: "#3DD6C6".into(),
             opencode: "#C9CED6".into(),
+            antigravity: "#4F8DF7".into(),
+            kiro: "#9046FF".into(),
         }
     }
 }
@@ -284,6 +294,14 @@ impl Default for Sessions {
     fn default() -> Self {
         Self { show: true }
     }
+}
+
+/// The usage panel.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Usage {
+    /// Also list, and read, the providers switched off in the widget.
+    pub all_providers: bool,
 }
 
 /// Desktop notifications, sent by `flare watch`.
@@ -362,6 +380,7 @@ pub struct Config {
     pub compact: Compact,
     pub providers: Providers,
     pub sessions: Sessions,
+    pub usage: Usage,
     pub notify: Notify,
     pub aura: Aura,
     pub poll: Poll,
@@ -372,6 +391,8 @@ pub struct Config {
     /// searching PATH and a fixed list of well-known, user-writable install
     /// directories — all of which run whatever they find there.
     pub claude: Binary,
+    /// `kiro-cli`, run only to renew an expiring sign-in, as `claude` is.
+    pub kiro: Binary,
     /// The flare binary itself, for a compositor that starts Quickshell
     /// without the login shell's PATH.
     pub flare: Binary,
@@ -408,8 +429,11 @@ pub const KEYS: &[&str] = &[
     "providers.codex",
     "providers.cursor",
     "providers.opencode",
+    "providers.antigravity",
+    "providers.kiro",
     "providers.order",
     "sessions.show",
+    "usage.all_providers",
     "notify.waiting",
     "notify.limit",
     "notify.limit_at",
@@ -418,11 +442,14 @@ pub const KEYS: &[&str] = &[
     "aura.codex",
     "aura.cursor",
     "aura.opencode",
+    "aura.antigravity",
+    "aura.kiro",
     "poll.interval_secs",
     "scan.window_days",
     "opencode.binary_path",
     "codex.binary_path",
     "claude.binary_path",
+    "kiro.binary_path",
     "flare.binary_path",
 ];
 
@@ -506,8 +533,10 @@ claude = true
 codex = true
 cursor = true
 opencode = true
+antigravity = true
+kiro = true
 # The order cells are drawn in, and the order aura steps through.
-order = ["claude", "codex", "opencode", "cursor"]
+order = ["claude", "codex", "opencode", "cursor", "antigravity", "kiro"]
 
 [aura]
 # The colour aura takes on for each provider.
@@ -515,10 +544,17 @@ claude = "#D97757"
 codex = "#6E7BFF"
 cursor = "#3DD6C6"
 opencode = "#C9CED6"
+antigravity = "#4F8DF7"
+kiro = "#9046FF"
 
 [sessions]
 # List the Claude Code sessions running right now in the widget.
 show = true
+
+[usage]
+# List the providers switched off above in the usage panel too. They are then
+# read like the rest, just not drawn in the widget.
+all_providers = false
 
 [notify]
 # Desktop notifications, sent by `flare watch`, which the widget starts while
@@ -551,6 +587,10 @@ window_days = 1
 # instead of trusting whatever "claude" resolves to first on PATH.
 [claude]
 # binary_path = "/usr/local/bin/claude"
+
+# kiro-cli, used only to renew an expiring sign-in (`kiro-cli whoami`).
+[kiro]
+# binary_path = "/usr/local/bin/kiro-cli"
 
 [flare]
 # binary_path = "/usr/local/bin/flare"
@@ -647,6 +687,8 @@ impl Config {
             ("aura.codex", &self.aura.codex),
             ("aura.cursor", &self.aura.cursor),
             ("aura.opencode", &self.aura.opencode),
+            ("aura.antigravity", &self.aura.antigravity),
+            ("aura.kiro", &self.aura.kiro),
         ] {
             ensure!(is_hex_colour(value), "{key} must look like #RRGGBB, got {value:?}");
         }
@@ -678,6 +720,8 @@ impl Config {
             (&mut self.aura.codex, defaults.codex),
             (&mut self.aura.cursor, defaults.cursor),
             (&mut self.aura.opencode, defaults.opencode),
+            (&mut self.aura.antigravity, defaults.antigravity),
+            (&mut self.aura.kiro, defaults.kiro),
         ] {
             if !is_hex_colour(value) {
                 *value = fallback;
@@ -711,6 +755,8 @@ impl Config {
             "codex" => self.providers.codex,
             "cursor" => self.providers.cursor,
             "opencode" => self.providers.opencode,
+            "antigravity" => self.providers.antigravity,
+            "kiro" => self.providers.kiro,
             _ => false,
         }
     }
@@ -829,7 +875,7 @@ mod tests {
         assert_eq!(config.theme.mode, ThemeMode::Black);
         assert_eq!(config.theme.ring_color, RingColor::Monochrome);
         assert_eq!(config.notch.style, Style::Classic);
-        assert_eq!(config.provider_order(), ["claude", "codex", "opencode", "cursor"]);
+        assert_eq!(config.provider_order(), ["claude", "codex", "opencode", "cursor", "antigravity", "kiro"]);
     }
 
     #[test]
@@ -871,7 +917,7 @@ mod tests {
         assert!(!config.enabled("codex"));
         assert_eq!(config.aura.claude, "#112233");
         assert_eq!(config.aura.codex, "#6E7BFF");
-        assert_eq!(config.provider_order(), ["cursor", "claude", "codex", "opencode"]);
+        assert_eq!(config.provider_order(), ["cursor", "claude", "codex", "opencode", "antigravity", "kiro"]);
     }
 
     #[test]
@@ -952,6 +998,7 @@ mod tests {
         set_value(&path, "notch.label", "both").unwrap();
         set_value(&path, "notify.limit_at", "80").unwrap();
         set_value(&path, "sessions.show", "false").unwrap();
+        set_value(&path, "usage.all_providers", "true").unwrap();
         assert!(set_value(&path, "notify.limit_at", "20").is_err());
         assert!(set_value(&path, "ui.language", "de").is_err());
         let (config, problem) = Config::load_from(&path);
@@ -961,6 +1008,7 @@ mod tests {
         assert_eq!(config.notch.label, Label::Both);
         assert_eq!(config.notify.limit_at, 80);
         assert!(!config.sessions.show);
+        assert!(config.usage.all_providers);
         assert_eq!(config.notch.offset, -40);
         assert_eq!(config.notch.scale, 1.0);
         assert!(!config.providers.codex);

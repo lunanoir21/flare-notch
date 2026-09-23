@@ -35,8 +35,8 @@ use crate::config::{Binary, DataMode};
 use crate::http::{self, HttpError};
 use crate::store::{self, Saved};
 use crate::{
-    Config, Fetch, ProviderUsage, SOURCE_LOCAL, SOURCE_OFFICIAL, Status, UsageProvider,
-    UsageWindow, err_parse, jsonl, paths,
+    Activity, Config, Fetch, ProviderUsage, Reply, SOURCE_LOCAL, SOURCE_OFFICIAL, Status, Unit,
+    UsageProvider, UsageWindow, err_parse, jsonl, paths,
 };
 
 const ID: &str = "claude";
@@ -63,6 +63,10 @@ impl Claude {
 impl UsageProvider for Claude {
     fn id(&self) -> &'static str {
         ID
+    }
+
+    fn activity(&self, cutoff_secs: i64) -> Option<Activity> {
+        Some(hourly(cutoff_secs))
     }
 
     fn fetch(&self, ctx: &Fetch) -> Result<ProviderUsage> {
@@ -500,25 +504,21 @@ struct Scan {
 /// since the cutoff are skipped without being opened.
 fn scan_tokens(projects: &Path, cutoff_secs: i64) -> Scan {
     let mut scan = Scan::default();
-    scan.parse_error = each_reply(projects, cutoff_secs, |_, tokens| {
+    scan.parse_error = each_reply(projects, cutoff_secs, |_, tokens, _| {
         scan.tokens = scan.tokens.saturating_add(tokens);
     });
     scan
 }
 
-/// Tokens and replies per hour since `cutoff_secs`, oldest first, as
-/// `(hour start, tokens, replies)` with hours on unix-hour boundaries.
-pub fn hourly(cutoff_secs: i64) -> Vec<(i64, u64, u32)> {
-    let Ok(home) = paths::claude_home() else {
-        return Vec::new();
-    };
-    let mut hours: std::collections::BTreeMap<i64, (u64, u32)> = std::collections::BTreeMap::new();
-    each_reply(&home.join("projects"), cutoff_secs, |at, tokens| {
-        let slot = hours.entry(at - at.rem_euclid(3600)).or_default();
-        slot.0 = slot.0.saturating_add(tokens);
-        slot.1 += 1;
-    });
-    hours.into_iter().map(|(at, (tokens, replies))| (at, tokens, replies)).collect()
+/// Tokens and replies per hour since `cutoff_secs`.
+fn hourly(cutoff_secs: i64) -> Activity {
+    let mut replies = Vec::new();
+    if let Ok(home) = paths::claude_home() {
+        each_reply(&home.join("projects"), cutoff_secs, |at, tokens, model| {
+            replies.push(Reply { at, amount: tokens as f64, model: model.map(str::to_string) });
+        });
+    }
+    Activity::from_replies(Unit::Tokens, replies)
 }
 
 /// Every assistant reply since `cutoff_secs`, once each, as (unix seconds,
@@ -526,7 +526,7 @@ pub fn hourly(cutoff_secs: i64) -> Vec<(i64, u64, u32)> {
 /// repeats the reply's usage on each, so a reply is counted by its message
 /// id, across files too: a resumed session copies earlier replies into its
 /// new log. Returns the first parse error, if any.
-fn each_reply(projects: &Path, cutoff_secs: i64, mut visit: impl FnMut(i64, u64)) -> Option<String> {
+fn each_reply(projects: &Path, cutoff_secs: i64, mut visit: impl FnMut(i64, u64, Option<&str>)) -> Option<String> {
     let mut seen = std::collections::HashSet::new();
     let mut parse_error = None;
     for path in paths::collect_files(projects, "jsonl") {
@@ -558,7 +558,12 @@ fn each_reply(projects: &Path, cutoff_secs: i64, mut visit: impl FnMut(i64, u64)
                     return;
                 }
             }
-            visit(at, token_total(usage));
+            // "<synthetic>" marks a reply Claude Code made up locally.
+            let model = value
+                .pointer("/message/model")
+                .and_then(Value::as_str)
+                .filter(|m| !m.starts_with('<'));
+            visit(at, token_total(usage), model);
         });
         if let Err(err) = result {
             parse_error.get_or_insert_with(|| format!("{err:#}"));
@@ -786,7 +791,7 @@ mod tests {
 
         assert_eq!(scan_tokens(dir.path(), NO_CUTOFF).tokens, 100 + 50);
         let mut hours = Vec::new();
-        each_reply(dir.path(), NO_CUTOFF, |at, tokens| hours.push((at - at.rem_euclid(3600), tokens)));
+        each_reply(dir.path(), NO_CUTOFF, |at, tokens, _| hours.push((at - at.rem_euclid(3600), tokens)));
         hours.sort();
         assert_eq!(hours.len(), 2);
         assert_eq!(hours[0].1, 100);

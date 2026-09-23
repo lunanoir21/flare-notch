@@ -56,6 +56,16 @@ pub fn opencode_data() -> Result<PathBuf> {
     Ok(data_dir()?.join("opencode"))
 }
 
+/// The Antigravity CLI's (`agy`) own directory.
+pub fn antigravity_home() -> Result<PathBuf> {
+    Ok(home_dir()?.join(".gemini").join("antigravity-cli"))
+}
+
+/// Kiro's own directory, shared by the Kiro editor and `kiro-cli`.
+pub fn kiro_home() -> Result<PathBuf> {
+    Ok(home_dir()?.join(".kiro"))
+}
+
 /// The Cursor editor's global state database, where it keeps its sign-in.
 pub fn cursor_state_db() -> Result<PathBuf> {
     Ok(config_dir()?

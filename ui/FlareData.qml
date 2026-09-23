@@ -17,7 +17,7 @@ Singleton {
 
     property var providers: []
     property var config: null
-    property var order: ["claude", "codex", "opencode", "cursor"]
+    property var order: ["claude", "codex", "opencode", "cursor", "antigravity", "kiro"]
     property string configPath: ""
     property string configProblem: ""
     property string lastError: ""
@@ -83,13 +83,17 @@ Singleton {
             claude: "Claude",
             codex: "Codex",
             cursor: "Cursor",
-            opencode: "OpenCode"
+            opencode: "OpenCode",
+            antigravity: "Antigravity",
+            kiro: "Kiro"
         })
     readonly property var defaultColours: ({
             claude: "#D97757",
             codex: "#6E7BFF",
             cursor: "#3DD6C6",
-            opencode: "#C9CED6"
+            opencode: "#C9CED6",
+            antigravity: "#4F8DF7",
+            kiro: "#9046FF"
         })
     readonly property var usagePages: ({
             claude: "https://claude.ai/settings/usage",
@@ -97,12 +101,25 @@ Singleton {
             cursor: "https://cursor.com/dashboard?tab=usage"
         })
 
+    readonly property bool usageAllProviders: section("usage").all_providers === true
+
     // One entry per drawn provider, everything a delegate needs precomputed.
-    readonly property var cells: {
+    readonly property var cells: makeCells(false)
+    // The usage panel's deck: the widget's providers, and with
+    // usage.all_providers the switched-off ones after them.
+    readonly property var usageCells: {
+        const shown = cells;
+        if (!usageAllProviders)
+            return shown;
+        return shown.concat(makeCells(true).filter(c => !shown.some(s => s.id === c.id)));
+    }
+
+    function makeCells(hiddenOnes) {
         const out = [];
         for (const id of root.order) {
             // Switched off counts at once, not at the next reading.
-            if (root.section("providers")[id] === false)
+            const off = root.section("providers")[id] === false;
+            if (off !== hiddenOnes)
                 continue;
             const p = root.providers.find(entry => entry.provider === id);
             if (!p || p.status === "absent")
@@ -111,14 +128,16 @@ Singleton {
             const blocked = p.status === "needs_auth" || p.status === "error" || p.status === "backoff" || p.status === "needs_consent";
             const used = head && !blocked ? head.used : null;
             let label = "—";
+            const credits = p.credits_today ?? null;
             if (!p.metered)
-                label = Strings.tokens(p.tokens_today);
+                label = credits !== null ? Strings.creditAmount(credits) : Strings.tokens(p.tokens_today);
             else if (used !== null)
-                label = Strings.percent(used);
+                label = head.amount ? Strings.creditAmount(Math.max(0, head.amount.limit - head.amount.used)) : Strings.percent(used);
             out.push({
                 id: id,
                 name: root.names[id] || id,
                 metered: p.metered,
+                source: p.source,
                 used: used,
                 head: head,
                 windows: p.windows,
@@ -129,6 +148,8 @@ Singleton {
                 note: p.note || "",
                 plan: p.plan || "",
                 tokens: p.tokens_today,
+                credits: credits,
+                todayText: credits !== null ? Strings.creditsToday(credits) : Strings.tokensToday(p.tokens_today),
                 fetchedAt: p.fetched_at,
                 fraction: p.metered ? (used === null ? 0 : used) : 1,
                 arcColor: p.metered
@@ -137,6 +158,7 @@ Singleton {
                 exhausted: used !== null && used >= 1,
                 dimmed: p.metered && (used === null || p.status === "stale" || (head !== null && head.reset_elapsed)),
                 label: label,
+                hidden: off,
                 aura: root.auraColour(id)
             });
         }
@@ -170,9 +192,12 @@ Singleton {
         focusId = id;
     }
 
-    // Hour-by-hour tokens per provider, read from disk by `flare activity`
-    // only while the usage panel wants them: too heavy for every refresh.
+    // Hour-by-hour tokens (or credits) per provider, read from disk by
+    // `flare activity` only while the usage panel wants them: too heavy for
+    // every refresh. Null hours: the provider's logs carry no amounts.
     property var activity: ({})
+    property var activityUnits: ({})
+    property var activityModels: ({})
     property string activityFor: ""
 
     function loadActivity(id) {
@@ -188,9 +213,16 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
+                    const answer = JSON.parse(text);
                     const next = Object.assign({}, root.activity);
-                    next[root.activityFor] = JSON.parse(text).hours || [];
+                    next[root.activityFor] = answer.hours || null;
                     root.activity = next;
+                    const units = Object.assign({}, root.activityUnits);
+                    units[root.activityFor] = answer.unit || "tokens";
+                    root.activityUnits = units;
+                    const models = Object.assign({}, root.activityModels);
+                    models[root.activityFor] = answer.models || [];
+                    root.activityModels = models;
                 } catch (e) {}
             }
         }
@@ -238,7 +270,7 @@ Singleton {
     // Every provider id, in order, including disabled ones, for the settings page.
     function allIds() {
         const out = order.slice();
-        for (const id of ["claude", "codex", "opencode", "cursor"])
+        for (const id of ["claude", "codex", "opencode", "cursor", "antigravity", "kiro"])
             if (out.indexOf(id) < 0)
                 out.push(id);
         return out;
@@ -414,7 +446,7 @@ Singleton {
     // `flare config set`, whose reply becomes the truth.
     function set(key, value) {
         applyLocal(key, value);
-        if (key.startsWith("providers."))
+        if (key.startsWith("providers.") || key === "usage.all_providers")
             refreshAfterSet = true;
         const text = Array.isArray(value) ? value.join(",") : String(value);
         pending = pending.filter(item => item[0] !== key).concat([[key, text]]);

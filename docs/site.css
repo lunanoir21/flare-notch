@@ -1549,6 +1549,215 @@ pre {
 
 /* ---------- small screens ---------- */
 
+/* provider matrix */
+
+.section-body.wide {
+  max-width: none;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.cap {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 6px;
+  flex: none;
+}
+
+.cap.full {
+  background: var(--ink);
+}
+
+.cap.ring {
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.cap.none {
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--ink-3);
+  opacity: 0.6;
+}
+
+.cap-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 22px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.cap-legend li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.matrix {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--rule);
+  border-radius: 22px;
+  background: var(--raise);
+  overflow: hidden;
+}
+
+.matrix th,
+.matrix td {
+  padding: 16px 12px;
+  border-bottom: 1px solid var(--rule);
+  text-align: center;
+  vertical-align: middle;
+}
+
+.matrix thead th {
+  font: 400 12px/1.2 var(--mono);
+  color: var(--ink-3);
+  padding-block: 14px;
+}
+
+.matrix thead th:first-child,
+.matrix tbody th {
+  text-align: left;
+  padding-left: 24px;
+}
+
+.matrix tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.matrix tbody tr {
+  transition: background-color 0.25s var(--ease);
+}
+
+.matrix tbody tr:hover {
+  background: var(--row-hover);
+}
+
+.matrix td {
+  color: var(--ink-3);
+  font-size: 11px;
+}
+
+.matrix td small {
+  display: block;
+  margin-top: 7px;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.matrix .who {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-weight: 400;
+}
+
+.matrix .tile {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.matrix .name {
+  display: block;
+  font: 500 18px/1.2 var(--display);
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.matrix .unit {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+@media (max-width: 860px) {
+  .matrix,
+  .matrix tbody,
+  .matrix tr,
+  .matrix th,
+  .matrix td {
+    display: block;
+  }
+
+  .matrix thead {
+    display: none;
+  }
+
+  .matrix tbody tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-bottom: 1px solid var(--rule);
+    padding: 6px 0 12px;
+  }
+
+  .matrix tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .matrix tbody th {
+    grid-column: 1 / -1;
+    padding: 14px 18px 8px;
+    border: 0;
+  }
+
+  .matrix td {
+    display: grid;
+    grid-template-columns: 14px minmax(0, 1fr);
+    column-gap: 10px;
+    align-items: center;
+    text-align: left;
+    padding: 8px 18px;
+    border: 0;
+  }
+
+  .matrix td::before {
+    grid-column: 2;
+    grid-row: 1;
+    font: 400 12px/1.2 var(--mono);
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+
+  .matrix td .cap {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: center;
+  }
+
+  .matrix td small {
+    grid-column: 2;
+    grid-row: 2;
+    margin: 3px 0 0;
+  }
+
+  .matrix td:nth-of-type(1)::before { content: "limit ring"; }
+  .matrix td:nth-of-type(2)::before { content: "reset time"; }
+  .matrix td:nth-of-type(3)::before { content: "usage today"; }
+  .matrix td:nth-of-type(4)::before { content: "local mode"; }
+  .matrix td:nth-of-type(5)::before { content: "sessions"; }
+  .matrix td:nth-of-type(6)::before { content: "heatmap"; }
+}
+
 @media (max-width: 720px) {
   :root {
     --notch-w: 64px;

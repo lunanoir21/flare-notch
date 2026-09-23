@@ -1,0 +1,11 @@
+{
+  "session_id": "00000000-0000-4000-8000-000000000002",
+  "cwd": "/home/user",
+  "created_at": "2026-08-12T23:40:24.000000000Z",
+  "updated_at": "2026-08-12T23:40:24.000000000Z",
+  "title": "",
+  "session_state": {
+    "version": "v1",
+    "conversation_metadata": { "user_turn_metadatas": [] }
+  }
+}

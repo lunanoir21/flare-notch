@@ -3,7 +3,7 @@
 //! What someone runs when the widget shows nothing for a provider. It says
 //! where flare looked and what it found, never the value of a secret.
 
-use flare_core::providers::{self, claude, codex, cursor, opencode};
+use flare_core::providers::{self, antigravity, claude, codex, cursor, kiro, opencode};
 use flare_core::{Config, Fetch, Status};
 
 pub fn run(config: &Config, config_problem: Option<&str>, ctx: &Fetch) {
@@ -15,6 +15,8 @@ pub fn run(config: &Config, config_problem: Option<&str>, ctx: &Fetch) {
             "codex" => codex::probe(),
             "cursor" => cursor::probe(),
             "opencode" => opencode::probe(),
+            "antigravity" => antigravity::probe(),
+            "kiro" => kiro::probe(),
             _ => Vec::new(),
         };
         if !config.enabled(id) {
@@ -127,6 +129,9 @@ fn report_snapshot(id: &str, config: &Config, ctx: &Fetch) {
     }
     if let Some(tokens) = usage.tokens_today {
         println!("[{id}] tokens in scan window: {tokens}");
+    }
+    if let Some(credits) = usage.credits_today {
+        println!("[{id}] credits in scan window: {credits:.2}");
     }
     if let Some(cost) = usage.cost_today_usd {
         println!(
