@@ -18,6 +18,9 @@ Singleton {
     property var providers: []
     property var config: null
     property var order: ["claude", "codex", "opencode", "cursor", "antigravity", "kiro"]
+    // Every login of the providers that can have more than one, from
+    // `flare config get`: {id, provider, name, home, color, origin}.
+    property var accounts: []
     property string configPath: ""
     property string configProblem: ""
     property string lastError: ""
@@ -102,6 +105,59 @@ Singleton {
         })
 
     readonly property bool usageAllProviders: section("usage").all_providers === true
+    readonly property bool findAccounts: section("providers").find_accounts !== false
+    readonly property var accountsOff: section("providers").accounts_off || []
+
+    // `claude:work` → "claude" and "work"; `claude` → "claude" and "".
+    function kindOf(id) {
+        return String(id).split(":")[0];
+    }
+
+    function accountOf(id) {
+        const at = String(id).indexOf(":");
+        return at < 0 ? "" : String(id).slice(at + 1);
+    }
+
+    // "Claude", or "Claude · work" for another login.
+    function nameOf(id) {
+        const kind = kindOf(id), account = accountOf(id);
+        const name = root.names[kind] || kind;
+        return account ? name + " · " + account : name;
+    }
+
+    function accountFor(id) {
+        return root.accounts.find(a => a.id === id) || null;
+    }
+
+    // The logins a provider has here, default first.
+    function loginsOf(kind) {
+        return root.accounts.filter(a => a.provider === kind);
+    }
+
+    // Hidden: the provider switched off, or this one login on its own.
+    function isOff(id) {
+        return root.section("providers")[kindOf(id)] === false || root.accountsOff.indexOf(id) >= 0;
+    }
+
+    // One card's switch. A provider with a single login keeps using its own
+    // key; one with several switches logins one by one, and turning one on
+    // while the whole provider is off brings back that login alone.
+    function setShown(id, show) {
+        const kind = kindOf(id);
+        const logins = loginsOf(kind).map(a => a.id);
+        if (logins.length <= 1 && accountOf(id) === "") {
+            set("providers." + kind, show);
+            return;
+        }
+        let off = root.accountsOff.filter(x => x !== id);
+        if (!show)
+            off.push(id);
+        else if (root.section("providers")[kind] === false) {
+            off = off.concat(logins.filter(x => x !== id && off.indexOf(x) < 0));
+            set("providers." + kind, true);
+        }
+        set("providers.accounts_off", off);
+    }
 
     // One entry per drawn provider, everything a delegate needs precomputed.
     readonly property var cells: makeCells(false)
@@ -118,7 +174,7 @@ Singleton {
         const out = [];
         for (const id of root.order) {
             // Switched off counts at once, not at the next reading.
-            const off = root.section("providers")[id] === false;
+            const off = root.isOff(id);
             if (off !== hiddenOnes)
                 continue;
             const p = root.providers.find(entry => entry.provider === id);
@@ -135,7 +191,10 @@ Singleton {
                 label = head.amount ? Strings.creditAmount(Math.max(0, head.amount.limit - head.amount.used)) : Strings.percent(used);
             out.push({
                 id: id,
-                name: root.names[id] || id,
+                kind: root.kindOf(id),
+                account: root.accountOf(id),
+                email: p.account || "",
+                name: root.nameOf(id),
                 metered: p.metered,
                 source: p.source,
                 used: used,
@@ -176,9 +235,13 @@ Singleton {
         return cells.find(c => c.id === id) || null;
     }
 
+    // A login's own colour from its [[account]] entry, else its provider's.
     function auraColour(id) {
-        const colours = section("aura");
-        return colours[id] || defaultColours[id] || "#808080";
+        const own = accountFor(id);
+        if (own && own.color)
+            return own.color;
+        const kind = kindOf(id);
+        return section("aura")[kind] || defaultColours[kind] || "#808080";
     }
 
     function step(direction) {
@@ -263,8 +326,9 @@ Singleton {
     }
 
     function openUsagePage(id) {
-        if (usagePages[id])
-            Qt.openUrlExternally(usagePages[id]);
+        const page = usagePages[kindOf(id)];
+        if (page)
+            Qt.openUrlExternally(page);
     }
 
     // Every provider id, in order, including disabled ones, for the settings page.
@@ -478,6 +542,7 @@ Singleton {
         const answer = JSON.parse(text);
         root.config = answer.config;
         root.order = answer.order;
+        root.accounts = answer.accounts || [];
         root.configPath = answer.path;
         root.configProblem = answer.problem || "";
     }

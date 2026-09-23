@@ -984,7 +984,7 @@ Rectangle {
                 Text {
                     anchors.centerIn: parent
                     visible: sheet.today.items.length === 0
-                    text: sheet.cell && sheet.sessionSources.indexOf(sheet.cell.id) < 0 ? Strings.noSessionSource : Strings.noSessionsToday
+                    text: sheet.cell && sheet.sessionSources.indexOf(sheet.cell.kind) < 0 ? Strings.noSessionSource : Strings.noSessionsToday
                     color: Theme.sheetMuted
                     font.pixelSize: 13
                 }
@@ -1573,14 +1573,14 @@ Rectangle {
             Card {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 60 + 30 + Math.max(1, sheet.weekSessions.length) * 40 + 12
-                visible: sheet.cell !== null && sheet.sessionSources.indexOf(sheet.cell.id) >= 0
+                visible: sheet.cell !== null && sheet.sessionSources.indexOf(sheet.cell.kind) >= 0
 
                 Heading {
                     x: 22
                     y: 20
                     width: parent.width - 44
                     title: Strings.weekSessions
-                    hint: sheet.cell && sheet.cell.id === "claude" ? Strings.jumpHint : Strings.fromHistory
+                    hint: sheet.cell && sheet.cell.kind === "claude" ? Strings.jumpHint : Strings.fromHistory
                 }
 
                 GridLayout {

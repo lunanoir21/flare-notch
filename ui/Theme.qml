@@ -73,8 +73,9 @@ Singleton {
         return theme.barLow;
     }
 
+    // Every login of a provider shares its logo: `claude:work` is Claude's.
     function logo(provider) {
-        return provider ? Qt.resolvedUrl("assets/logos/" + provider + ".svg") : "";
+        return provider ? Qt.resolvedUrl("assets/logos/" + provider.split(":")[0] + ".svg") : "";
     }
 
     readonly property bool followingSystem: FlareData.themeMode === "auto"

@@ -204,6 +204,13 @@ Singleton {
     readonly property string usageAll: tr ? "Kapalı sağlayıcıları da göster" : "Show switched-off providers too"
     readonly property string usageAllHint: tr ? "Widget'ta kapattıkların panelde, açıkların ardından listelenir; onlar da okunur." : "Those switched off in the widget are listed after the rest in the panel, and read like them."
     readonly property string hiddenInWidget: tr ? "widget'ta gizli" : "hidden in the widget"
+    readonly property string accountsTitle: tr ? "Birden fazla hesap" : "More than one login"
+    readonly property string findAccounts: tr ? "Diğer girişleri bul" : "Find other logins"
+    readonly property string findAccountsHint: tr ? "~/.claude-<ad> ya da ~/.codex-<ad> klasöründeki her giriş kendi halkasını alır. Birine girmek için: CLAUDE_CONFIG_DIR=~/.claude-is claude" : "Every sign-in in a ~/.claude-<name> or ~/.codex-<name> folder gets a ring of its own. To sign in to one: CLAUDE_CONFIG_DIR=~/.claude-work claude"
+    readonly property string defaultLogin: tr ? "varsayılan giriş" : "default login"
+    readonly property string loginFound: tr ? "ev dizininde bulundu" : "found in your home folder"
+    readonly property string loginFromConfig: tr ? "config'teki [[account]]" : "[[account]] in the config"
+    readonly property string colourFromConfig: tr ? "Bu girişin rengi config'teki [[account]] girdisinde (color) ayarlanır." : "This login's colour is set by color in its [[account]] entry in the config."
     readonly property string topModels: tr ? "En çok kullanılan modeller" : "Most used models"
     readonly property string thisWeek: tr ? "bu hafta" : "this week"
     readonly property string noModels: tr ? "Bu sağlayıcı kayıtlarına modeli yazmıyor." : "This provider does not record the model in its logs."
@@ -269,9 +276,13 @@ Singleton {
         return days[date.getDay()] + " " + date.getDate() + " " + months[date.getMonth()] + " · " + from + "–" + to;
     }
 
+    // "Claude · work" is another login: the suffix goes on the provider's
+    // name and the login follows in brackets.
     function rhythmTitle(name) {
         const accusative = { Claude: "Claude'u", Codex: "Codex'i", Cursor: "Cursor'u", OpenCode: "OpenCode'u", Antigravity: "Antigravity'yi", Kiro: "Kiro'yu" };
-        return tr ? (accusative[name] || name) + " ne zaman kullanıyorsun" : "When you use " + name;
+        const [base, login] = String(name).split(" · ");
+        const which = login ? " (" + login + ")" : "";
+        return tr ? (accusative[base] || base) + which + " ne zaman kullanıyorsun" : "When you use " + base + which;
     }
 
     function shareOfWeek(percent) {

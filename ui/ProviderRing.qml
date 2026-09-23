@@ -2,7 +2,8 @@ import QtQuick
 import QtQuick.Shapes
 
 // A grey track with a coloured arc from 12 o'clock, clockwise, by the
-// fraction used, and the provider's logo in the middle.
+// fraction used, and the provider's logo in the middle; another login of a
+// provider wears its initial on the ring.
 Item {
     id: ring
 
@@ -86,5 +87,14 @@ Item {
         // A spent limit dims its logo so the ring reads as waiting.
         opacity: ring.exhausted ? 0.35 : 1
         Accessible.ignored: true
+    }
+
+    AccountBadge {
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.rightMargin: -size * 0.12
+        anchors.bottomMargin: -size * 0.12
+        provider: ring.provider
+        size: Math.max(9, Math.round(ring.diameter * 0.4))
     }
 }

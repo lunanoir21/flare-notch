@@ -2,6 +2,7 @@ singleton FlareData 1.0 FlareData.qml
 singleton Strings 1.0 Strings.qml
 singleton Theme 1.0 Theme.qml
 
+AccountBadge 1.0 AccountBadge.qml
 AuraView 1.0 AuraView.qml
 ClassicView 1.0 ClassicView.qml
 CompactView 1.0 CompactView.qml

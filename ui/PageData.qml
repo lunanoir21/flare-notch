@@ -89,7 +89,7 @@ Flickable {
 
                     Text {
                         Layout.fillWidth: true
-                        text: FlareData.names[reading.modelData.provider] || reading.modelData.provider
+                        text: FlareData.nameOf(reading.modelData.provider)
                         color: Theme.sheetText
                         font.pixelSize: 13
                     }

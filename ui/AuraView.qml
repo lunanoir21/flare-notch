@@ -200,6 +200,13 @@ Item {
                         asynchronous: true
                     }
 
+                    AccountBadge {
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        provider: mini.modelData.id
+                        size: Math.max(9, Math.round(11 * view.size))
+                    }
+
                     HoverHandler {
                         id: miniHover
                     }

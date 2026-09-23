@@ -7,6 +7,18 @@ Flickable {
 
     readonly property var presets: ["#D97757", "#E0A458", "#7FB77E", "#3DD6C6", "#6E7BFF", "#B08CFF", "#E06C9F", "#C9CED6"]
 
+    // Which login a card is, for a provider with more than one: the account's
+    // email where the reading has it, and where the login came from.
+    function loginLine(id) {
+        if (FlareData.loginsOf(FlareData.kindOf(id)).length < 2)
+            return "";
+        const login = FlareData.accountFor(id);
+        const snapshot = FlareData.providers.find(p => p.provider === id);
+        const origin = !login || login.origin === "default" ? Strings.defaultLogin
+            : login.origin === "found" ? Strings.loginFound : Strings.loginFromConfig;
+        return snapshot && snapshot.account ? snapshot.account + " · " + origin : origin;
+    }
+
     function summary(id, enabledHere) {
         if (!enabledHere)
             return Strings.hiddenLabel;
@@ -36,6 +48,21 @@ Flickable {
         spacing: 12
 
         SettingsCard {
+            title: Strings.accountsTitle
+
+            SettingsRow {
+                label: Strings.findAccounts
+                hint: Strings.findAccountsHint
+
+                SettingsToggle {
+                    checked: FlareData.findAccounts
+                    Accessible.name: Strings.findAccounts
+                    onToggled: FlareData.set("providers.find_accounts", !FlareData.findAccounts)
+                }
+            }
+        }
+
+        SettingsCard {
             title: Strings.usagePanelTitle
 
             SettingsRow {
@@ -59,7 +86,9 @@ Flickable {
                 required property string modelData
                 required property int index
 
-                readonly property bool enabledHere: FlareData.section("providers")[modelData] !== false
+                readonly property bool enabledHere: !FlareData.isOff(modelData)
+                readonly property bool otherLogin: FlareData.accountOf(modelData) !== ""
+                readonly property string login: page.loginLine(modelData)
                 readonly property color tint: FlareData.auraColour(modelData)
                 readonly property string tintText: tint.toString().toUpperCase()
                 readonly property bool last: index === FlareData.allIds().length - 1
@@ -106,10 +135,19 @@ Flickable {
                                 width: 13
                                 height: 13
                                 radius: 6.5
-                                visible: card.enabledHere
+                                visible: card.enabledHere && !card.otherLogin
                                 color: card.tint
                                 border.width: 2
                                 border.color: Theme.sheetRaised
+                            }
+
+                            AccountBadge {
+                                anchors.right: parent.right
+                                anchors.bottom: parent.bottom
+                                anchors.margins: -4
+                                provider: card.modelData
+                                size: 17
+                                fill: card.enabledHere ? card.tint : Theme.sheetRaised
                             }
                         }
 
@@ -118,10 +156,19 @@ Flickable {
                             spacing: 3
 
                             Text {
-                                text: FlareData.names[card.modelData]
+                                text: FlareData.nameOf(card.modelData)
                                 color: card.enabledHere ? Theme.sheetText : Theme.sheetSubtext
                                 font.pixelSize: 15
                                 font.weight: Font.DemiBold
+                            }
+
+                            Text {
+                                Layout.fillWidth: true
+                                visible: card.login !== ""
+                                text: card.login
+                                color: Theme.sheetSubtext
+                                font.pixelSize: 12
+                                elide: Text.ElideMiddle
                             }
 
                             Text {
@@ -151,14 +198,23 @@ Flickable {
 
                         SettingsToggle {
                             checked: card.enabledHere
-                            Accessible.name: Strings.show + " " + FlareData.names[card.modelData]
-                            onToggled: FlareData.set("providers." + card.modelData, !card.enabledHere)
+                            Accessible.name: Strings.show + " " + FlareData.nameOf(card.modelData)
+                            onToggled: FlareData.setShown(card.modelData, !card.enabledHere)
                         }
+                    }
+
+                    Text {
+                        Layout.fillWidth: true
+                        visible: card.enabledHere && card.otherLogin
+                        text: Strings.colourFromConfig
+                        color: Theme.sheetMuted
+                        font.pixelSize: 12
+                        wrapMode: Text.WordWrap
                     }
 
                     RowLayout {
                         Layout.fillWidth: true
-                        visible: card.enabledHere
+                        visible: card.enabledHere && !card.otherLogin
                         spacing: 5
 
                         Text {
@@ -226,7 +282,7 @@ Flickable {
                                 color: Theme.sheet
                                 border.color: hexField.activeFocus ? Theme.sheetSubtext : Theme.sheetLine
                             }
-                            Accessible.name: Strings.colour + " " + FlareData.names[card.modelData]
+                            Accessible.name: Strings.colour + " " + FlareData.nameOf(card.modelData)
                             onEditingFinished: {
                                 if (acceptableInput && text.toUpperCase() !== card.tintText)
                                     FlareData.set("aura." + card.modelData, text.toUpperCase());
