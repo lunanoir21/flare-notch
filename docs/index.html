@@ -35,10 +35,52 @@
 
   <main id="main">
     <section class="hero" aria-labelledby="title">
-      <h1 id="title">Your AI limits, <span class="quiet">on the edge of the screen</span></h1>
-      <p class="lede">flare is a notch for Quickshell on Hyprland. It shows how much of your <strong>Claude Code, Codex, Cursor, OpenCode, Antigravity and Kiro</strong> allowance is left, and which Claude sessions are running right now.</p>
-      <p class="pointer" data-dir="left"><span class="arrow" aria-hidden="true">←</span> <span class="words">The notch on this page's left edge works. Hover a ring.</span></p>
-      <div class="actions">
+      <div class="hero-art" aria-hidden="true">
+      <svg class="hero-gauge" viewBox="0 0 600 520" focusable="false" style="--v: 66; --w: 41; --t: 55">
+        <defs>
+          <linearGradient id="gauge-fill" gradientUnits="userSpaceOnUse" x1="100" y1="0" x2="420" y2="0">
+            <stop class="from" offset="0"/>
+            <stop class="to" offset="1"/>
+          </linearGradient>
+          <radialGradient id="gauge-glow">
+            <stop class="tip-colour" offset="0" stop-opacity="0.9"/>
+            <stop class="tip-colour" offset="1" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <path class="orbit" d="M20 400a280 280 0 0 1 560 0" pathLength="100"/>
+        <path class="time" d="M20 400a280 280 0 0 1 560 0" pathLength="100"/>
+        <g class="clock"><circle cx="300" cy="120" r="6"/></g>
+        <g class="ticks">
+          <line x1="300" y1="148" x2="300" y2="166" data-at="0" transform="rotate(-90 300 400)"/>
+          <line x1="300" y1="148" x2="300" y2="166" data-at="10" transform="rotate(-72 300 400)"/>
+          <line x1="300" y1="148" x2="300" y2="166" data-at="20" transform="rotate(-54 300 400)"/>
+          <line x1="300" y1="148" x2="300" y2="166" data-at="30" transform="rotate(-36 300 400)"/>
+          <line x1="300" y1="148" x2="300" y2="166" data-at="40" transform="rotate(-18 300 400)"/>
+          <line x1="300" y1="148" x2="300" y2="166" data-at="50" transform="rotate(0 300 400)"/>
+          <line x1="300" y1="148" x2="300" y2="166" data-at="60" transform="rotate(18 300 400)"/>
+          <line x1="300" y1="148" x2="300" y2="166" data-at="70" transform="rotate(36 300 400)"/>
+          <line x1="300" y1="148" x2="300" y2="166" data-at="80" transform="rotate(54 300 400)"/>
+          <line x1="300" y1="148" x2="300" y2="166" data-at="90" transform="rotate(72 300 400)"/>
+          <line x1="300" y1="148" x2="300" y2="166" data-at="100" transform="rotate(90 300 400)"/>
+        </g>
+        <path class="track" d="M100 400a200 200 0 0 1 400 0"/>
+        <path class="fill" d="M100 400a200 200 0 0 1 400 0" pathLength="100"/>
+        <path class="week-track" d="M150 400a150 150 0 0 1 300 0"/>
+        <path class="week" d="M150 400a150 150 0 0 1 300 0" pathLength="100"/>
+        <g class="tip"><circle class="glow" cx="300" cy="200" r="54"/></g>
+        <g class="needle"><line x1="300" y1="400" x2="300" y2="262"/></g>
+        <circle class="hub" cx="300" cy="400" r="16"/>
+      </svg>
+      <div class="hero-readout">
+        <span class="figure" data-figure>66%</span>
+        <span class="caption" data-caption>current session · resets in 2h 14m</span>
+        <span class="week-line"><i class="swatch"></i>week <b data-week>41%</b> · <span data-pace>on pace</span></span>
+      </div>
+      </div>
+      <h1 id="title"><span class="line">Your AI limits,</span> <span class="quiet line">on the edge of the screen</span></h1>
+      <p class="lede rise" style="--d: 3">flare is a notch for Quickshell on Hyprland. It shows how much of your <strong>Claude Code, Codex, Cursor, OpenCode, Antigravity and Kiro</strong> allowance is left, and which Claude sessions are running right now.</p>
+      <p class="pointer rise" style="--d: 4" data-dir="left"><span class="arrow" aria-hidden="true">←</span> <span class="words">The notch on this page's left edge works. Hover a ring.</span></p>
+      <div class="actions rise" style="--d: 5">
         <a class="button solid" href="#install">Install</a>
         <a class="button line" href="https://github.com/lunanoir21/flare-notch">Source on GitHub</a>
         <span class="meta"><span data-version>v0.3.0</span> · MIT · Rust and QML</span>
@@ -114,7 +156,7 @@ ShellRoot {
       </div>
     </section>
 
-    <section class="section" id="providers" aria-labelledby="providers-title">
+    <section class="section stacked" id="providers" aria-labelledby="providers-title">
       <div class="section-head">
         <span class="tag">providers</span>
         <h2 id="providers-title">What each one shows</h2>
@@ -131,27 +173,27 @@ ShellRoot {
             <tr><th scope="col">provider</th><th scope="col">limit ring</th><th scope="col">reset time</th><th scope="col">usage today</th><th scope="col">local mode</th><th scope="col">sessions</th><th scope="col">heatmap</th></tr>
           </thead>
           <tbody>
-            <tr>
+            <tr style="--aura: #D97757">
               <th scope="row"><span class="who"><span class="tile"><img src="assets/logos/claude.svg" alt="" width="22" height="22"></span><span><span class="name">Claude Code</span><span class="unit">limits · tokens</span></span></span></th>
               <td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>5h, weekly</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>tokens</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>status line</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>jump to it</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>from logs</small></td>
             </tr>
-            <tr>
+            <tr style="--aura: #6E7BFF">
               <th scope="row"><span class="who"><span class="tile"><img src="assets/logos/codex.svg" alt="" width="22" height="22"></span><span><span class="name">Codex</span><span class="unit">limits</span></span></span></th>
               <td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>primary, weekly</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span></td><td><span class="cap none" aria-hidden="true"></span><span class="sr">Not available</span></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>rollout log</small></td><td><span class="cap none" aria-hidden="true"></span><span class="sr">Not available</span></td><td><span class="cap ring" aria-hidden="true"></span><span class="sr">From flare’s own readings</span></td>
             </tr>
-            <tr>
+            <tr style="--aura: #3DD6C6">
               <th scope="row"><span class="who"><span class="tile"><img src="assets/logos/cursor.svg" alt="" width="22" height="22"></span><span><span class="name">Cursor</span><span class="unit">included usage</span></span></span></th>
               <td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>asks first</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span></td><td><span class="cap none" aria-hidden="true"></span><span class="sr">Not available</span></td><td><span class="cap none" aria-hidden="true"></span><span class="sr">Not available</span></td><td><span class="cap none" aria-hidden="true"></span><span class="sr">Not available</span></td><td><span class="cap ring" aria-hidden="true"></span><span class="sr">From flare’s own readings</span></td>
             </tr>
-            <tr>
+            <tr style="--aura: #C9CED6">
               <th scope="row"><span class="who"><span class="tile"><img src="assets/logos/opencode.svg" alt="" width="22" height="22"></span><span><span class="name">OpenCode</span><span class="unit">tokens</span></span></span></th>
               <td><span class="cap none" aria-hidden="true"></span><span class="sr">Not available</span><small>own API keys</small></td><td><span class="cap none" aria-hidden="true"></span><span class="sr">Not available</span></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>tokens</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>history</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>from db</small></td>
             </tr>
-            <tr>
+            <tr style="--aura: #4F8DF7">
               <th scope="row"><span class="who"><span class="tile"><img src="assets/logos/antigravity.svg" alt="" width="22" height="22"></span><span><span class="name">Antigravity</span><span class="unit">quotas · tokens</span></span></span></th>
               <td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>per model</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>tokens</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>history</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>from db</small></td>
             </tr>
-            <tr>
+            <tr style="--aura: #9046FF">
               <th scope="row"><span class="who"><span class="tile"><img src="assets/logos/kiro.svg" alt="" width="22" height="22"></span><span><span class="name">Kiro</span><span class="unit">credits</span></span></span></th>
               <td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>monthly</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>credits</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>credits</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>history</small></td><td><span class="cap full" aria-hidden="true"></span><span class="sr">Read directly</span><small>credits</small></td>
             </tr>
@@ -247,5 +289,6 @@ ShellRoot {
 
   <script src="news.js" defer></script>
   <script src="site.js" defer></script>
+  <script src="motion.js" defer></script>
 </body>
 </html>
