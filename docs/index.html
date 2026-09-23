@@ -41,7 +41,7 @@
       <div class="actions">
         <a class="button solid" href="#install">Install</a>
         <a class="button line" href="https://github.com/lunanoir21/flare-notch">Source on GitHub</a>
-        <span class="meta"><span data-version>v0.1.0</span> · MIT · Rust and QML</span>
+        <span class="meta"><span data-version>v0.3.0</span> · MIT · Rust and QML</span>
       </div>
     </section>
 
@@ -54,7 +54,8 @@
 <pre class="copyable"><code><span class="prompt">$ </span>git clone https://github.com/lunanoir21/flare-notch</code>
 <code><span class="prompt">$ </span>cd flare-notch</code>
 <code><span class="prompt">$ </span>./install.sh</code></pre>
-        <p>The script builds the <code>flare</code> binary if Rust 1.85 or newer is installed, and otherwise downloads the <a href="https://github.com/lunanoir21/flare-notch/releases/latest">latest release build</a>. It puts it in <code>~/.local/bin</code> and runs <code>flare doctor</code>, which lists what flare can and cannot find on your machine.</p>
+        <p>The script builds the <code>flare</code> binary if Rust 1.85 or newer is installed, and otherwise downloads the <a href="https://github.com/lunanoir21/flare-notch/releases/latest">latest release build</a>. It puts it in <code>~/.local/bin</code> and runs <code>flare doctor</code>, which lists what flare can and cannot find on your machine. It also adds <strong>flare</strong> to your app launcher, opening the settings page.</p>
+        <p>The prebuilt binary on its own: <a href="https://github.com/lunanoir21/flare-notch/releases/latest/download/flare-x86_64-linux.tar.gz">flare-x86_64-linux.tar.gz</a> (<a href="https://github.com/lunanoir21/flare-notch/releases/latest/download/flare-x86_64-linux.tar.gz.sha256">sha256</a>), always the latest release.</p>
         <p>Run the widget on its own with <code>quickshell -p ui</code>, or add it to the shell you already have:</p>
 <pre class="copyable"><code>import "path/to/flare-notch/ui" as Flare
 
