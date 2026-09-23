@@ -100,6 +100,34 @@ her limit, süresinin ne kadarının geçtiği ve bugünkü hızın onu nereye g
 en uzun limitin nasıl dolduğu, son yedi gün, günün saatleri, en çok kullanılan
 modeller ve haftanın oturumları.
 
+## Birden fazla hesap
+
+İki Claude Code girişi iki halka demektir, iki Codex girişi de öyle. İçinde bir
+giriş olan `~/.claude-<ad>` ya da `~/.codex-<ad>` klasörü kendiliğinden bulunur ve
+`claude:<ad>` olur; halkasında adın baş harfi, kartında "Claude · ad" görünür. Birine
+giriş yapmak için CLI'ı bir kez o klasöre yönlendirerek çalıştırın:
+
+```sh
+CLAUDE_CONFIG_DIR=~/.claude-is claude    # sonra /login
+CODEX_HOME=~/.codex-is codex login
+```
+
+Başka bir yerde duran bir giriş config'e yazılır:
+
+```toml
+[[account]]
+provider = "claude"        # ya da "codex"
+name = "is"                # küçük harf, rakam, - ve _
+home = "~/is/.claude"      # CLAUDE_CONFIG_DIR / CODEX_HOME'un değeri
+color = "#E0A458"          # isteğe bağlı: aura'nın bu girişteki rengi
+```
+
+Her girişin ayarlar sayfasında kapatmak ya da taşımak için kendi kartı vardır;
+`providers.claude = false` yine bütün Claude girişlerini birden gizler. Geri kalan her
+şey de giriş başına çalışır: `card claude:is`, `usage claude:is`, `flare --provider
+claude:is`, bildirimler ve oturum listesi. Durum satırı kaydı her giriş için ayrı bir
+dosya tutar; her girişin `statusLine`'ını aynı hook'a yönlendirmek yeterlidir.
+
 ## Sayılar nereden gelir
 
 `data.mode` iki yoldan birini seçer.

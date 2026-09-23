@@ -99,6 +99,34 @@ Further down: each limit with how much of its time has gone and where today's pa
 takes it, how the longest limit filled, the last seven days, the hours of the day,
 the models that took the most, and the week's sessions.
 
+## More than one login
+
+Two Claude Code logins are two rings, and so are two Codex ones. A folder
+`~/.claude-<name>` or `~/.codex-<name>` holding a sign-in is found on its own and
+becomes `claude:<name>`, with the name's initial on its ring and "Claude · name" on
+its card. To sign in to one, run the CLI pointed at it once:
+
+```sh
+CLAUDE_CONFIG_DIR=~/.claude-work claude    # then /login
+CODEX_HOME=~/.codex-work codex login
+```
+
+A login kept anywhere else goes in the config:
+
+```toml
+[[account]]
+provider = "claude"        # or "codex"
+name = "work"              # lower-case letters, digits, - and _
+home = "~/work/.claude"    # what CLAUDE_CONFIG_DIR / CODEX_HOME is set to
+color = "#E0A458"          # optional: aura's colour for this login
+```
+
+Each login has its own card in the settings page, to switch it off or move it;
+`providers.claude = false` still hides every Claude login at once. Everything else
+works per login too: `card claude:work`, `usage claude:work`, `flare --provider
+claude:work`, notifications and the session list. The status line capture keeps one
+file per login, so pointing every login's `statusLine` at the same hook is enough.
+
 ## Where the numbers come from
 
 `data.mode` picks one of two ways.
@@ -241,7 +269,9 @@ comments. The widget picks up a saved change within a second.
 | `compact.offset` | pixels from the centre, along the edge |
 | `compact.open_on` | `click`, `hover` |
 | `providers.claude`, `.codex`, `.cursor`, `.opencode`, `.antigravity`, `.kiro` | `true`, `false` |
-| `providers.order` | the order cells are drawn and aura steps through |
+| `providers.order` | the order cells are drawn and aura steps through; another login by its id, e.g. `claude:work` |
+| `providers.find_accounts` | `true`, `false` — find logins in `~/.claude-<name>` and `~/.codex-<name>` |
+| `providers.accounts_off` | logins switched off one by one, e.g. `claude:work` |
 | `sessions.show` | `true`, `false` — the hover card's session list |
 | `usage.all_providers` | `true`, `false` — also list (and read) switched-off providers in the usage panel |
 | `notify.waiting`, `notify.limit`, `notify.reset` | `true`, `false` |
