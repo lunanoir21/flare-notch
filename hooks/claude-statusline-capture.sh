@@ -16,15 +16,27 @@
 #   1. the arguments to this script, run as a command:
 #        claude-statusline-capture.sh npx -y @owloops/claude-powerline@latest
 #   2. $FLARE_STATUSLINE_DELEGATE, a file run with bash or a shell command
-#   3. ~/.claude/statusline-command.sh, if it exists
+#   3. statusline-command.sh in Claude Code's own directory, if it exists
 # With none of them, the capture happens and nothing is printed.
+#
+# Another login (Claude Code run with CLAUDE_CONFIG_DIR) gets a capture of its
+# own, named after its directory the same way flare looks for it.
 
 set -u
 
 input=$(cat)
 
 state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/flare"
+claude_dir="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 capture="$state_dir/claude-statusline.json"
+if [ -n "${CLAUDE_CONFIG_DIR:-}" ]; then
+    dir=$(realpath -m -- "$CLAUDE_CONFIG_DIR" 2>/dev/null || printf '%s' "$CLAUDE_CONFIG_DIR")
+    default=$(realpath -m -- "$HOME/.claude" 2>/dev/null || printf '%s' "$HOME/.claude")
+    if [ "$dir" != "$default" ]; then
+        key=$(printf '%s' "$dir" | sed 's|^/*||; s|/*$||; s|/|%|g')
+        capture="$state_dir/claude-statusline@$key.json"
+    fi
+fi
 
 # Best effort. Every failure path falls through to the delegate.
 if mkdir -p "$state_dir" 2>/dev/null; then
@@ -44,7 +56,7 @@ $input
 EOF
 fi
 
-delegate="${FLARE_STATUSLINE_DELEGATE:-$HOME/.claude/statusline-command.sh}"
+delegate="${FLARE_STATUSLINE_DELEGATE:-$claude_dir/statusline-command.sh}"
 if [ -r "$delegate" ]; then
     exec bash "$delegate" <<EOF
 $input

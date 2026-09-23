@@ -12,7 +12,7 @@ use std::path::Path;
 
 use anyhow::{Context, Result, bail};
 use clap::{Parser, Subcommand, ValueEnum};
-use flare_core::{Config, Fetch, ProviderUsage, SOURCE_LOCAL, Status, UsageProvider, config, history, paths, providers, sessions};
+use flare_core::{Config, Fetch, ProviderUsage, SOURCE_LOCAL, Status, UsageProvider, accounts, config, history, paths, providers, sessions};
 
 #[derive(Debug, Parser)]
 #[command(name = "flare", version, about = "AI coding usage for Quickshell, read the way Codenotch reads it")]
@@ -20,9 +20,10 @@ struct Cli {
     #[command(subcommand)]
     command: Option<Command>,
 
-    /// Which provider to report on.
-    #[arg(long, value_enum, default_value_t = ProviderArg::All)]
-    provider: ProviderArg,
+    /// Which provider to report on: all, claude, codex, cursor, opencode,
+    /// antigravity, kiro, or another login such as claude:work.
+    #[arg(long, default_value = "all")]
+    provider: String,
 
     /// Output format.
     #[arg(long, value_enum, default_value_t = Format::Json)]
@@ -75,31 +76,6 @@ enum ConfigAction {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
-enum ProviderArg {
-    Claude,
-    Codex,
-    Cursor,
-    Opencode,
-    Antigravity,
-    Kiro,
-    All,
-}
-
-impl ProviderArg {
-    fn id(self) -> Option<&'static str> {
-        match self {
-            Self::Claude => Some("claude"),
-            Self::Codex => Some("codex"),
-            Self::Cursor => Some("cursor"),
-            Self::Opencode => Some("opencode"),
-            Self::Antigravity => Some("antigravity"),
-            Self::Kiro => Some("kiro"),
-            Self::All => None,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 enum Format {
     Json,
 }
@@ -111,6 +87,11 @@ fn main() -> Result<()> {
         eprintln!("warning: config: {problem}");
     }
     let ctx = Fetch { now: paths::now_secs(), force: cli.refresh };
+    let one = (cli.provider != "all").then_some(cli.provider.as_str());
+    let named = |fallback: &str| -> Result<Box<dyn UsageProvider>> {
+        let id = one.unwrap_or(fallback);
+        providers::by_id(id, &config).with_context(|| format!("unknown provider or login: {id}"))
+    };
 
     match cli.command {
         Some(Command::Doctor) => {
@@ -121,8 +102,7 @@ fn main() -> Result<()> {
         Some(Command::Watch) => return watch::run(config),
         Some(Command::Activity) => {
             let cutoff = ctx.now - 8 * 86_400;
-            let activity = providers::by_id(cli.provider.id().unwrap_or("claude"), &config)
-                .and_then(|provider| provider.activity(cutoff));
+            let activity = named("claude")?.activity(cutoff);
             let json = match activity {
                 Some(activity) => serde_json::to_string(&activity)?,
                 None => serde_json::json!({ "unit": "tokens", "hours": null }).to_string(),
@@ -130,14 +110,11 @@ fn main() -> Result<()> {
             println!("{json}");
             return Ok(());
         }
-        Some(Command::Focus { pid }) => {
-            let provider = cli.provider.id().unwrap_or("claude");
-            return sessions::focus(provider, pid);
-        }
+        Some(Command::Focus { pid }) => return sessions::focus(named("claude")?.as_ref(), pid),
         None => {}
     }
 
-    let json = match cli.provider.id() {
+    let json = match one {
         None => {
             let mut all = fetch_all(&providers::for_widget(&config), &ctx);
             for usage in &mut all {
@@ -145,10 +122,7 @@ fn main() -> Result<()> {
             }
             render(cli.format, &all)
         }
-        Some(id) => {
-            let provider = providers::by_id(id, &config).with_context(|| format!("unknown provider: {id}"))?;
-            render(cli.format, &fetch(provider.as_ref(), &ctx))
-        }
+        Some(_) => render(cli.format, &fetch(named("claude")?.as_ref(), &ctx)),
     }?;
     println!("{json}");
     Ok(())
@@ -176,7 +150,7 @@ fn fetch(provider: &dyn UsageProvider, ctx: &Fetch) -> ProviderUsage {
         .fetch(ctx)
         .unwrap_or_else(|err| failed(provider.id(), format!("{err:#}")));
     if usage.status != Status::Absent {
-        usage.sessions = sessions::live(provider.id());
+        usage.sessions = sessions::live(provider);
         usage.history = history::record(&usage, ctx.now);
         usage.session_log = provider
             .session_log(ctx.now)
@@ -217,6 +191,7 @@ fn print_effective(path: &Path, config: &Config, problem: Option<&str>) -> Resul
         "path": path,
         "problem": problem,
         "order": config.provider_order(),
+        "accounts": accounts::all(config),
         "config": config,
     });
     println!("{}", serde_json::to_string_pretty(&body)?);

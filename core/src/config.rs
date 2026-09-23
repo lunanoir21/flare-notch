@@ -17,6 +17,7 @@ use anyhow::{Context, bail, ensure};
 use serde::{Deserialize, Serialize};
 use toml_edit::{Array, DocumentMut, Item, Value};
 
+use crate::accounts;
 use crate::paths;
 use crate::providers::IDS;
 
@@ -238,8 +239,13 @@ pub struct Providers {
     pub opencode: bool,
     pub antigravity: bool,
     pub kiro: bool,
-    /// Drawing order, and the order aura steps through.
+    /// Drawing order, and the order aura steps through. Holds account ids
+    /// (`claude:work`) too; one left out follows its provider.
     pub order: Vec<String>,
+    /// Look for more logins in `~/.claude-<name>` and `~/.codex-<name>`.
+    pub find_accounts: bool,
+    /// Logins switched off one by one, by id; `claude` itself may be one.
+    pub accounts_off: Vec<String>,
 }
 
 impl Default for Providers {
@@ -252,6 +258,8 @@ impl Default for Providers {
             antigravity: true,
             kiro: true,
             order: DEFAULT_ORDER.map(String::from).to_vec(),
+            find_accounts: true,
+            accounts_off: Vec::new(),
         }
     }
 }
@@ -294,6 +302,22 @@ impl Default for Sessions {
     fn default() -> Self {
         Self { show: true }
     }
+}
+
+/// Another login for a provider whose CLI can keep one elsewhere, as
+/// `[[account]]` in the file.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AccountEntry {
+    /// `claude` or `codex`.
+    pub provider: String,
+    /// Lower-case letters, digits, `-` and `_`; the account id is `<provider>:<name>`.
+    pub name: String,
+    /// The directory the CLI keeps this login in: what `CLAUDE_CONFIG_DIR` or
+    /// `CODEX_HOME` is set to when it runs. `~/` is the home directory.
+    pub home: String,
+    /// Aura's colour for this login, as `#RRGGBB`; the provider's otherwise.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub color: Option<String>,
 }
 
 /// The usage panel.
@@ -396,6 +420,9 @@ pub struct Config {
     /// The flare binary itself, for a compositor that starts Quickshell
     /// without the login shell's PATH.
     pub flare: Binary,
+    /// `[[account]]`: logins beyond the ones `providers.find_accounts` finds.
+    #[serde(rename = "account")]
+    pub accounts: Vec<AccountEntry>,
 }
 
 pub const SCALE_RANGE: RangeInclusive<f64> = 0.5..=2.0;
@@ -432,6 +459,8 @@ pub const KEYS: &[&str] = &[
     "providers.antigravity",
     "providers.kiro",
     "providers.order",
+    "providers.find_accounts",
+    "providers.accounts_off",
     "sessions.show",
     "usage.all_providers",
     "notify.waiting",
@@ -535,8 +564,16 @@ cursor = true
 opencode = true
 antigravity = true
 kiro = true
-# The order cells are drawn in, and the order aura steps through.
+# The order cells are drawn in, and the order aura steps through. Another
+# login goes in by its id, e.g. "claude:work"; one left out follows its provider.
 order = ["claude", "codex", "opencode", "cursor", "antigravity", "kiro"]
+# More than one Claude Code or Codex login, each a ring of its own: a directory
+# ~/.claude-<name> or ~/.codex-<name> holding a sign-in is found on its own
+# (sign in with `CLAUDE_CONFIG_DIR=~/.claude-work claude`, or
+# `CODEX_HOME=~/.codex-work codex login`) and becomes "claude:work".
+find_accounts = true
+# Logins to leave out one by one, by id, e.g. ["claude:work"].
+accounts_off = []
 
 [aura]
 # The colour aura takes on for each provider.
@@ -594,6 +631,13 @@ window_days = 1
 
 [flare]
 # binary_path = "/usr/local/bin/flare"
+
+# A login that lives somewhere find_accounts does not look, one block each.
+# [[account]]
+# provider = "claude"        # or "codex"
+# name = "work"              # its id becomes "claude:work"
+# home = "~/work/.claude"    # what CLAUDE_CONFIG_DIR / CODEX_HOME is set to
+# color = "#E0A458"          # optional; aura's colour for this login
 "##;
 
 fn is_hex_colour(value: &str) -> bool {
@@ -671,15 +715,38 @@ impl Config {
         ] {
             ensure!(value <= MAX_DELAY_MS, "{key} must be at most {MAX_DELAY_MS}, got {value}");
         }
-        for (index, id) in self.providers.order.iter().enumerate() {
+        for (key, list) in [("providers.order", &self.providers.order), ("providers.accounts_off", &self.providers.accounts_off)] {
+            for (index, id) in list.iter().enumerate() {
+                ensure!(
+                    accounts::valid_id(id),
+                    "{key}: unknown provider {id:?}; known: {}, or claude:<name> / codex:<name>",
+                    IDS.join(", ")
+                );
+                ensure!(!list[..index].contains(id), "{key} lists {id:?} twice");
+            }
+        }
+        for (index, entry) in self.accounts.iter().enumerate() {
             ensure!(
-                IDS.contains(&id.as_str()),
-                "providers.order: unknown provider {id:?}; known: {}",
-                IDS.join(", ")
+                accounts::KINDS.contains(&entry.provider.as_str()),
+                "[[account]] {:?}: provider must be one of {}, got {:?}",
+                entry.name,
+                accounts::KINDS.join(", "),
+                entry.provider
             );
             ensure!(
-                !self.providers.order[..index].contains(id),
-                "providers.order lists {id:?} twice"
+                accounts::valid_name(&entry.name),
+                "[[account]] name {:?}: use lower-case letters, digits, - and _, at most 32",
+                entry.name
+            );
+            ensure!(!entry.home.trim().is_empty(), "[[account]] {:?}: home is empty", entry.name);
+            if let Some(color) = &entry.color {
+                ensure!(is_hex_colour(color), "[[account]] {:?}: color must look like #RRGGBB, got {color:?}", entry.name);
+            }
+            ensure!(
+                !self.accounts[..index].iter().any(|other| other.provider == entry.provider && other.name == entry.name),
+                "[[account]] {}:{} is listed twice",
+                entry.provider,
+                entry.name
             );
         }
         for (key, value) in [
@@ -707,13 +774,27 @@ impl Config {
         self.notch.gap = self.notch.gap.min(MAX_GAP);
         self.notch.reveal_delay_ms = self.notch.reveal_delay_ms.min(MAX_DELAY_MS);
         self.notch.hide_delay_ms = self.notch.hide_delay_ms.min(MAX_DELAY_MS);
-        let mut order: Vec<String> = Vec::new();
-        for id in &self.providers.order {
-            if IDS.contains(&id.as_str()) && !order.contains(id) {
-                order.push(id.clone());
+        for list in [&mut self.providers.order, &mut self.providers.accounts_off] {
+            let mut kept: Vec<String> = Vec::new();
+            for id in list.iter() {
+                if accounts::valid_id(id) && !kept.contains(id) {
+                    kept.push(id.clone());
+                }
+            }
+            *list = kept;
+        }
+        let mut entries: Vec<AccountEntry> = Vec::new();
+        for mut entry in std::mem::take(&mut self.accounts) {
+            let usable = accounts::KINDS.contains(&entry.provider.as_str())
+                && accounts::valid_name(&entry.name)
+                && !entry.home.trim().is_empty()
+                && !entries.iter().any(|e| e.provider == entry.provider && e.name == entry.name);
+            if usable {
+                entry.color = entry.color.filter(|c| is_hex_colour(c));
+                entries.push(entry);
             }
         }
-        self.providers.order = order;
+        self.accounts = entries;
         let defaults = Aura::default();
         for (value, fallback) in [
             (&mut self.aura.claude, defaults.claude),
@@ -730,27 +811,45 @@ impl Config {
         self
     }
 
-    /// Every provider id, in the configured order; any the order leaves out
-    /// follow in their default place.
-    pub fn provider_order(&self) -> Vec<&'static str> {
-        let mut out: Vec<&'static str> = Vec::new();
-        for name in &self.providers.order {
-            if let Some(id) = IDS.iter().find(|id| **id == name.as_str()) {
-                if !out.contains(id) {
-                    out.push(id);
-                }
+    /// Every provider id and every other login on this machine, in the
+    /// configured order: a provider the order leaves out follows in its
+    /// default place, and a login it leaves out follows its provider's last.
+    pub fn provider_order(&self) -> Vec<String> {
+        let accounts: Vec<String> = accounts::extra(self).into_iter().map(|a| a.id).collect();
+        self.order_with(&accounts)
+    }
+
+    fn order_with(&self, accounts: &[String]) -> Vec<String> {
+        let here = |id: &str| IDS.contains(&id) || accounts.iter().any(|a| a == id);
+        let mut out: Vec<String> = Vec::new();
+        for id in &self.providers.order {
+            if here(id) && !out.contains(id) {
+                out.push(id.clone());
             }
         }
         for id in IDS {
-            if !out.contains(&id) {
-                out.push(id);
+            if !out.iter().any(|o| o == id) {
+                out.push(id.to_string());
             }
+        }
+        for account in accounts {
+            if out.contains(account) {
+                continue;
+            }
+            let provider = accounts::split(account).0;
+            let at = out
+                .iter()
+                .rposition(|o| accounts::split(o).0 == provider)
+                .map_or(out.len(), |i| i + 1);
+            out.insert(at, account.clone());
         }
         out
     }
 
-    pub fn enabled(&self, provider_id: &str) -> bool {
-        match provider_id {
+    /// Whether a provider or one login is shown: its provider switched on, and
+    /// the login not switched off on its own.
+    pub fn enabled(&self, id: &str) -> bool {
+        let on = match accounts::split(id).0 {
             "claude" => self.providers.claude,
             "codex" => self.providers.codex,
             "cursor" => self.providers.cursor,
@@ -758,7 +857,8 @@ impl Config {
             "antigravity" => self.providers.antigravity,
             "kiro" => self.providers.kiro,
             _ => false,
-        }
+        };
+        on && !self.providers.accounts_off.iter().any(|off| off == id)
     }
 
     pub fn scan_cutoff_secs(&self) -> i64 {
@@ -784,7 +884,7 @@ pub fn set_value(path: &Path, key: &str, raw: &str) -> anyhow::Result<()> {
         format!("{} is not valid TOML; fix it by hand before using `flare config set`", path.display())
     })?;
 
-    let candidates: Vec<Value> = if key == "providers.order" {
+    let candidates: Vec<Value> = if key == "providers.order" || key == "providers.accounts_off" {
         // `claude,codex,cursor` or `["claude", "codex"]`, both accepted.
         let mut array = Array::new();
         for item in raw
@@ -1023,5 +1123,89 @@ mod tests {
         assert_eq!(blank.command("opencode"), "opencode");
         let set = Binary { binary_path: Some("/opt/opencode".into()) };
         assert_eq!(set.command("opencode"), "/opt/opencode");
+    }
+
+    #[test]
+    fn a_login_the_order_leaves_out_follows_its_provider() {
+        let mut config = Config::default();
+        config.providers.order = vec!["codex".into(), "claude:work".into(), "claude".into()];
+        let accounts = ["claude:work".to_string(), "claude:side".to_string(), "codex:home".to_string()];
+        assert_eq!(
+            config.order_with(&accounts),
+            ["codex", "codex:home", "claude:work", "claude", "claude:side", "cursor", "opencode", "antigravity", "kiro"]
+        );
+        // A login named in the order but not on this machine is skipped.
+        assert_eq!(config.order_with(&[])[..2], ["codex", "claude"]);
+    }
+
+    #[test]
+    fn a_login_is_shown_while_its_provider_is_on_and_it_is_not_switched_off() {
+        let mut config = Config::default();
+        config.providers.accounts_off = vec!["claude:work".into()];
+        assert!(config.enabled("claude"));
+        assert!(config.enabled("claude:side"));
+        assert!(!config.enabled("claude:work"));
+        config.providers.claude = false;
+        assert!(!config.enabled("claude:side"));
+        config.providers.claude = true;
+        config.providers.accounts_off = vec!["claude".into()];
+        assert!(!config.enabled("claude"));
+        assert!(config.enabled("claude:side"));
+    }
+
+    #[test]
+    fn accounts_are_read_from_the_file_and_checked() {
+        let dir = tempfile::tempdir().expect("temp dir");
+        let path = write(
+            dir.path(),
+            r##"
+[providers]
+order = ["claude:work", "claude"]
+accounts_off = ["codex:old"]
+
+[[account]]
+provider = "claude"
+name = "work"
+home = "~/work/.claude"
+color = "#E0A458"
+"##,
+        );
+        let (config, problem) = Config::load_from(&path);
+        assert!(problem.is_none(), "{problem:?}");
+        assert_eq!(config.accounts.len(), 1);
+        assert_eq!(config.accounts[0].color.as_deref(), Some("#E0A458"));
+        assert_eq!(config.providers.accounts_off, ["codex:old"]);
+
+        let bad = write(
+            dir.path(),
+            r#"
+[providers]
+order = ["cursor:work", "claude"]
+
+[[account]]
+provider = "cursor"
+name = "Work"
+home = ""
+"#,
+        );
+        let (config, problem) = Config::load_from(&bad);
+        assert!(problem.is_some());
+        assert_eq!(config.providers.order, ["claude"]);
+        assert!(config.accounts.is_empty());
+    }
+
+    #[test]
+    fn logins_are_switched_off_through_config_set() {
+        let dir = tempfile::tempdir().expect("temp dir");
+        let path = dir.path().join("config.toml");
+        set_value(&path, "providers.accounts_off", "claude:work,codex").unwrap();
+        set_value(&path, "providers.find_accounts", "false").unwrap();
+        assert!(set_value(&path, "providers.accounts_off", "cursor:x").is_err());
+        let (config, problem) = Config::load_from(&path);
+        assert!(problem.is_none(), "{problem:?}");
+        assert_eq!(config.providers.accounts_off, ["claude:work", "codex"]);
+        assert!(!config.providers.find_accounts);
+        set_value(&path, "providers.accounts_off", "").unwrap();
+        assert!(Config::load_from(&path).0.providers.accounts_off.is_empty());
     }
 }

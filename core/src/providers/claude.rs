@@ -23,6 +23,10 @@
 //! hooks/claude-statusline-capture.sh writes.
 //!
 //! Tokens for the day come from ~/.claude/projects/**/*.jsonl in both modes.
+//!
+//! Every path above is the login's own directory: `~/.claude` for the default
+//! one, and whatever `CLAUDE_CONFIG_DIR` names for another (see accounts.rs),
+//! which is also where Claude Code then keeps `.claude.json` and `sessions/`.
 
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -31,15 +35,15 @@ use std::time::{Duration, Instant};
 use anyhow::Result;
 use serde_json::Value;
 
+use crate::accounts::{self, Account};
 use crate::config::{Binary, DataMode};
 use crate::http::{self, HttpError};
 use crate::store::{self, Saved};
 use crate::{
     Activity, Config, Fetch, ProviderUsage, Reply, SOURCE_LOCAL, SOURCE_OFFICIAL, Status, Unit,
-    UsageProvider, UsageWindow, err_parse, jsonl, paths,
+    UsageProvider, UsageWindow, err_parse, jsonl, paths, sessions,
 };
 
-const ID: &str = "claude";
 const ENDPOINT: &str = "https://api.anthropic.com/api/oauth/usage";
 const POLL_SECS: i64 = 60;
 /// Under Claude Code's own five minutes: it renews only when that close, so
@@ -52,35 +56,44 @@ const EXPIRED_NOTE: &str = "Credential expired — run claude once in a terminal
 
 pub struct Claude {
     config: Config,
+    account: Account,
 }
 
 impl Claude {
-    pub fn new(config: Config) -> Self {
-        Self { config }
+    pub fn new(config: Config, account: Account) -> Self {
+        Self { config, account }
     }
 }
 
 impl UsageProvider for Claude {
-    fn id(&self) -> &'static str {
-        ID
+    fn id(&self) -> &str {
+        &self.account.id
     }
 
     fn activity(&self, cutoff_secs: i64) -> Option<Activity> {
-        Some(hourly(cutoff_secs))
+        Some(hourly(&self.account.home, cutoff_secs))
+    }
+
+    fn open_sessions(&self) -> Vec<sessions::Session> {
+        sessions::claude_open(&self.account.home)
+    }
+
+    fn probe(&self) -> Vec<String> {
+        probe(&self.account, &self.config.claude)
     }
 
     fn fetch(&self, ctx: &Fetch) -> Result<ProviderUsage> {
-        let home = paths::claude_home()?;
+        let home = &self.account.home;
         if !home.exists() {
-            return Ok(ProviderUsage::absent(ID));
+            return Ok(ProviderUsage::absent(&self.account.id));
         }
 
         let mut usage = match self.config.data.mode {
-            DataMode::Official => official(ctx, &home, &self.config.claude),
-            DataMode::Local => local(),
+            DataMode::Official => official(ctx, &self.account, &self.config.claude),
+            DataMode::Local => local(&self.account),
         };
 
-        usage.account = read_account();
+        usage.account = read_account(home);
         let scan = scan_tokens(&home.join("projects"), self.config.scan_cutoff_secs());
         usage.tokens_today = Some(scan.tokens);
         if let Some(err) = scan.parse_error {
@@ -91,9 +104,9 @@ impl UsageProvider for Claude {
     }
 }
 
-fn local() -> ProviderUsage {
-    let mut usage = ProviderUsage::new(ID, SOURCE_LOCAL);
-    match read_capture() {
+fn local(account: &Account) -> ProviderUsage {
+    let mut usage = ProviderUsage::new(&account.id, SOURCE_LOCAL);
+    match read_capture(&account.home) {
         Some(captured) => {
             usage.status = Status::Ok;
             usage.windows = captured.windows;
@@ -110,20 +123,21 @@ fn local() -> ProviderUsage {
     usage
 }
 
-fn official(ctx: &Fetch, home: &Path, claude_bin: &Binary) -> ProviderUsage {
+fn official(ctx: &Fetch, account: &Account, claude_bin: &Binary) -> ProviderUsage {
     let now = ctx.now;
-    let credentials = credentials_path(home);
-    let mut saved = Saved::load(ID);
+    let id = account.id.as_str();
+    let credentials = credentials_path(&account.home);
+    let mut saved = Saved::load(id);
     let mut usage = saved
         .usage
         .clone()
         .filter(|u| u.source == SOURCE_OFFICIAL)
-        .unwrap_or_else(|| ProviderUsage::new(ID, SOURCE_OFFICIAL));
+        .unwrap_or_else(|| ProviderUsage::new(id, SOURCE_OFFICIAL));
 
     // Ahead of the back-off: renewing never touches the usage endpoint, and a
     // fresh token deserves a fresh try.
     if let Some(credential) = read_credentials(&credentials) {
-        if maybe_renew(&credential, &credentials, &mut saved, now, claude_bin) {
+        if maybe_renew(&credential, &credentials, &mut saved, now, claude_bin, account) {
             saved.consecutive_429 = 0;
             saved.backoff_until = None;
         }
@@ -139,10 +153,10 @@ fn official(ctx: &Fetch, home: &Path, claude_bin: &Binary) -> ProviderUsage {
     }
 
     saved.usage = Some(usage.clone());
-    saved.save(ID);
+    saved.save(id);
 
     if usage.status != Status::Ok && usage.windows.is_empty() {
-        if let Some(captured) = read_capture() {
+        if let Some(captured) = read_capture(&account.home) {
             if captured
                 .captured_at
                 .is_some_and(|at| now - at <= CAPTURE_FRESH_FOR_SECS)
@@ -400,6 +414,7 @@ fn maybe_renew(
     saved: &mut Saved,
     now: i64,
     claude_bin: &Binary,
+    account: &Account,
 ) -> bool {
     if !should_renew(
         credential.expires_at_ms,
@@ -412,7 +427,7 @@ fn maybe_renew(
     saved.renew_last_attempt = Some(now);
     saved.renew_attempted_for = credential.expires_at_ms;
     let Some(cli) = find_cli(claude_bin) else { return false };
-    if run_renewal(&cli).is_err() {
+    if run_renewal(&cli, account).is_err() {
         return false;
     }
     let after = read_credentials(path).and_then(|c| c.expires_at_ms);
@@ -463,14 +478,18 @@ fn is_executable(path: &Path) -> bool {
 }
 
 /// `claude -p` with a null stdin: no conversation, no transcript, output
-/// discarded because a token could in principle be echoed into it.
-fn run_renewal(cli: &Path) -> std::io::Result<()> {
+/// discarded because a token could in principle be echoed into it. Another
+/// login is renewed by pointing the CLI at its directory.
+fn run_renewal(cli: &Path, account: &Account) -> std::io::Result<()> {
     let mut command = Command::new(cli);
     command
         .arg("-p")
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null());
+    if !account.is_default() {
+        command.env(account.home_var(), &account.home);
+    }
     // Started from inside a Claude Code session, the child would take the
     // host's auth and leave the file alone.
     for (key, _) in std::env::vars_os() {
@@ -511,13 +530,11 @@ fn scan_tokens(projects: &Path, cutoff_secs: i64) -> Scan {
 }
 
 /// Tokens and replies per hour since `cutoff_secs`.
-fn hourly(cutoff_secs: i64) -> Activity {
+fn hourly(home: &Path, cutoff_secs: i64) -> Activity {
     let mut replies = Vec::new();
-    if let Ok(home) = paths::claude_home() {
-        each_reply(&home.join("projects"), cutoff_secs, |at, tokens, model| {
-            replies.push(Reply { at, amount: tokens as f64, model: model.map(str::to_string) });
-        });
-    }
+    each_reply(&home.join("projects"), cutoff_secs, |at, tokens, model| {
+        replies.push(Reply { at, amount: tokens as f64, model: model.map(str::to_string) });
+    });
     Activity::from_replies(Unit::Tokens, replies)
 }
 
@@ -592,8 +609,30 @@ struct Captured {
     captured_at: Option<i64>,
 }
 
-fn read_capture() -> Option<Captured> {
-    read_capture_from(&paths::flare_state().ok()?.join("claude-statusline.json"))
+fn read_capture(home: &Path) -> Option<Captured> {
+    read_capture_from(&capture_file(home)?)
+}
+
+/// Where hooks/claude-statusline-capture.sh leaves a login's status line:
+/// `claude-statusline.json` for ~/.claude, and for another directory a name
+/// made from its path, which the hook works out the same way from the
+/// `CLAUDE_CONFIG_DIR` Claude Code runs it under.
+fn capture_file(home: &Path) -> Option<PathBuf> {
+    let state = paths::flare_state().ok()?;
+    if is_home_default(home) {
+        return Some(state.join("claude-statusline.json"));
+    }
+    let dir = std::fs::canonicalize(home).unwrap_or_else(|_| home.to_path_buf());
+    Some(state.join(format!("claude-statusline@{}.json", capture_key(&dir))))
+}
+
+/// `/home/u/.claude-work` → `home%u%.claude-work`: one flat file name per directory.
+fn capture_key(dir: &Path) -> String {
+    dir.to_string_lossy().trim_matches('/').replace('/', "%")
+}
+
+fn is_home_default(home: &Path) -> bool {
+    paths::home_dir().is_ok_and(|user| accounts::same_dir(home, &user.join(".claude")))
 }
 
 /// The status line payload names its windows instead of giving a duration.
@@ -621,9 +660,12 @@ fn read_capture_from(path: &Path) -> Option<Captured> {
     })
 }
 
-/// The account lives in ~/.claude.json; nothing but the email is read.
-fn read_account() -> Option<String> {
-    read_account_from(&paths::claude_account_file().ok()?)
+/// The account lives in ~/.claude.json, beside ~/.claude; under a
+/// `CLAUDE_CONFIG_DIR`, Claude Code keeps it inside that directory instead.
+/// Nothing but the email is read.
+fn read_account(home: &Path) -> Option<String> {
+    let file = if is_home_default(home) { paths::claude_account_file().ok()? } else { home.join(".claude.json") };
+    read_account_from(&file)
 }
 
 fn read_account_from(path: &Path) -> Option<String> {
@@ -636,36 +678,33 @@ fn read_account_from(path: &Path) -> Option<String> {
 }
 
 /// For `flare doctor`. Never prints a secret: a token is described by length.
-pub fn probe(claude_bin: &Binary) -> Vec<String> {
+pub fn probe(account: &Account, claude_bin: &Binary) -> Vec<String> {
     let mut lines = Vec::new();
     let now = paths::now_secs();
-    match paths::claude_home() {
-        Ok(home) => {
-            let path = credentials_path(&home);
-            match read_credentials(&path) {
-                Some(credential) => {
-                    let validity = match credential.expires_at_ms {
-                        Some(ms) if ms / 1000 <= now => "expired".to_string(),
-                        Some(ms) => format!("valid for {}m", (ms / 1000 - now) / 60),
-                        None => "no expiry recorded".to_string(),
-                    };
-                    lines.push(format!(
-                        "credential: found ({validity}, token {} chars, plan {})",
-                        credential.token.len(),
-                        credential.plan.as_deref().unwrap_or("unknown")
-                    ));
-                }
-                None => lines.push(format!("credential: NOT FOUND ({})", path.display())),
-            }
+    if !account.is_default() {
+        lines.push(format!("home: {} ({})", account.home.display(), account.origin.describe()));
+    }
+    let path = credentials_path(&account.home);
+    match read_credentials(&path) {
+        Some(credential) => {
+            let validity = match credential.expires_at_ms {
+                Some(ms) if ms / 1000 <= now => "expired".to_string(),
+                Some(ms) => format!("valid for {}m", (ms / 1000 - now) / 60),
+                None => "no expiry recorded".to_string(),
+            };
+            lines.push(format!(
+                "credential: found ({validity}, token {} chars, plan {})",
+                credential.token.len(),
+                credential.plan.as_deref().unwrap_or("unknown")
+            ));
         }
-        Err(err) => lines.push(format!("home: unresolved ({err:#})")),
+        None => lines.push(format!("credential: NOT FOUND ({})", path.display())),
     }
     lines.push(match find_cli(claude_bin) {
         Some(cli) => format!("token renewal: via {}", cli.display()),
         None => "token renewal: no claude CLI found".to_string(),
     });
-    if let Ok(dir) = paths::flare_state() {
-        let capture = dir.join("claude-statusline.json");
+    if let Some(capture) = capture_file(&account.home) {
         lines.push(match paths::mtime_secs(&capture) {
             Some(at) => format!("status line capture: written {}s ago", now - at),
             None => format!("status line capture: none ({})", capture.display()),

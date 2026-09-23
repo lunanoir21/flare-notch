@@ -44,8 +44,12 @@ impl Cursor {
 }
 
 impl UsageProvider for Cursor {
-    fn id(&self) -> &'static str {
+    fn id(&self) -> &str {
         ID
+    }
+
+    fn probe(&self) -> Vec<String> {
+        probe()
     }
 
     fn fetch(&self, ctx: &Fetch) -> Result<ProviderUsage> {

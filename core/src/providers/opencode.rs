@@ -36,8 +36,12 @@ struct Totals {
 }
 
 impl UsageProvider for OpenCode {
-    fn id(&self) -> &'static str {
+    fn id(&self) -> &str {
         ID
+    }
+
+    fn probe(&self) -> Vec<String> {
+        probe()
     }
 
     fn fetch(&self, _ctx: &Fetch) -> Result<ProviderUsage> {

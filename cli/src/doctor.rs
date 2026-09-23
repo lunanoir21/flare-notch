@@ -3,29 +3,21 @@
 //! What someone runs when the widget shows nothing for a provider. It says
 //! where flare looked and what it found, never the value of a secret.
 
-use flare_core::providers::{self, antigravity, claude, codex, cursor, kiro, opencode};
-use flare_core::{Config, Fetch, Status};
+use flare_core::providers;
+use flare_core::{Config, Fetch, Status, UsageProvider};
 
 pub fn run(config: &Config, config_problem: Option<&str>, ctx: &Fetch) {
     report_config(config, config_problem);
     for id in config.provider_order() {
+        let Some(provider) = providers::by_id(&id, config) else { continue };
         println!();
-        let probe = match id {
-            "claude" => claude::probe(&config.claude),
-            "codex" => codex::probe(),
-            "cursor" => cursor::probe(),
-            "opencode" => opencode::probe(),
-            "antigravity" => antigravity::probe(),
-            "kiro" => kiro::probe(),
-            _ => Vec::new(),
-        };
-        if !config.enabled(id) {
+        if !config.enabled(&id) {
             println!("[{id}] disabled in the config");
         }
-        for line in probe {
+        for line in provider.probe() {
             println!("[{id}] {line}");
         }
-        report_snapshot(id, config, ctx);
+        report_snapshot(provider.as_ref(), ctx);
     }
 }
 
@@ -73,8 +65,8 @@ fn format_duration(secs: i64) -> String {
     }
 }
 
-fn report_snapshot(id: &str, config: &Config, ctx: &Fetch) {
-    let Some(provider) = providers::by_id(id, config) else { return };
+fn report_snapshot(provider: &dyn UsageProvider, ctx: &Fetch) {
+    let id = provider.id();
     let usage = match provider.fetch(ctx) {
         Ok(usage) => usage,
         Err(err) => {

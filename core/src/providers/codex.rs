@@ -23,6 +23,9 @@
 //!
 //! That is the number from the last run, so it stands as current only while
 //! the line is under five minutes old.
+//!
+//! Every path above is the login's own directory: `~/.codex` for the default
+//! one, and whatever `CODEX_HOME` names for another (see accounts.rs).
 
 use std::path::{Path, PathBuf};
 
@@ -30,6 +33,7 @@ use anyhow::Result;
 use base64::Engine;
 use serde_json::Value;
 
+use crate::accounts::Account;
 use crate::config::DataMode;
 use crate::http::{self, HttpError};
 use crate::store::Saved;
@@ -38,7 +42,6 @@ use crate::{
     UsageProvider, UsageWindow, err_parse, jsonl, paths,
 };
 
-const ID: &str = "codex";
 const ENDPOINT: &str = "https://chatgpt.com/backend-api/wham/usage";
 /// Codex has no session state to pace against, so a fixed five minutes.
 const POLL_SECS: i64 = 300;
@@ -47,30 +50,36 @@ const NO_SNAPSHOT: &str = "Codex has not recorded a usage snapshot yet";
 
 pub struct Codex {
     config: Config,
+    account: Account,
 }
 
 impl Codex {
-    pub fn new(config: Config) -> Self {
-        Self { config }
+    pub fn new(config: Config, account: Account) -> Self {
+        Self { config, account }
     }
 }
 
 impl UsageProvider for Codex {
-    fn id(&self) -> &'static str {
-        ID
+    fn id(&self) -> &str {
+        &self.account.id
+    }
+
+    fn probe(&self) -> Vec<String> {
+        probe(&self.account)
     }
 
     fn fetch(&self, ctx: &Fetch) -> Result<ProviderUsage> {
-        let home = paths::codex_home()?;
+        let id = self.account.id.as_str();
+        let home = &self.account.home;
         if !home.exists() {
-            return Ok(ProviderUsage::absent(ID));
+            return Ok(ProviderUsage::absent(id));
         }
 
         let scan = scan_sessions(&home.join("sessions"), self.config.scan_cutoff_secs(), ctx.now);
         let mut usage = match self.config.data.mode {
-            DataMode::Official => official(ctx, &home, &scan),
+            DataMode::Official => official(ctx, id, home, &scan),
             DataMode::Local => {
-                let mut usage = ProviderUsage::new(ID, SOURCE_LOCAL);
+                let mut usage = ProviderUsage::new(id, SOURCE_LOCAL);
                 if !apply_rollout(&mut usage, &scan, ctx.now) {
                     usage.note = Some(NO_SNAPSHOT.into());
                 }
@@ -88,9 +97,9 @@ impl UsageProvider for Codex {
     }
 }
 
-fn official(ctx: &Fetch, home: &Path, scan: &Scan) -> ProviderUsage {
+fn official(ctx: &Fetch, id: &str, home: &Path, scan: &Scan) -> ProviderUsage {
     let now = ctx.now;
-    let mut saved = Saved::load(ID);
+    let mut saved = Saved::load(id);
     let mut note: Option<String> = None;
     let mut needs_auth = false;
 
@@ -98,11 +107,11 @@ fn official(ctx: &Fetch, home: &Path, scan: &Scan) -> ProviderUsage {
         note = Some(format!("Rate limited, retrying in {}s", until - now));
     } else if saved.due(now, POLL_SECS, ctx.force) {
         saved.last_attempt = Some(now);
-        match read_live(&home.join("auth.json"), now) {
+        match read_live(id, &home.join("auth.json"), now) {
             Live::Reading(usage) => {
                 saved.backoff_until = None;
                 saved.usage = Some((*usage).clone());
-                saved.save(ID);
+                saved.save(id);
                 return *usage;
             }
             Live::NotSignedIn => {}
@@ -121,7 +130,7 @@ fn official(ctx: &Fetch, home: &Path, scan: &Scan) -> ProviderUsage {
     }) {
         return last;
     }
-    saved.save(ID);
+    saved.save(id);
 
     // Whichever is newer: the last live reading, or the rollout's own line.
     let last_live = saved.usage.clone().filter(|u| !u.windows.is_empty());
@@ -129,7 +138,7 @@ fn official(ctx: &Fetch, home: &Path, scan: &Scan) -> ProviderUsage {
         .recorded_at
         .is_some_and(|at| last_live.as_ref().and_then(|u| u.fetched_at).is_none_or(|live| at >= live));
 
-    let mut usage = ProviderUsage::new(ID, SOURCE_LOCAL);
+    let mut usage = ProviderUsage::new(id, SOURCE_LOCAL);
     if (rollout_newer || last_live.is_none()) && apply_rollout(&mut usage, scan, now) {
         if let Some(why) = note {
             usage.note = Some(format!("{why} · from last Codex run"));
@@ -154,7 +163,7 @@ enum Live {
     Failed(String),
 }
 
-fn read_live(auth: &Path, now: i64) -> Live {
+fn read_live(id: &str, auth: &Path, now: i64) -> Live {
     let Some(credential) = load_credential(auth, now) else {
         return Live::NotSignedIn;
     };
@@ -174,7 +183,7 @@ fn read_live(auth: &Path, now: i64) -> Live {
             if windows.is_empty() {
                 return Live::Failed("Codex reported no usage windows".into());
             }
-            let mut usage = ProviderUsage::new(ID, SOURCE_OFFICIAL);
+            let mut usage = ProviderUsage::new(id, SOURCE_OFFICIAL);
             usage.status = Status::Ok;
             usage.headline = windows.first().map(|w| w.id.clone());
             usage.windows = windows;
@@ -456,12 +465,13 @@ fn read_account(auth_path: &Path) -> Option<String> {
 }
 
 /// For `flare doctor`. Never prints a secret.
-pub fn probe() -> Vec<String> {
+pub fn probe(account: &Account) -> Vec<String> {
     let now = paths::now_secs();
     let mut lines = Vec::new();
-    let Ok(home) = paths::codex_home() else {
-        return vec!["home: unresolved".into()];
-    };
+    if !account.is_default() {
+        lines.push(format!("home: {} ({})", account.home.display(), account.origin.describe()));
+    }
+    let home = &account.home;
     let auth = home.join("auth.json");
     lines.push(match load_credential(&auth, now) {
         Some(credential) => format!(

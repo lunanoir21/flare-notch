@@ -8,6 +8,7 @@
 //!
 //! Credentials are borrowed read-only and never written, printed or logged.
 
+pub mod accounts;
 pub mod config;
 pub mod history;
 pub mod http;
@@ -160,7 +161,7 @@ impl UsageWindow {
 /// A normalized usage snapshot for a single provider.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProviderUsage {
-    /// One of `providers::IDS`.
+    /// One of `providers::IDS`, or another login's `<provider>:<name>`.
     pub provider: String,
     pub status: Status,
     /// One line on why the status is what it is, for the hover card.
@@ -273,8 +274,20 @@ impl ProviderUsage {
 /// Every failure lands in the snapshot's `status`, `note` and `error`; an
 /// `Err` means something went wrong before the provider could even look.
 pub trait UsageProvider: Send + Sync {
-    fn id(&self) -> &'static str;
+    /// `claude`, or `claude:work` for another login.
+    fn id(&self) -> &str;
     fn fetch(&self, ctx: &Fetch) -> anyhow::Result<ProviderUsage>;
+
+    /// Sessions open right now, from the CLI's own records, without checking
+    /// for a window. Empty for a provider that keeps no such record.
+    fn open_sessions(&self) -> Vec<sessions::Session> {
+        Vec::new()
+    }
+
+    /// For `flare doctor`: where it looked and what it found, never a secret.
+    fn probe(&self) -> Vec<String> {
+        Vec::new()
+    }
 
     /// Use per hour since `cutoff_secs`, read from the provider's own logs,
     /// for the usage panel. None where the logs carry no per-reply amounts.

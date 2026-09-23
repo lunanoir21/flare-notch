@@ -11,7 +11,7 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
-use crate::paths;
+use crate::{UsageProvider, paths};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -44,23 +44,19 @@ pub struct Session {
 /// On Hyprland a session also needs a window to count: a terminal host can
 /// outlive its window (Orca's daemon keeps its shells running after the IDE
 /// closes), and a session nobody can reach is as good as closed.
-pub fn live(provider: &str) -> Vec<Session> {
-    let found = scan(provider);
+pub fn live(provider: &dyn UsageProvider) -> Vec<Session> {
+    let found = provider.open_sessions();
     if found.is_empty() {
         return found;
     }
     with_window(found, Path::new("/proc"), hypr_windows().as_deref())
 }
 
-/// Live sessions without the window check: no `hyprctl` call, so cheap
-/// enough to repeat every few seconds. Pair with `reachable` before acting.
-pub fn scan(provider: &str) -> Vec<Session> {
-    match provider {
-        "claude" => paths::claude_home()
-            .map(|home| claude(&home.join("sessions"), Path::new("/proc")))
-            .unwrap_or_default(),
-        _ => Vec::new(),
-    }
+/// The sessions one Claude Code login has open, without the window check:
+/// no `hyprctl` call, so cheap enough to repeat every few seconds. Pair with
+/// `reachable` before acting.
+pub fn claude_open(home: &Path) -> Vec<Session> {
+    claude(&home.join("sessions"), Path::new("/proc"))
 }
 
 /// Whether a session's terminal still has a window. Off Hyprland there is no
@@ -300,12 +296,12 @@ fn window_for(proc_root: &Path, pid: u32, windows: &[(u32, String)]) -> Option<S
 }
 
 /// Bring the terminal a live session runs in to the front, on Hyprland.
-pub fn focus(provider: &str, pid: u32) -> anyhow::Result<()> {
+pub fn focus(provider: &dyn UsageProvider, pid: u32) -> anyhow::Result<()> {
     use anyhow::{Context, bail};
     use std::process::Command;
 
     if !live(provider).iter().any(|session| session.pid == pid) {
-        bail!("{pid} is not a live {provider} session");
+        bail!("{pid} is not a live {} session", provider.id());
     }
     let windows = hypr_windows().context("could not list Hyprland windows")?;
     let Some(address) = window_for(Path::new("/proc"), pid, &windows) else {

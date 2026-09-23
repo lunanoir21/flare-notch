@@ -11,7 +11,7 @@ use std::time::{Duration, Instant};
 use anyhow::Result;
 use flare_core::config::Language;
 use flare_core::notify::{Event, Tracker};
-use flare_core::{Config, Fetch, paths, providers, sessions};
+use flare_core::{Config, Fetch, accounts, paths, providers, sessions};
 
 const SESSION_EVERY: Duration = Duration::from_secs(2);
 const CONFIG_EVERY: Duration = Duration::from_secs(10);
@@ -36,19 +36,20 @@ pub fn run(mut config: Config) -> Result<()> {
         }
         let turkish = turkish(&config);
 
-        if config.enabled("claude") {
-            let found = sessions::scan("claude");
-            for event in tracker.sessions("claude", &found, &config.notify) {
-                send(event, turkish);
+        let list = providers::all(&config);
+        for provider in &list {
+            let found = provider.open_sessions();
+            for event in tracker.sessions(provider.id(), &found, &config.notify) {
+                send(event, turkish, config.clone());
             }
         }
 
         let usage_every = Duration::from_secs(config.poll.interval_secs.max(MIN_USAGE_EVERY_SECS));
         if (config.notify.limit || config.notify.reset) && usage_read.is_none_or(|at| at.elapsed() >= usage_every) {
             let ctx = Fetch { now: paths::now_secs(), force: false };
-            for usage in super::fetch_all(&providers::all(&config), &ctx) {
+            for usage in super::fetch_all(&list, &ctx) {
                 for event in tracker.usage(&usage, &config.notify) {
-                    send(event, turkish);
+                    send(event, turkish, config.clone());
                 }
             }
             usage_read = Some(Instant::now());
@@ -69,8 +70,10 @@ fn turkish(config: &Config) -> bool {
     }
 }
 
-fn name(provider: &str) -> &str {
-    match provider {
+/// `Claude`, or `Claude · work` for another login.
+fn name(id: &str) -> String {
+    let (provider, account) = accounts::split(id);
+    let provider = match provider {
         "claude" => "Claude",
         "codex" => "Codex",
         "cursor" => "Cursor",
@@ -78,12 +81,16 @@ fn name(provider: &str) -> &str {
         "antigravity" => "Antigravity",
         "kiro" => "Kiro",
         other => other,
+    };
+    match account {
+        Some(account) => format!("{provider} · {account}"),
+        None => provider.to_string(),
     }
 }
 
 /// Each notification on its own thread: one with an action waits for the
 /// user, and must not hold up the loop.
-fn send(event: Event, turkish: bool) {
+fn send(event: Event, turkish: bool, config: Config) {
     std::thread::spawn(move || {
         let (title, body, urgency, jump) = match &event {
             Event::Waiting { provider, pid, name: session, waiting_for } => {
@@ -126,7 +133,10 @@ fn send(event: Event, turkish: bool) {
         };
         if let Some((provider, pid)) = jump {
             if String::from_utf8_lossy(&output.stdout).trim() == "focus" {
-                if let Err(err) = sessions::focus(&provider, pid) {
+                let focused = providers::by_id(&provider, &config)
+                    .ok_or_else(|| anyhow::anyhow!("{provider} is gone"))
+                    .and_then(|found| sessions::focus(found.as_ref(), pid));
+                if let Err(err) = focused {
                     eprintln!("{err:#}");
                 }
             }
