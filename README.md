@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/assets/flare.svg" width="96" height="96" alt=""></p>
+
 # flare
 
 A usage notch for Quickshell on Hyprland: how much of your Claude Code, Codex,

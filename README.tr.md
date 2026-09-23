@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/assets/flare.svg" width="96" height="96" alt=""></p>
+
 # flare
 
 Hyprland'de Quickshell için bir kullanım notch'u: Claude Code, Codex, Cursor,

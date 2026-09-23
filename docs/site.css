@@ -143,9 +143,17 @@ figcaption code {
 }
 
 .wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font: 600 22px/1 var(--display);
   letter-spacing: -0.02em;
   text-decoration: none;
+}
+
+.wordmark img {
+  display: block;
+  flex: none;
 }
 
 .top nav {

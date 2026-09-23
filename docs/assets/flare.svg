@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="512" height="512" fill="none">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#17171a"/>
+      <stop offset="1" stop-color="#060607"/>
+    </linearGradient>
+    <linearGradient id="arc" gradientUnits="userSpaceOnUse" x1="20" y1="0" x2="70" y2="0">
+      <stop offset="0" stop-color="#f4f4f5"/>
+      <stop offset="1" stop-color="#ffb020"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffb020" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#ffb020" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="100" height="100" rx="23" fill="url(#tile)"/>
+  <path d="M20,62 A30,30 0 0 1 80,62" stroke="#1f1f22" stroke-width="10" stroke-linecap="round"/>
+  <path d="M20,62 A30,30 0 0 1 80,62" stroke="url(#arc)" stroke-width="10" stroke-linecap="round" stroke-dasharray="66 94.3"/>
+  <circle cx="67.6" cy="37.7" r="12" fill="url(#glow)"/>
+  <line x1="50" y1="62" x2="63" y2="44.2" stroke="#f4f4f5" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="50" cy="62" r="6" fill="#08080a" stroke="#f4f4f5" stroke-width="2.6"/>
+  <rect x="0.5" y="0.5" width="99" height="99" rx="22.5" stroke="#ffffff" stroke-opacity="0.09"/>
+</svg>
