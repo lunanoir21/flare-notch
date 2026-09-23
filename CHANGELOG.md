@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.0.0
+
+flare is stable. From here on the config keys, the IPC calls and the JSON
+`flare` prints keep their meaning; new ones may be added, none will change
+under you.
+
+- **More than one login:** two Claude Code or Codex logins are two rings.
+  `~/.claude-<name>` and `~/.codex-<name>` are found on their own, anything else
+  goes in `[[account]]`, and each login is read, renewed and reported on its
+  own, with its initial on its ring.
+- **Documentation:** a full reference on the site: how flare works, what it
+  reads and what it sends, what it costs to run, and every setting, IPC call
+  and command.
+- **In your app launcher:** `install.sh` adds a **flare** entry that opens the
+  settings page, and `openSettings` does the same over IPC without closing a
+  page that is already open.
+- **Fixed:** the white theme lost Cursor's, OpenCode's and Antigravity's logos;
+  the usage panel reopened where it was left instead of at the top; a long
+  pace line ran out of its card; two logins' session lists in the compact
+  panel did not say whose they were.
+- A logo of its own, and new screenshots, drawn from a made-up world with
+  `tools/shots/shots.sh` so they never show anyone's real usage.
+
 ## 0.3.0
 
 - **Antigravity and Kiro:** two more providers. Antigravity reads each model
