@@ -363,11 +363,15 @@ Rectangle {
     }
 
     component Stat: Column {
+        id: stat
+
         property string label
         property string value
         property string sub
         property color subColor: Theme.sheetSubtext
 
+        // As wide as its column: a long line wraps inside the card.
+        Layout.fillWidth: true
         spacing: 4
 
         Text {
@@ -385,7 +389,7 @@ Rectangle {
         }
         Text {
             visible: text !== ""
-            width: 250
+            width: stat.width
             text: parent.sub
             color: parent.subColor
             font.pixelSize: 12
