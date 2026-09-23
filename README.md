@@ -37,7 +37,8 @@ Rings go green under 50 %, yellow under 70 %, orange above; the hover card's bar
 green, orange and red the same way. A reading flare could not refresh is dimmed,
 never invented.
 
-Right-click the widget for its settings page. Drag it along its edge to move it.
+Right-click the widget for its settings page, or open **flare** from your app launcher.
+Drag the widget along its edge to move it.
 
 ## Open sessions
 
@@ -142,6 +143,11 @@ cd quickshell-flare
 downloads the [latest release](https://github.com/lunanoir21/quickshell-flare/releases/latest)'s
 build (x86_64, glibc 2.39+), puts it in `~/.local/bin` (`FLARE_BIN_DIR` to change
 that) and runs `flare doctor`.
+
+It also adds **flare** to your app launcher (rofi, wofi, fuzzel and the like): a
+`flare.desktop` entry and its icon under `~/.local/share`, and `flare-settings` next to
+the binary. Opening it brings up the settings page in whichever running Quickshell has
+flare loaded, and starts the widget on its own first when none does.
 
 By hand, `cargo build --release` is enough: the widget finds the binary it was built
 next to, as well as one on `PATH` or in `~/.local/bin`, or the one
@@ -259,6 +265,7 @@ flare listens on Quickshell IPC as `flare`:
 | `usage <provider>` | open the usage panel on a provider; again to close |
 | `style classic\|aura\|compact` | switch style |
 | `settings` | open or close the settings page |
+| `openSettings` | open the settings page, leaving it open if it already is |
 | `refresh` | read now |
 
 For Hyprland, with flare inside the shell at `~/.config/quickshell/shell.qml`:

@@ -37,7 +37,8 @@ Halkalar %50'nin altında yeşil, %70'in altında sarı, üstünde turuncudur; h
 kartındaki barlar da aynı şekilde yeşil, turuncu ve kırmızı olur. flare'in
 yenileyemediği bir okuma soluk gösterilir; asla uydurulmaz.
 
-Ayarlar için widget'a sağ tıklayın. Kenar boyunca sürükleyerek taşıyabilirsiniz.
+Ayarlar için widget'a sağ tıklayın ya da uygulama başlatıcınızdan **flare**'i açın.
+Widget'ı kenar boyunca sürükleyerek taşıyabilirsiniz.
 
 ## Açık oturumlar
 
@@ -144,6 +145,11 @@ cd quickshell-flare
 binary'sini indirir (x86_64, glibc 2.39+), `~/.local/bin`'e koyar (değiştirmek için
 `FLARE_BIN_DIR`) ve `flare doctor`'ı çalıştırır.
 
+Ayrıca **flare**'i uygulama başlatıcınıza (rofi, wofi, fuzzel vb.) ekler: `~/.local/share`
+altına bir `flare.desktop` girdisi ve ikonu, binary'nin yanına da `flare-settings`.
+Açıldığında, flare'in yüklü olduğu çalışan Quickshell'de ayarlar sayfasını getirir;
+hiçbirinde yüklü değilse önce widget'ı tek başına başlatır.
+
 Elle kurmak için `cargo build --release` yeterlidir: widget yanında derlendiği
 binary'yi, `PATH`'teki ya da `~/.local/bin`'deki binary'yi veya `flare.binary_path`
 ayarının gösterdiğini kendisi bulur.
@@ -231,6 +237,7 @@ flare Quickshell IPC'de `flare` adıyla dinler:
 | `usage <sağlayıcı>` | o sağlayıcının kullanım panelini açar; tekrar çağırmak kapatır |
 | `style classic\|aura\|compact` | stili değiştirir |
 | `settings` | ayarlar sayfasını açar ya da kapatır |
+| `openSettings` | ayarlar sayfasını açar; zaten açıksa açık bırakır |
 | `refresh` | hemen okur |
 
 Hyprland için, flare `~/.config/quickshell/shell.qml` içindeki shell'deyse:

@@ -27,6 +27,16 @@ else
 fi
 
 say "installed $bin_dir/flare"
+
+# An app launcher entry named flare that opens the settings page.
+data_dir="${XDG_DATA_HOME:-$HOME/.local/share}"
+mkdir -p "$data_dir/applications" "$data_dir/icons/hicolor/scalable/apps"
+sed "s|@UI_DIR@|$here/ui|" "$here/packaging/flare-settings.sh" > "$bin_dir/flare-settings"
+chmod 755 "$bin_dir/flare-settings"
+sed "s|@BIN_DIR@|$bin_dir|" "$here/packaging/flare.desktop" > "$data_dir/applications/flare.desktop"
+install -m 644 "$here/docs/assets/flare.svg" "$data_dir/icons/hicolor/scalable/apps/flare.svg"
+command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database "$data_dir/applications" 2>/dev/null || true
+say "added flare to the app launcher; it opens the settings page"
 case ":$PATH:" in
     *":$bin_dir:"*) ;;
     *)

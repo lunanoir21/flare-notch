@@ -45,6 +45,9 @@ Scope {
         function settings(): void {
             FlareData.settingsOpen = !FlareData.settingsOpen;
         }
+        function openSettings(): void {
+            FlareData.settingsOpen = true;
+        }
     }
 
     FlareSettings {}

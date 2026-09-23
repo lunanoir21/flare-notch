@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=flare
+GenericName=AI usage notch
+Comment=Open flare's settings
+Exec="@BIN_DIR@/flare-settings"
+Icon=flare
+Terminal=false
+StartupNotify=false
+Categories=Utility;
+Keywords=claude;codex;cursor;opencode;usage;limits;notch;quickshell;
