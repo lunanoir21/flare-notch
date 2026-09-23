@@ -1,4 +1,6 @@
-<p align="center"><img src="docs/assets/flare.svg" width="96" height="96" alt=""></p>
+<div align="center">
+
+<img src="docs/assets/flare.svg" width="96" alt="flare logo">
 
 # flare
 
@@ -6,14 +8,22 @@ A usage notch for Quickshell on Hyprland: how much of your Claude Code, Codex,
 Cursor, OpenCode, Antigravity and Kiro allowance is left, welded to the edge of the
 screen.
 
-[Website](https://lunanoir21.github.io/flare-notch/) · [Türkçe README](README.tr.md)
+[![Version](https://img.shields.io/github/v/release/lunanoir21/flare-notch?style=flat-square&color=111111&label=Version)](https://lunanoir21.github.io/flare-notch/changelog.html)
+[![Quickshell](https://img.shields.io/badge/Quickshell-0.3%2B-111111?style=flat-square)](https://quickshell.outfoxxed.me/)
+[![Hyprland](https://img.shields.io/badge/Hyprland-wlroots-111111?style=flat-square)](https://hyprland.org/)
+[![License](https://img.shields.io/badge/License-MIT-111111?style=flat-square)](LICENSE)
 
-<p align="center">
-  <img src="docs/screenshots/card.png" width="380" alt="The hover card beside the notch">
-  <img src="docs/screenshots/sessions.png" width="380" alt="The hover card with its session list open">
-</p>
+**[Website](https://lunanoir21.github.io/flare-notch/)** · [Türkçe README](README.tr.md)
+
+<img src="docs/screenshots/themes.png" width="720" alt="The notch on the left edge with Claude's hover card open, in the black theme and in the white theme">
+
+</div>
+
+---
 
 ## Three looks
+
+<p align="center"><img src="docs/screenshots/styles.png" width="720" alt="The three looks side by side: classic with a ring per provider, aura with one provider large, compact opened into a panel"></p>
 
 | Style | What it is |
 |---|---|
@@ -41,6 +51,8 @@ Right-click the widget for its settings page, or open **flare** from your app la
 Drag the widget along its edge to move it.
 
 ## Open sessions
+
+<p align="center"><img src="docs/screenshots/sessions.png" width="405" alt="The hover card with three open sessions: one working, one idle, one waiting for a command to be approved"></p>
 
 The hover card also lists the Claude Code sessions running right now, folded under a
 **Sessions** header: click the header (or bind the `toggleSessions` IPC call) to open
@@ -86,6 +98,9 @@ turns the card's session list off entirely, if you'd rather not see it at all.
 
 ## The usage panel
 
+<p align="center"><img src="docs/screenshots/usage-deck.png" width="720" alt="The usage panel: a deck of provider cards and, for the second Claude login, a week of use hour by hour"></p>
+<p align="center"><sub><a href="docs/screenshots/usage.png">The whole panel, top to bottom</a></sub></p>
+
 Click the arrow at the top of a provider's hover card, or `qs ipc call flare usage
 <provider>`, for the full picture: an hour-by-hour heatmap of its busiest limit's
 current week, or the last seven days for a provider with no limit (token counts —
@@ -100,6 +115,8 @@ takes it, how the longest limit filled, the last seven days, the hours of the da
 the models that took the most, and the week's sessions.
 
 ## More than one login
+
+<p align="center"><img src="docs/screenshots/accounts.png" width="405" alt="Two Claude rings, the second marked W, with the work login's card open"></p>
 
 Two Claude Code logins are two rings, and so are two Codex ones. A folder
 `~/.claude-<name>` or `~/.codex-<name>` holding a sign-in is found on its own and
@@ -231,6 +248,8 @@ agy hands each model group's quota only to its status line command.
 The quotas then refresh every time agy runs; between runs the last ones stand.
 
 ## Configuration
+
+<p align="center"><img src="docs/screenshots/settings.png" width="720" alt="The settings page on its Providers section, with a card for each login and a live preview of the notch"></p>
 
 Everything lives in `~/.config/flare/config.toml`. The settings page writes the same
 file, through the same command a terminal uses:

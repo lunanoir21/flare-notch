@@ -1,4 +1,6 @@
-<p align="center"><img src="docs/assets/flare.svg" width="96" height="96" alt=""></p>
+<div align="center">
+
+<img src="docs/assets/flare.svg" width="96" alt="flare logosu">
 
 # flare
 
@@ -6,14 +8,22 @@ Hyprland'de Quickshell için bir kullanım notch'u: Claude Code, Codex, Cursor,
 OpenCode, Antigravity ve Kiro haklarından ne kadarının kaldığını ekranın kenarında
 gösterir.
 
-[Web sitesi](https://lunanoir21.github.io/flare-notch/) · [English README](README.md)
+[![Sürüm](https://img.shields.io/github/v/release/lunanoir21/flare-notch?style=flat-square&color=111111&label=S%C3%BCr%C3%BCm)](https://lunanoir21.github.io/flare-notch/changelog.html)
+[![Quickshell](https://img.shields.io/badge/Quickshell-0.3%2B-111111?style=flat-square)](https://quickshell.outfoxxed.me/)
+[![Hyprland](https://img.shields.io/badge/Hyprland-wlroots-111111?style=flat-square)](https://hyprland.org/)
+[![Lisans](https://img.shields.io/badge/Lisans-MIT-111111?style=flat-square)](LICENSE)
 
-<p align="center">
-  <img src="docs/screenshots/card.png" width="380" alt="Notch yanında hover kartı">
-  <img src="docs/screenshots/sessions.png" width="380" alt="Oturum listesi açık hover kartı">
-</p>
+**[Web sitesi](https://lunanoir21.github.io/flare-notch/)** · [English README](README.md)
+
+<img src="docs/screenshots/themes.png" width="720" alt="Sol kenardaki notch ve açık Claude hover kartı, siyah ve beyaz temada">
+
+</div>
+
+---
 
 ## Üç görünüm
+
+<p align="center"><img src="docs/screenshots/styles.png" width="720" alt="Üç görünüm yan yana: sağlayıcı başına halkalı classic, tek sağlayıcıyı büyük gösteren aura, panele açılmış compact"></p>
 
 | Stil | Nedir |
 |---|---|
@@ -41,6 +51,8 @@ Ayarlar için widget'a sağ tıklayın ya da uygulama başlatıcınızdan **flar
 Widget'ı kenar boyunca sürükleyerek taşıyabilirsiniz.
 
 ## Açık oturumlar
+
+<p align="center"><img src="docs/screenshots/sessions.png" width="405" alt="Üç açık oturumlu hover kartı: biri çalışıyor, biri boşta, biri bir komutun onayını bekliyor"></p>
 
 Hover kartı, o an çalışan Claude Code oturumlarını da **Oturumlar** başlığı altında,
 katlanmış olarak listeler: açmak için başlığa tıklayın (ya da `toggleSessions` IPC
@@ -87,6 +99,9 @@ ise kartın oturum listesini tamamen kapatır, hiç görmek istemiyorsanız.
 
 ## Kullanım paneli
 
+<p align="center"><img src="docs/screenshots/usage-deck.png" width="720" alt="Kullanım paneli: sağlayıcı kartlarından bir deste ve ikinci Claude girişinin saat saat bir haftası"></p>
+<p align="center"><sub><a href="docs/screenshots/usage.png">Panelin tamamı, baştan sona</a></sub></p>
+
 Bir sağlayıcının hover kartının üstündeki oku tıklayın, ya da
 `qs ipc call flare usage <sağlayıcı>`: en yoğun limitinin bu haftasının saat saat ısı
 haritasını, limiti olmayan bir sağlayıcıda son yedi günü (token sayıları — Kiro'da
@@ -101,6 +116,8 @@ en uzun limitin nasıl dolduğu, son yedi gün, günün saatleri, en çok kullan
 modeller ve haftanın oturumları.
 
 ## Birden fazla hesap
+
+<p align="center"><img src="docs/screenshots/accounts.png" width="405" alt="İki Claude halkası, ikincisi W ile işaretli, iş girişinin kartı açık"></p>
 
 İki Claude Code girişi iki halka demektir, iki Codex girişi de öyle. İçinde bir
 giriş olan `~/.claude-<ad>` ya da `~/.codex-<ad>` klasörü kendiliğinden bulunur ve
@@ -232,6 +249,8 @@ satırı `stack_with_default` ile kalır:
 Kotalar agy her çalıştığında yenilenir; aradaki sürede son okunanlar geçerli kalır.
 
 ## Ayarlar
+
+<p align="center"><img src="docs/screenshots/settings.png" width="720" alt="Ayarlar sayfasının Sağlayıcılar bölümü: her giriş için bir kart ve notch'un canlı önizlemesi"></p>
 
 Her şey `~/.config/flare/config.toml` dosyasındadır. Ayarlar sayfası da aynı dosyayı,
 terminalin kullandığı komutla yazar:
