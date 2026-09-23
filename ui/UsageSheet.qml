@@ -538,6 +538,7 @@ Rectangle {
                     }
 
                     Image {
+                        id: slotLogo
                         x: 16
                         y: 16
                         width: 24
@@ -546,6 +547,14 @@ Rectangle {
                         sourceSize: Qt.size(48, 48)
                         fillMode: Image.PreserveAspectFit
                         asynchronous: true
+                    }
+
+                    AccountBadge {
+                        x: slotLogo.x + slotLogo.width - size * 0.6
+                        y: slotLogo.y + slotLogo.height - size * 0.6
+                        provider: slot.modelData.id
+                        size: 14
+                        fill: Theme.sheetRaised
                     }
 
                     ProviderRing {

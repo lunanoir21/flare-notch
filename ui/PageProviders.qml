@@ -8,15 +8,16 @@ Flickable {
     readonly property var presets: ["#D97757", "#E0A458", "#7FB77E", "#3DD6C6", "#6E7BFF", "#B08CFF", "#E06C9F", "#C9CED6"]
 
     // Which login a card is, for a provider with more than one: the account's
-    // email where the reading has it, and where the login came from.
+    // email where the reading has it, else where the login came from.
     function loginLine(id) {
         if (FlareData.loginsOf(FlareData.kindOf(id)).length < 2)
             return "";
-        const login = FlareData.accountFor(id);
         const snapshot = FlareData.providers.find(p => p.provider === id);
-        const origin = !login || login.origin === "default" ? Strings.defaultLogin
+        if (snapshot && snapshot.account)
+            return snapshot.account;
+        const login = FlareData.accountFor(id);
+        return !login || login.origin === "default" ? Strings.defaultLogin
             : login.origin === "found" ? Strings.loginFound : Strings.loginFromConfig;
-        return snapshot && snapshot.account ? snapshot.account + " · " + origin : origin;
     }
 
     function summary(id, enabledHere) {

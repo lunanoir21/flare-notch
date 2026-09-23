@@ -452,6 +452,10 @@ Singleton {
 
     readonly property string sessions: tr ? "Oturumlar" : "Sessions"
 
+    function sessionsOf(name) {
+        return tr ? name + " oturumları" : name + " sessions";
+    }
+
     function sessionState(state, waitingFor) {
         if (state === "busy")
             return tr ? "çalışıyor" : "working";

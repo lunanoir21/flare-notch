@@ -240,6 +240,7 @@ Item {
                 width: panel.width
                 sessions: modelData.sessions
                 provider: modelData.id
+                label: sessionLists.count > 1 ? Strings.sessionsOf(modelData.name) : Strings.sessions
                 s: view.size
                 live: view.open
             }

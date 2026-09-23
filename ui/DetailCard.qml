@@ -72,7 +72,7 @@ Item {
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                text: card.cell ? Strings.title(card.cell.name) : ""
+                text: card.cell ? Strings.title(FlareData.nameOf(card.cell.kind)) : ""
                 color: Theme.textPrimary
                 font.pixelSize: Math.round(16 * card.s)
                 font.weight: Font.Medium
@@ -137,6 +137,11 @@ Item {
                 if (!card.cell)
                     return "";
                 const parts = [];
+                // Which login this is, where the provider has more than one.
+                if (card.cell.account)
+                    parts.push(card.cell.account);
+                if (card.cell.email && FlareData.loginsOf(card.cell.kind).length > 1)
+                    parts.push(card.cell.email);
                 if (card.cell.plan)
                     parts.push(card.cell.plan.charAt(0).toUpperCase() + card.cell.plan.slice(1));
                 const status = Strings.status(card.cell.status);

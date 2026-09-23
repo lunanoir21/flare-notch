@@ -11,6 +11,8 @@ Column {
     required property real s
     // Whether the card is on screen at all: nothing animates otherwise.
     property bool live: true
+    // The header; says whose sessions they are where several lists stack.
+    property string label: Strings.sessions
 
     readonly property bool open: FlareData.sessionsOpen
     readonly property int waiting: sessions.filter(session => session.state === "waiting").length
@@ -49,7 +51,7 @@ Column {
 
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                text: Strings.sessions
+                text: list.label
                 color: Theme.textPrimary
                 font.pixelSize: Math.round(13 * list.s)
                 font.weight: Font.Medium
