@@ -43,7 +43,7 @@
 - **Smoother compact panel:** opening the session list no longer resizes the
   panel's window on every frame, and the panel opens and closes faster.
 - **`card` in aura** switches to that provider before opening its card.
-- **A website:** [lunanoir21.github.io/quickshell-flare](https://lunanoir21.github.io/quickshell-flare/),
+- **A website:** [lunanoir21.github.io/flare-notch](https://lunanoir21.github.io/flare-notch/),
   with a working copy of the notch, the credits and this changelog, in black or
   white.
 - `install.sh` suggests setting `flare.binary_path` when it installs somewhere the

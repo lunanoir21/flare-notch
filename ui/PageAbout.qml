@@ -41,7 +41,7 @@ Flickable {
                 SettingsButton {
                     text: Strings.openGithub
                     primary: true
-                    onClicked: Qt.openUrlExternally("https://github.com/lunanoir21/quickshell-flare")
+                    onClicked: Qt.openUrlExternally("https://github.com/lunanoir21/flare-notch")
                 }
 
                 SettingsButton {

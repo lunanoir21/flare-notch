@@ -3,7 +3,7 @@
 # this checkout when cargo is available, otherwise the latest release build.
 set -eu
 
-repo="lunanoir21/quickshell-flare"
+repo="lunanoir21/flare-notch"
 bin_dir="${FLARE_BIN_DIR:-$HOME/.local/bin}"
 here=$(cd "$(dirname "$0")" && pwd)
 

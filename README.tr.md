@@ -6,7 +6,7 @@ Hyprland'de Quickshell için bir kullanım notch'u: Claude Code, Codex, Cursor,
 OpenCode, Antigravity ve Kiro haklarından ne kadarının kaldığını ekranın kenarında
 gösterir.
 
-[Web sitesi](https://lunanoir21.github.io/quickshell-flare/) · [English README](README.md)
+[Web sitesi](https://lunanoir21.github.io/flare-notch/) · [English README](README.md)
 
 <p align="center">
   <img src="docs/screenshots/card.png" width="380" alt="Notch yanında hover kartı">
@@ -135,13 +135,13 @@ olarak hangisinin çalışacağı sabitlenebilir.
 Quickshell 0.3+ ve Qt 6.6+ gerekir.
 
 ```sh
-git clone https://github.com/lunanoir21/quickshell-flare
-cd quickshell-flare
+git clone https://github.com/lunanoir21/flare-notch
+cd flare-notch
 ./install.sh
 ```
 
 `install.sh`, Rust 1.85+ kuruluysa `flare` binary'sini derler, değilse
-[son sürümün](https://github.com/lunanoir21/quickshell-flare/releases/latest) hazır
+[son sürümün](https://github.com/lunanoir21/flare-notch/releases/latest) hazır
 binary'sini indirir (x86_64, glibc 2.39+), `~/.local/bin`'e koyar (değiştirmek için
 `FLARE_BIN_DIR`) ve `flare doctor`'ı çalıştırır.
 
@@ -163,7 +163,7 @@ quickshell -p ui
 ### Ya da kendi shell'inizin içinde
 
 ```qml
-import "path/to/quickshell-flare/ui" as Flare
+import "path/to/flare-notch/ui" as Flare
 
 ShellRoot {
     Flare.FlareHost {}
@@ -180,7 +180,7 @@ kullandığınız komutun önüne ekleyin:
 ```json
 "statusLine": {
   "type": "command",
-  "command": "/path/to/quickshell-flare/hooks/claude-statusline-capture.sh npx -y @owloops/claude-powerline@latest"
+  "command": "/path/to/flare-notch/hooks/claude-statusline-capture.sh npx -y @owloops/claude-powerline@latest"
 }
 ```
 
@@ -195,7 +195,7 @@ satırı `stack_with_default` ile kalır:
 
 ```json
 "statusLine": {
-  "command": "/path/to/quickshell-flare/hooks/agy-statusline-capture.sh",
+  "command": "/path/to/flare-notch/hooks/agy-statusline-capture.sh",
   "enabled": true,
   "stack_with_default": true
 }

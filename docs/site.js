@@ -14,7 +14,7 @@
       ],
       sessions: [
         { pid: 48213, name: "fix-bar-overlap", project: "hypr", age: "42m", state: "busy" },
-        { pid: 51877, name: "release-notes", project: "quickshell-flare", age: "12m", state: "waiting" },
+        { pid: 51877, name: "release-notes", project: "flare-notch", age: "12m", state: "waiting" },
         { pid: 50342, name: "try-kwin-layer-shell", project: "notes", age: "1h 5m", state: "idle" },
       ],
     },

@@ -2,8 +2,8 @@
 // a "what's new" card for a release this visitor hasn't seen, and the full
 // history on changelog.html.
 (() => {
-  const SOURCE = "https://raw.githubusercontent.com/lunanoir21/quickshell-flare/main/CHANGELOG.md";
-  const FALLBACK = "https://github.com/lunanoir21/quickshell-flare/blob/main/CHANGELOG.md";
+  const SOURCE = "https://raw.githubusercontent.com/lunanoir21/flare-notch/main/CHANGELOG.md";
+  const FALLBACK = "https://github.com/lunanoir21/flare-notch/blob/main/CHANGELOG.md";
   const SEEN = "flare-seen-release";
 
   const escape = (text) => text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -120,7 +120,7 @@
           <header>
             <h2>${escape(release.version)}</h2>
             ${i === 0 ? '<span class="latest">Latest</span>' : ""}
-            <a class="release-link" href="https://github.com/lunanoir21/quickshell-flare/releases/tag/v${encodeURIComponent(release.version)}">Release</a>
+            <a class="release-link" href="https://github.com/lunanoir21/flare-notch/releases/tag/v${encodeURIComponent(release.version)}">Release</a>
           </header>
           <div class="release-body">${release.html}</div>
         </article>`

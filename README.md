@@ -6,7 +6,7 @@ A usage notch for Quickshell on Hyprland: how much of your Claude Code, Codex,
 Cursor, OpenCode, Antigravity and Kiro allowance is left, welded to the edge of the
 screen.
 
-[Website](https://lunanoir21.github.io/quickshell-flare/) · [Türkçe README](README.tr.md)
+[Website](https://lunanoir21.github.io/flare-notch/) · [Türkçe README](README.tr.md)
 
 <p align="center">
   <img src="docs/screenshots/card.png" width="380" alt="The hover card beside the notch">
@@ -134,13 +134,13 @@ the exact one to run.
 Requires Quickshell 0.3+ and Qt 6.6+.
 
 ```sh
-git clone https://github.com/lunanoir21/quickshell-flare
-cd quickshell-flare
+git clone https://github.com/lunanoir21/flare-notch
+cd flare-notch
 ./install.sh
 ```
 
 `install.sh` builds the `flare` binary when Rust 1.85+ is installed and otherwise
-downloads the [latest release](https://github.com/lunanoir21/quickshell-flare/releases/latest)'s
+downloads the [latest release](https://github.com/lunanoir21/flare-notch/releases/latest)'s
 build (x86_64, glibc 2.39+), puts it in `~/.local/bin` (`FLARE_BIN_DIR` to change
 that) and runs `flare doctor`.
 
@@ -162,7 +162,7 @@ quickshell -p ui
 ### Or inside your shell
 
 ```qml
-import "path/to/quickshell-flare/ui" as Flare
+import "path/to/flare-notch/ui" as Flare
 
 ShellRoot {
     Flare.FlareHost {}
@@ -179,7 +179,7 @@ already use, in `~/.claude/settings.json`:
 ```json
 "statusLine": {
   "type": "command",
-  "command": "/path/to/quickshell-flare/hooks/claude-statusline-capture.sh npx -y @owloops/claude-powerline@latest"
+  "command": "/path/to/flare-notch/hooks/claude-statusline-capture.sh npx -y @owloops/claude-powerline@latest"
 }
 ```
 
@@ -194,7 +194,7 @@ agy hands each model group's quota only to its status line command.
 
 ```json
 "statusLine": {
-  "command": "/path/to/quickshell-flare/hooks/agy-statusline-capture.sh",
+  "command": "/path/to/flare-notch/hooks/agy-statusline-capture.sh",
   "enabled": true,
   "stack_with_default": true
 }
