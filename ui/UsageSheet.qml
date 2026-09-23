@@ -78,6 +78,8 @@ Rectangle {
         target: FlareData
         function onUsageOpenChanged() {
             if (FlareData.usageOpen) {
+                // Opened again, it starts from the top, not where it was left.
+                scroller.contentY = 0;
                 sheet.reload();
                 swapIn.restart();
             } else {
