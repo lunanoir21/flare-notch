@@ -81,17 +81,19 @@
     },
   };
 
+  const t = window.flareT || ((key, english) => english);
+
   function popup(release) {
     const dialog = document.createElement("dialog");
     dialog.className = "news";
     dialog.setAttribute("aria-labelledby", "news-title");
     dialog.innerHTML = `
-      <p class="news-kicker">What's new</p>
+      <p class="news-kicker">${escape(t("ui.whatsNew", "What's new"))}</p>
       <h2 class="news-title" id="news-title">flare ${escape(release.version)}</h2>
       <div class="news-body">${release.html}</div>
       <div class="news-actions">
-        <a href="changelog.html">Full changelog</a>
-        <button type="button" class="news-close">Got it</button>
+        <a href="changelog.html">${escape(t("ui.fullChangelog", "Full changelog"))}</a>
+        <button type="button" class="news-close">${escape(t("ui.gotIt", "Got it"))}</button>
       </div>`;
     const dismiss = () => {
       storage.set(release.version);

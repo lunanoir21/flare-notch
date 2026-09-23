@@ -11,7 +11,8 @@
     anchor.className = "anchor";
     anchor.href = `#${id}`;
     anchor.textContent = "#";
-    anchor.setAttribute("aria-label", `Link to ${heading.textContent}`);
+    const t = window.flareT || ((key, english, vars) => english.replace("{title}", vars.title));
+    anchor.setAttribute("aria-label", t("ui.linkTo", "Link to {title}", { title: heading.textContent }));
     heading.append(anchor);
   }
 

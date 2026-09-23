@@ -1,5 +1,8 @@
 // A working copy of flare's notch, fixed to this page's edge.
 (() => {
+  // Strings go through i18n.js where a page loads it; elsewhere, English.
+  const t =
+    window.flareT || ((key, english, vars = {}) => english.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m)));
   const providers = [
     {
       id: "claude",
@@ -9,8 +12,8 @@
       figure: "27%",
       fraction: 0.27,
       windows: [
-        { label: "Current session", reset: "Resets in 3h 12m", used: 0.27 },
-        { label: "Weekly (all models)", reset: "Resets Thu 03:00", used: 0.69 },
+        { label: t("ui.currentSession", "Current session"), reset: t("ui.resetsIn3h", "Resets in 3h 12m"), used: 0.27 },
+        { label: t("ui.weeklyAll", "Weekly (all models)"), reset: t("ui.resetsThu", "Resets Thu 03:00"), used: 0.69 },
       ],
       sessions: [
         { pid: 48213, name: "fix-bar-overlap", project: "hypr", age: "42m", state: "busy" },
@@ -26,8 +29,8 @@
       figure: "12%",
       fraction: 0.12,
       windows: [
-        { label: "5h limit", reset: "Resets in 1h 40m", used: 0.12 },
-        { label: "Weekly limit", reset: "Resets Mon 09:00", used: 0.41 },
+        { label: t("ui.5h", "5h limit"), reset: t("ui.resetsIn1h", "Resets in 1h 40m"), used: 0.12 },
+        { label: t("ui.weekly", "Weekly limit"), reset: t("ui.resetsMon", "Resets Mon 09:00"), used: 0.41 },
       ],
     },
     {
@@ -38,13 +41,13 @@
       fraction: 1,
       unmetered: true,
       tokens: "15K",
-      note: "Runs on your own API keys, so there is no limit to show: tokens today instead.",
+      note: t("ui.openCodeNote", "Runs on your own API keys, so there is no limit to show: tokens today instead."),
     },
   ];
 
   const logo = (id) => `assets/logos/${id}.svg`;
   const barColour = (used) => (used >= 0.7 ? "var(--high)" : used >= 0.5 ? "var(--mid)" : "var(--good)");
-  const stateLabel = { busy: "working", waiting: "waiting on you", idle: "idle" };
+  const stateLabel = { busy: t("ui.working", "working"), waiting: t("ui.waiting", "waiting on you"), idle: t("ui.idle", "idle") };
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const C = 2 * Math.PI * 25;
 
@@ -118,7 +121,7 @@
   }
 
   const side = el("div", { class: "flare flare-side", "data-style": style });
-  const body = el("div", { class: "body", role: "group", "aria-label": "flare notch (a demo)" });
+  const body = el("div", { class: "body", role: "group", "aria-label": t("ui.demo", "flare notch (a demo)") });
   const sideShape = shapeSvg();
   side.append(sideShape.svgEl, body);
 
@@ -148,7 +151,9 @@
         "data-id": p.id,
         "aria-expanded": "false",
         "aria-controls": "flare-card",
-        "aria-label": p.unmetered ? `${p.name}: ${p.tokens} tokens today` : `${p.name}: ${p.figure} of the current window used`,
+        "aria-label": p.unmetered
+          ? t("ui.tokensOf", "{name}: {tokens} tokens today", p)
+          : t("ui.usedOf", "{name}: {figure} of the current window used", p),
       },
       [el("span", { class: "face" }, [arc, el("img", { src: logo(p.id), alt: "" })]), el("span", { class: "figure", text: p.figure })]
     );
@@ -177,7 +182,7 @@
         providers
           .filter((x) => x.id !== lead)
           .map((x) => {
-            const b = el("button", { type: "button", "aria-label": `Show ${x.name}` }, [el("img", { src: logo(x.id), alt: "" }), x.figure]);
+            const b = el("button", { type: "button", "aria-label": t("ui.show", "Show {name}", x) }, [el("img", { src: logo(x.id), alt: "" }), x.figure]);
             b.addEventListener("click", () => {
               lead = x.id;
               close(true);
@@ -194,7 +199,7 @@
 
   // ---------- the hover card ----------
 
-  const card = el("div", { class: "card", id: "flare-card", role: "region", "aria-label": "Usage detail" });
+  const card = el("div", { class: "card", id: "flare-card", role: "region", "aria-label": t("ui.cardRegion", "Usage detail") });
   const tail = svg(
     '<svg viewBox="0 0 26 36" aria-hidden="true"><path class="fill" d="M26 0C26 9 12.6 13.7 0 18C12.6 22.3 26 27 26 36Z"/><path class="edge" d="M26 0C26 9 12.6 13.7 0 18C12.6 22.3 26 27 26 36"/></svg>',
     "tail"
@@ -211,8 +216,8 @@
     requestAnimationFrame(() => requestAnimationFrame(() => (fill.style.width = `${Math.round(w.used * 100)}%`)));
     return el("div", { class: "window" }, [
       el("div", { class: "window-head" }, [el("span", { text: w.label }), el("span", { class: "reset", text: w.reset })]),
-      el("div", { class: "bar", role: "img", "aria-label": `${Math.round(w.used * 100)}% used` }, [fill]),
-      el("div", { class: "used", text: `${Math.round(w.used * 100)}% used` }),
+      el("div", { class: "bar", role: "img", "aria-label": t("ui.used", "{n}% used", { n: Math.round(w.used * 100) }) }, [fill]),
+      el("div", { class: "used", text: t("ui.used", "{n}% used", { n: Math.round(w.used * 100) }) }),
     ]);
   }
 
@@ -220,7 +225,7 @@
     const waiting = p.sessions.filter((s) => s.state === "waiting").length;
     const jumped = el("p", { class: "jumped", "aria-live": "polite" });
     const head = el("button", { class: "sessions-head", type: "button", "aria-expanded": String(sessionsOpen), "aria-controls": "flare-sessions" }, [
-      el("span", { text: "Sessions" }),
+      el("span", { text: t("ui.sessions", "Sessions") }),
       el("span", { class: "count" + (waiting ? " waiting" : ""), text: String(p.sessions.length) }),
       svg('<svg viewBox="0 0 10 10" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 1.5 7 5 3.5 8.5"/></svg>', "chevron"),
     ]);
@@ -236,9 +241,9 @@
             svg('<svg viewBox="0 0 12 12" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 9.5 9.5 2.5M4.5 2.5h5v5"/></svg>', "go"),
           ]),
         ]);
-        row.setAttribute("aria-label", `${s.name}, ${s.project}, ${stateLabel[s.state]}. Bring its terminal to the front.`);
+        row.setAttribute("aria-label", t("ui.sessionRow", "{name}, {project}, {state}. Bring its terminal to the front.", { ...s, state: stateLabel[s.state] }));
         row.addEventListener("click", () => {
-          jumped.textContent = `flare focus ${s.pid} — on your desktop, this brings the terminal to the front.`;
+          jumped.textContent = t("ui.jumped", "flare focus {pid} — on your desktop, this brings the terminal to the front.", s);
         });
         return el("li", {}, [row]);
       })
@@ -256,7 +261,7 @@
 
   function renderCard(p) {
     const parts = [
-      el("p", { class: "card-title" }, [el("img", { src: logo(p.id), alt: "" }), `${p.name} Usage`]),
+      el("p", { class: "card-title" }, [el("img", { src: logo(p.id), alt: "" }), t("ui.cardTitle", "{name} Usage", p)]),
       p.plan ? el("p", { class: "card-plan", text: p.plan }) : null,
     ];
     if (p.unmetered) {
@@ -332,7 +337,7 @@
   const top = el("div", { class: "flare flare-top" });
   const strip = el(
     "button",
-    { class: "strip", type: "button", "aria-expanded": "false", "aria-controls": "flare-panel", "aria-label": "flare, compact: open the panel" },
+    { class: "strip", type: "button", "aria-expanded": "false", "aria-controls": "flare-panel", "aria-label": t("ui.stripLabel", "flare, compact: open the panel") },
     providers.map((p) => el("span", {}, [el("img", { src: logo(p.id), alt: "" }), p.figure]))
   );
   const panel = el("div", { class: "panel", id: "flare-panel" }, [
@@ -345,7 +350,7 @@
         providers.map((p) => {
           if (p.unmetered)
             return el("div", { class: "panel-row" }, [
-              el("div", { class: "window-head" }, [el("span", {}, [el("img", { src: logo(p.id), alt: "" }), p.name]), el("span", { class: "reset", text: `${p.tokens} tokens today` })]),
+              el("div", { class: "window-head" }, [el("span", {}, [el("img", { src: logo(p.id), alt: "" }), p.name]), el("span", { class: "reset", text: t("ui.tokensToday", "{tokens} tokens today", p) })]),
             ]);
           const w = p.windows[0];
           const fill = el("span");
@@ -354,7 +359,7 @@
           return el("div", { class: "panel-row" }, [
             el("div", { class: "window-head" }, [el("span", {}, [el("img", { src: logo(p.id), alt: "" }), p.name]), el("span", { class: "reset", text: w.reset })]),
             el("div", { class: "bar" }, [fill]),
-            el("div", { class: "used", text: `${Math.round(w.used * 100)}% used · ${w.label}` }),
+            el("div", { class: "used", text: `${t("ui.used", "{n}% used", { n: Math.round(w.used * 100) })} · ${w.label}` }),
           ]);
         })
       )
@@ -404,8 +409,17 @@
     if (pointer) {
       pointer.dataset.dir = compact ? "up" : "left";
       pointer.querySelector(".words").textContent = compact
-        ? "Now it is a strip on the top edge. Click it."
-        : `The notch on this page's left edge works. ${touch ? "Tap" : "Hover"} ${style === "aura" ? "the ring" : "a ring"}.`;
+        ? t("ui.pointerCompact", "Now it is a strip on the top edge. Click it.")
+        : t("ui.pointerSide", "The notch on this page's left edge works. {action}.", {
+            action:
+              style === "aura"
+                ? touch
+                  ? t("ui.tapThe", "Tap the ring")
+                  : t("ui.hoverThe", "Hover the ring")
+                : touch
+                  ? t("ui.tapA", "Tap a ring")
+                  : t("ui.hoverA", "Hover a ring"),
+          });
     }
   }
 
@@ -416,7 +430,7 @@
   const themeButton = document.querySelector(".theme");
   function syncThemeLabel() {
     const light = document.documentElement.dataset.theme === "light";
-    if (themeButton) themeButton.setAttribute("aria-label", light ? "Switch to the black theme" : "Switch to the white theme");
+    if (themeButton) themeButton.setAttribute("aria-label", light ? t("ui.toBlack", "Switch to the black theme") : t("ui.toWhite", "Switch to the white theme"));
   }
   if (themeButton) {
     syncThemeLabel();
@@ -432,7 +446,7 @@
   // ---------- copy buttons ----------
 
   for (const pre of document.querySelectorAll("pre.copyable")) {
-    const button = el("button", { class: "copy", type: "button", text: "Copy" });
+    const button = el("button", { class: "copy", type: "button", text: t("ui.copy", "Copy") });
     button.addEventListener("click", async () => {
       const text = [...pre.querySelectorAll("code")]
         .map((c) => c.cloneNode(true))
@@ -444,11 +458,11 @@
         .trim();
       try {
         await navigator.clipboard.writeText(text);
-        button.textContent = "Copied";
+        button.textContent = t("ui.copied", "Copied");
       } catch {
-        button.textContent = "Select and copy";
+        button.textContent = t("ui.selectCopy", "Select and copy");
       }
-      setTimeout(() => (button.textContent = "Copy"), 1600);
+      setTimeout(() => (button.textContent = t("ui.copy", "Copy")), 1600);
     });
     pre.append(button);
   }

@@ -3,10 +3,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Documentation — flare</title>
+  <title data-i18n="head.1">Documentation — flare</title>
   <meta name="theme-color" content="#000000">
-  <meta name="description" content="Everything about flare: how it works, what it reads and sends, what it costs to run, every setting, IPC call and command.">
+  <meta name="description" data-i18n-attr="content:head.desc" content="Everything about flare: how it works, what it reads and sends, what it costs to run, every setting, IPC call and command.">
   <script>try { if (localStorage.getItem("flare-theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+  <script>
+    (function () {
+      var root = document.documentElement, known = /^(en|tr)$/, asked = new URLSearchParams(location.search).get("lang"), saved = null;
+      try { saved = localStorage.getItem("flare-lang"); } catch (e) {}
+      var lang = known.test(asked) ? asked : known.test(saved) ? saved : /^tr\b/i.test(navigator.language || "") ? "tr" : "en";
+      if (asked === lang) try { localStorage.setItem("flare-lang", lang); } catch (e) {}
+      root.dataset.lang = lang;
+      if (lang !== "en") {
+        root.classList.add("i18n-pending");
+        setTimeout(function () { root.classList.remove("i18n-pending"); }, 2000);
+      }
+    })();
+  </script>
+  <link rel="alternate" hreflang="en" href="https://lunanoir21.github.io/flare-notch/docs.html?lang=en">
+  <link rel="alternate" hreflang="tr" href="https://lunanoir21.github.io/flare-notch/docs.html?lang=tr">
   <link rel="icon" href="assets/flare.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,14 +30,14 @@
   <link rel="stylesheet" href="docs.css">
 </head>
 <body>
-  <a class="skip" href="#main">Skip to content</a>
+  <a class="skip" href="#main" data-i18n="head.2">Skip to content</a>
 
   <header class="top">
     <a class="wordmark" href="./"><img src="assets/flare.svg" alt="" width="28" height="28">flare</a>
     <nav aria-label="Site">
-      <a href="docs.html" aria-current="page">Docs</a>
-      <a href="changelog.html">Changelog</a>
-      <a href="credits.html">Credits</a>
+      <a href="docs.html" aria-current="page" data-i18n="nav.2">Docs</a>
+      <a href="changelog.html" data-i18n="nav.3">Changelog</a>
+      <a href="credits.html" data-i18n="nav.4">Credits</a>
       <a class="wide" href="https://github.com/lunanoir21/flare-notch">GitHub</a>
       <button class="theme" type="button" aria-label="Switch to the white theme">
         <svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.6A5.6 5.6 0 0 1 6.4 2.5a5.6 5.6 0 1 0 7.1 7.1Z"/></svg>
@@ -34,371 +49,371 @@
   <main id="main">
     <div class="page-head">
       <span class="tag">docs.html</span>
-      <h1>Documentation</h1>
-      <p class="lede">How flare works, what it reads and what it sends, what it costs to run, and every setting, IPC call and command it has. The README covers the same ground in less depth.</p>
+      <h1 data-i18n="page.1">Documentation</h1>
+      <p class="lede" data-i18n="page.2">How flare works, what it reads and what it sends, what it costs to run, and every setting, IPC call and command it has. The README covers the same ground in less depth.</p>
     </div>
 
     <div class="doc-layout">
-      <nav class="toc" aria-label="On this page">
+      <nav class="toc" aria-label="On this page" data-i18n-attr="aria-label:toc.label">
         <label class="toc-filter">
-          <span class="sr">Filter the contents</span>
-          <input id="toc-filter" type="search" placeholder="Filter sections" autocomplete="off">
+          <span class="sr" data-i18n="toc.1">Filter the contents</span>
+          <input id="toc-filter" type="search" placeholder="Filter sections" data-i18n-attr="placeholder:toc.filter" autocomplete="off">
         </label>
         <ol>
-          <li><a href="#overview">Overview</a></li>
-          <li><a href="#how-it-works">How it works</a></li>
-          <li><a href="#data">What it reads and sends</a></li>
-          <li><a href="#resources">What it costs to run</a></li>
-          <li><a href="#security">Security and privacy</a></li>
-          <li><a href="#install">Install</a></li>
-          <li><a href="#running">Running it</a></li>
-          <li><a href="#widget">Using the widget</a></li>
-          <li><a href="#sessions">Open sessions</a></li>
-          <li><a href="#usage-panel">The usage panel</a></li>
-          <li><a href="#logins">More than one login</a></li>
-          <li><a href="#notifications">Notifications</a></li>
-          <li><a href="#providers">Providers</a></li>
-          <li><a href="#captures">Status line captures</a></li>
-          <li><a href="#config">Configuration reference</a></li>
-          <li><a href="#ipc">IPC reference</a></li>
-          <li><a href="#cli">Command line</a></li>
-          <li><a href="#json">The JSON output</a></li>
-          <li><a href="#files">Files</a></li>
-          <li><a href="#troubleshooting">Troubleshooting</a></li>
-          <li><a href="#uninstall">Uninstall</a></li>
-          <li><a href="#development">Development</a></li>
+          <li><a href="#overview" data-i18n="toc.2">Overview</a></li>
+          <li><a href="#how-it-works" data-i18n="toc.3">How it works</a></li>
+          <li><a href="#data" data-i18n="toc.4">What it reads and sends</a></li>
+          <li><a href="#resources" data-i18n="toc.5">What it costs to run</a></li>
+          <li><a href="#security" data-i18n="toc.6">Security and privacy</a></li>
+          <li><a href="#install" data-i18n="toc.7">Install</a></li>
+          <li><a href="#running" data-i18n="toc.8">Running it</a></li>
+          <li><a href="#widget" data-i18n="toc.9">Using the widget</a></li>
+          <li><a href="#sessions" data-i18n="toc.10">Open sessions</a></li>
+          <li><a href="#usage-panel" data-i18n="toc.11">The usage panel</a></li>
+          <li><a href="#logins" data-i18n="toc.12">More than one login</a></li>
+          <li><a href="#notifications" data-i18n="toc.13">Notifications</a></li>
+          <li><a href="#providers" data-i18n="toc.14">Providers</a></li>
+          <li><a href="#captures" data-i18n="toc.15">Status line captures</a></li>
+          <li><a href="#config" data-i18n="toc.16">Configuration reference</a></li>
+          <li><a href="#ipc" data-i18n="toc.17">IPC reference</a></li>
+          <li><a href="#cli" data-i18n="toc.18">Command line</a></li>
+          <li><a href="#json" data-i18n="toc.19">The JSON output</a></li>
+          <li><a href="#files" data-i18n="toc.20">Files</a></li>
+          <li><a href="#troubleshooting" data-i18n="toc.21">Troubleshooting</a></li>
+          <li><a href="#uninstall" data-i18n="toc.22">Uninstall</a></li>
+          <li><a href="#development" data-i18n="toc.23">Development</a></li>
         </ol>
       </nav>
 
       <article class="doc">
 
         <section id="overview">
-          <h2>Overview</h2>
-          <p>flare is two programs that work as one:</p>
+          <h2 data-i18n="overview.1">Overview</h2>
+          <p data-i18n="overview.2">flare is two programs that work as one:</p>
           <ul>
-            <li><strong>The widget</strong> (<code>ui/</code>, QML for Quickshell) draws the notch, its hover card, the usage panel and the settings page. It never reads a provider itself.</li>
-            <li><strong><code>flare</code></strong> (<code>core/</code> and <code>cli/</code>, Rust) does all the reading. The widget runs it, it prints what it found as JSON on stdout, and it exits.</li>
+            <li data-i18n="overview.3"><strong>The widget</strong> (<code>ui/</code>, QML for Quickshell) draws the notch, its hover card, the usage panel and the settings page. It never reads a provider itself.</li>
+            <li data-i18n="overview.4"><strong><code>flare</code></strong> (<code>core/</code> and <code>cli/</code>, Rust) does all the reading. The widget runs it, it prints what it found as JSON on stdout, and it exits.</li>
           </ul>
-          <p>That split is deliberate: the widget stays a thin view, every file and network read goes through one small binary you can run and inspect by hand (<code>flare</code>, <code>flare doctor</code>), and a slow provider never freezes the shell.</p>
-          <p>flare reads six tools: Claude Code, Codex, Cursor, OpenCode, Antigravity and Kiro. Each is read the way it keeps its own numbers: a rate limit becomes a ring, a pay-as-you-go tool shows today's tokens, a credit plan shows the credits left.</p>
+          <p data-i18n="overview.5">That split is deliberate: the widget stays a thin view, every file and network read goes through one small binary you can run and inspect by hand (<code>flare</code>, <code>flare doctor</code>), and a slow provider never freezes the shell.</p>
+          <p data-i18n="overview.6">flare reads six tools: Claude Code, Codex, Cursor, OpenCode, Antigravity and Kiro. Each is read the way it keeps its own numbers: a rate limit becomes a ring, a pay-as-you-go tool shows today's tokens, a credit plan shows the credits left.</p>
         </section>
 
         <section id="how-it-works">
-          <h2>How it works</h2>
-          <p>Everything flare does happens on your machine except one kind of request: in the default <code>official</code> mode, a provider's own usage endpoint is asked for your numbers, with the sign-in its CLI already keeps. In <code>local</code> mode even that is gone.</p>
+          <h2 data-i18n="how-it-works.1">How it works</h2>
+          <p data-i18n="how-it-works.2">Everything flare does happens on your machine except one kind of request: in the default <code>official</code> mode, a provider's own usage endpoint is asked for your numbers, with the sign-in its CLI already keeps. In <code>local</code> mode even that is gone.</p>
 
           <figure class="diagram">
             <div class="diagram-scroll">
               <svg viewBox="0 0 940 430" role="img" aria-labelledby="arch-title arch-desc">
-                <title id="arch-title">flare's parts and how they talk</title>
-                <desc id="arch-desc">Inside your machine, the Quickshell widget runs the flare binary on each refresh and reads its JSON back. flare reads the providers' own files and its own state directory. Only in official mode does flare reach outside, to each provider's usage endpoint over HTTPS. The widget also starts flare watch, which sends desktop notifications.</desc>
+                <title id="arch-title" data-i18n="how-it-works.3">flare's parts and how they talk</title>
+                <desc id="arch-desc" data-i18n="how-it-works.4">Inside your machine, the Quickshell widget runs the flare binary on each refresh and reads its JSON back. flare reads the providers' own files and its own state directory. Only in official mode does flare reach outside, to each provider's usage endpoint over HTTPS. The widget also starts flare watch, which sends desktop notifications.</desc>
                 <defs>
                   <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-head" d="M0 0L10 5L0 10z"/></marker>
                   <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-head-accent" d="M0 0L10 5L0 10z"/></marker>
                 </defs>
                 <rect class="d-bound" x="10" y="10" width="640" height="410" rx="22"/>
-                <text class="d-label" x="30" y="40">YOUR MACHINE</text>
-                <text class="d-label" x="690" y="140">THE INTERNET</text>
+                <text class="d-label" x="30" y="40" data-i18n="how-it-works.5">YOUR MACHINE</text>
+                <text class="d-label" x="690" y="140" data-i18n="how-it-works.6">THE INTERNET</text>
 
                 <rect class="d-box" x="30" y="170" width="200" height="100" rx="14"/>
-                <text class="d-title" x="50" y="205">Quickshell widget</text>
+                <text class="d-title" x="50" y="205" data-i18n="how-it-works.7">Quickshell widget</text>
                 <text class="d-sub" x="50" y="228">ui/ · QML</text>
-                <text class="d-sub" x="50" y="250">notch, card, panels</text>
+                <text class="d-sub" x="50" y="250" data-i18n="how-it-works.9">notch, card, panels</text>
 
                 <rect class="d-box strong" x="360" y="170" width="200" height="100" rx="14"/>
                 <text class="d-title" x="380" y="205">flare</text>
                 <text class="d-sub" x="380" y="228">Rust binary</text>
-                <text class="d-sub" x="380" y="250">one short run per refresh</text>
+                <text class="d-sub" x="380" y="250" data-i18n="how-it-works.12">one short run per refresh</text>
 
                 <rect class="d-box" x="360" y="40" width="282" height="90" rx="14"/>
-                <text class="d-title" x="380" y="72">The providers' own files</text>
+                <text class="d-title" x="380" y="72" data-i18n="how-it-works.13">The providers' own files</text>
                 <text class="d-sub" x="376" y="96">~/.claude, ~/.codex, opencode.db,</text>
-                <text class="d-sub" x="376" y="116">~/.gemini, ~/.kiro — read only</text>
+                <text class="d-sub" x="376" y="116" data-i18n="how-it-works.15">~/.gemini, ~/.kiro — read only</text>
 
                 <rect class="d-box" x="360" y="320" width="282" height="80" rx="14"/>
                 <text class="d-title" x="380" y="352">~/.local/state/flare</text>
-                <text class="d-sub" x="380" y="376">snapshots, history, pacing</text>
+                <text class="d-sub" x="380" y="376" data-i18n="how-it-works.17">snapshots, history, pacing</text>
 
                 <rect class="d-box" x="30" y="320" width="200" height="80" rx="14"/>
                 <text class="d-title" x="50" y="352">flare watch</text>
                 <text class="d-sub" x="50" y="376">notify-send</text>
 
                 <rect class="d-box accent" x="690" y="170" width="230" height="100" rx="14"/>
-                <text class="d-title" x="710" y="205">Usage endpoints</text>
-                <text class="d-sub" x="710" y="228">HTTPS, official mode only</text>
-                <text class="d-sub" x="710" y="250">one per provider</text>
+                <text class="d-title" x="710" y="205" data-i18n="how-it-works.20">Usage endpoints</text>
+                <text class="d-sub" x="710" y="228" data-i18n="how-it-works.21">HTTPS, official mode only</text>
+                <text class="d-sub" x="710" y="250" data-i18n="how-it-works.22">one per provider</text>
 
                 <path class="d-line" d="M230 200H356" marker-end="url(#arrow)"/>
-                <text class="d-note" x="244" y="192">runs it</text>
+                <text class="d-note" x="244" y="192" data-i18n="how-it-works.23">runs it</text>
                 <path class="d-line" d="M360 240H234" marker-end="url(#arrow)"/>
                 <text class="d-note" x="244" y="258">JSON</text>
                 <path class="d-line" d="M460 170V134" marker-end="url(#arrow)"/>
-                <text class="d-note" x="468" y="158">reads</text>
+                <text class="d-note" x="468" y="158" data-i18n="how-it-works.25">reads</text>
                 <path class="d-line both" d="M460 270V316" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
                 <path class="d-line" d="M130 270V316" marker-end="url(#arrow)"/>
-                <text class="d-note" x="138" y="298">starts while [notify] is on</text>
+                <text class="d-note" x="138" y="298" data-i18n="how-it-works.26">starts while [notify] is on</text>
                 <path class="d-line accent" d="M560 220H686" marker-end="url(#arrow-accent)"/>
-                <text class="d-note accent" x="570" y="210">GET + sign-in</text>
+                <text class="d-note accent" x="570" y="210" data-i18n="how-it-works.27">GET + sign-in</text>
               </svg>
             </div>
-            <figcaption>The only line that leaves your machine is the amber one, and only in <code>official</code> mode.</figcaption>
+            <figcaption data-i18n="how-it-works.28">The only line that leaves your machine is the amber one, and only in <code>official</code> mode.</figcaption>
           </figure>
 
-          <h3 id="refresh">One refresh, step by step</h3>
+          <h3 id="refresh" data-i18n="how-it-works.29">One refresh, step by step</h3>
           <ol class="steps">
-            <li><strong>The poll timer fires</strong>, every <code>poll.interval_secs</code> (30 s by default), and only while the notch is actually on screen, the usage panel is open, or a shortcut brought it in. A notch tucked away in <code>hover</code> or <code>shortcut</code> mode reads nothing.</li>
-            <li><strong>The widget runs <code>flare --provider all</code>.</strong> It finds the binary beside the module (<code>target/release/flare</code>), on <code>PATH</code>, in <code>~/.local/bin</code>, in <code>~/.cargo/bin</code>, or at <code>flare.binary_path</code>.</li>
-            <li><strong>Every enabled provider is read at once</strong>, each on its own thread, so one slow endpoint never holds up the rest.</li>
-            <li><strong>Each provider checks its own pace.</strong> The widget may refresh every 30 s, but network reads keep their own rhythm: Claude at most every minute; Codex, Cursor and Kiro every five. Between those, the last reading is reused. A server that said "slow down" is not asked again before its deadline, which survives restarts.</li>
-            <li><strong>The provider reads</strong>: its own files on disk, and in official mode its usage endpoint.</li>
-            <li><strong>flare records</strong> the reading, its history and the session log in <code>~/.local/state/flare</code>.</li>
-            <li><strong>flare prints JSON and exits.</strong> Nothing stays running between refreshes.</li>
-            <li><strong>The widget draws</strong> the rings, the card and the panels from that JSON.</li>
+            <li data-i18n="how-it-works.30"><strong>The poll timer fires</strong>, every <code>poll.interval_secs</code> (30 s by default), and only while the notch is actually on screen, the usage panel is open, or a shortcut brought it in. A notch tucked away in <code>hover</code> or <code>shortcut</code> mode reads nothing.</li>
+            <li data-i18n="how-it-works.31"><strong>The widget runs <code>flare --provider all</code>.</strong> It finds the binary beside the module (<code>target/release/flare</code>), on <code>PATH</code>, in <code>~/.local/bin</code>, in <code>~/.cargo/bin</code>, or at <code>flare.binary_path</code>.</li>
+            <li data-i18n="how-it-works.32"><strong>Every enabled provider is read at once</strong>, each on its own thread, so one slow endpoint never holds up the rest.</li>
+            <li data-i18n="how-it-works.33"><strong>Each provider checks its own pace.</strong> The widget may refresh every 30 s, but network reads keep their own rhythm: Claude at most every minute; Codex, Cursor and Kiro every five. Between those, the last reading is reused. A server that said "slow down" is not asked again before its deadline, which survives restarts.</li>
+            <li data-i18n="how-it-works.34"><strong>The provider reads</strong>: its own files on disk, and in official mode its usage endpoint.</li>
+            <li data-i18n="how-it-works.35"><strong>flare records</strong> the reading, its history and the session log in <code>~/.local/state/flare</code>.</li>
+            <li data-i18n="how-it-works.36"><strong>flare prints JSON and exits.</strong> Nothing stays running between refreshes.</li>
+            <li data-i18n="how-it-works.37"><strong>The widget draws</strong> the rings, the card and the panels from that JSON.</li>
           </ol>
-          <p>The usage panel's week of hourly use comes from a second, heavier command, <code>flare activity</code>, which runs only while the panel is open and once every five minutes at most.</p>
+          <p data-i18n="how-it-works.38">The usage panel's week of hourly use comes from a second, heavier command, <code>flare activity</code>, which runs only while the panel is open and once every five minutes at most.</p>
         </section>
 
         <section id="data">
-          <h2>What it reads and sends</h2>
-          <p>Per provider, in the default <code>official</code> mode. In <code>local</code> mode the "sent" column is empty for everyone: flare never opens a network connection.</p>
+          <h2 data-i18n="data.1">What it reads and sends</h2>
+          <p data-i18n="data.2">Per provider, in the default <code>official</code> mode. In <code>local</code> mode the "sent" column is empty for everyone: flare never opens a network connection.</p>
           <div class="table-scroll">
             <table class="ref data">
-              <thead><tr><th scope="col">Provider</th><th scope="col">Read on your machine</th><th scope="col">Sent in official mode, and where</th></tr></thead>
+              <thead><tr><th scope="col" data-i18n="data.3">Provider</th><th scope="col" data-i18n="data.4">Read on your machine</th><th scope="col" data-i18n="data.5">Sent in official mode, and where</th></tr></thead>
               <tbody>
-                <tr><th scope="row">Claude Code</th><td>The OAuth token in <code>~/.claude/.credentials.json</code>; the email in <code>~/.claude.json</code>; reply logs in <code>~/.claude/projects</code>; live sessions in <code>~/.claude/sessions</code>; the status line capture</td><td>The token as a bearer header, plus <code>anthropic-beta: oauth-2025-04-20</code><span class="to">→ <code>api.anthropic.com/api/oauth/usage</code></span></td>
-                <tr><th scope="row">Codex</th><td>The session in <code>~/.codex/auth.json</code>; rollout logs in <code>~/.codex/sessions</code></td><td>The access token as a bearer header and the <code>ChatGPT-Account-Id</code> it names<span class="to">→ <code>chatgpt.com/backend-api/wham/usage</code></span></td>
-                <tr><th scope="row">Cursor</th><td>The editor's session from <code>~/.config/Cursor/User/globalStorage/state.vscdb</code></td><td>That session, as the editor itself sends it — <strong>only after you say yes once</strong><span class="to">→ <code>cursor.com/api/usage-summary</code></span></td>
-                <tr><th scope="row">OpenCode</th><td>Its database, <code>~/.local/share/opencode/opencode.db</code>; provider names (not keys) from its <code>auth.json</code></td><td>Nothing</td>
-                <tr><th scope="row">Antigravity</th><td>The status line capture; conversation databases in <code>~/.gemini/antigravity-cli/conversations</code></td><td>Nothing</td>
-                <tr><th scope="row">Kiro</th><td>The sign-in <code>kiro-cli</code> keeps in <code>~/.local/share/kiro-cli/data.sqlite3</code>; sessions in <code>~/.kiro/sessions/cli</code></td><td>The sign-in as a bearer header<span class="to">→ <code>q.&lt;region&gt;.amazonaws.com/getUsageLimits</code></span></td>
+                <tr><th scope="row">Claude Code</th><td data-i18n="data.7">The OAuth token in <code>~/.claude/.credentials.json</code>; the email in <code>~/.claude.json</code>; reply logs in <code>~/.claude/projects</code>; live sessions in <code>~/.claude/sessions</code>; the status line capture</td><td data-i18n="data.8">The token as a bearer header, plus <code>anthropic-beta: oauth-2025-04-20</code><span class="to">→ <code>api.anthropic.com/api/oauth/usage</code></span></td>
+                <tr><th scope="row">Codex</th><td data-i18n="data.10">The session in <code>~/.codex/auth.json</code>; rollout logs in <code>~/.codex/sessions</code></td><td data-i18n="data.11">The access token as a bearer header and the <code>ChatGPT-Account-Id</code> it names<span class="to">→ <code>chatgpt.com/backend-api/wham/usage</code></span></td>
+                <tr><th scope="row">Cursor</th><td data-i18n="data.13">The editor's session from <code>~/.config/Cursor/User/globalStorage/state.vscdb</code></td><td data-i18n="data.14">That session, as the editor itself sends it — <strong>only after you say yes once</strong><span class="to">→ <code>cursor.com/api/usage-summary</code></span></td>
+                <tr><th scope="row">OpenCode</th><td data-i18n="data.16">Its database, <code>~/.local/share/opencode/opencode.db</code>; provider names (not keys) from its <code>auth.json</code></td><td data-i18n="data.17">Nothing</td>
+                <tr><th scope="row">Antigravity</th><td data-i18n="data.19">The status line capture; conversation databases in <code>~/.gemini/antigravity-cli/conversations</code></td><td data-i18n="data.20">Nothing</td>
+                <tr><th scope="row">Kiro</th><td data-i18n="data.22">The sign-in <code>kiro-cli</code> keeps in <code>~/.local/share/kiro-cli/data.sqlite3</code>; sessions in <code>~/.kiro/sessions/cli</code></td><td data-i18n="data.23">The sign-in as a bearer header<span class="to">→ <code>q.&lt;region&gt;.amazonaws.com/getUsageLimits</code></span></td>
               </tbody>
             </table>
           </div>
-          <p>What never leaves your machine: your prompts, your replies, your code, your project names, your sessions, your history, your config. The endpoints above answer with percentages, reset times and plan names; that is all flare asks for. There is no telemetry, no analytics and no update check.</p>
+          <p data-i18n="data.24">What never leaves your machine: your prompts, your replies, your code, your project names, your sessions, your history, your config. The endpoints above answer with percentages, reset times and plan names; that is all flare asks for. There is no telemetry, no analytics and no update check.</p>
         </section>
 
         <section id="resources">
-          <h2>What it costs to run</h2>
-          <p>Measured on 23 September 2026, with a heavy week of Claude Code logs. Your numbers will differ with your log sizes and hardware, but not by an order of magnitude.</p>
+          <h2 data-i18n="resources.1">What it costs to run</h2>
+          <p data-i18n="resources.2">Measured on 23 September 2026, with a heavy week of Claude Code logs. Your numbers will differ with your log sizes and hardware, but not by an order of magnitude.</p>
           <dl class="machine">
-            <dt>Machine</dt><dd>HP Victus laptop</dd>
-            <dt>CPU</dt><dd>Intel Core i5-12500H, 12 cores, 16 threads</dd>
-            <dt>Graphics</dt><dd>Intel Iris Xe · NVIDIA GeForce RTX 3050 Ti Laptop</dd>
-            <dt>Memory</dt><dd>16 GB</dd>
-            <dt>Storage</dt><dd>512 GB NVMe SSD</dd>
-            <dt>System</dt><dd>CachyOS, Linux 7.2.6</dd>
-            <dt>Desktop</dt><dd>Hyprland 0.56.2 · Quickshell 0.3.1 · Qt 6.11</dd>
+            <dt data-i18n="resources.3">Machine</dt><dd data-i18n="resources.4">HP Victus laptop</dd>
+            <dt data-i18n="resources.5">CPU</dt><dd data-i18n="resources.6">Intel Core i5-12500H, 12 cores, 16 threads</dd>
+            <dt data-i18n="resources.7">Graphics</dt><dd>Intel Iris Xe · NVIDIA GeForce RTX 3050 Ti Laptop</dd>
+            <dt data-i18n="resources.9">Memory</dt><dd>16 GB</dd>
+            <dt data-i18n="resources.11">Storage</dt><dd>512 GB NVMe SSD</dd>
+            <dt data-i18n="resources.13">System</dt><dd>CachyOS, Linux 7.2.6</dd>
+            <dt data-i18n="resources.15">Desktop</dt><dd>Hyprland 0.56.2 · Quickshell 0.3.1 · Qt 6.11</dd>
           </dl>
 
-          <h3>Memory</h3>
-          <div class="meters" role="img" aria-label="Memory: an empty Quickshell uses 63 MB; with every flare view loaded, 137 MB; one flare run peaks at 17 MB and exits; flare watch uses 5 MB.">
-            <div class="meter"><span class="meter-name">Quickshell, empty</span><span class="meter-track"><span class="meter-fill" style="--x: 46"></span></span><span class="meter-value">63 MB</span></div>
-            <div class="meter"><span class="meter-name">Quickshell + flare's views</span><span class="meter-track"><span class="meter-fill accent" style="--x: 100"></span></span><span class="meter-value">137 MB</span></div>
-            <div class="meter"><span class="meter-name">One <code>flare</code> run (peak)</span><span class="meter-track"><span class="meter-fill" style="--x: 12.4"></span></span><span class="meter-value">17 MB</span></div>
+          <h3 data-i18n="resources.17">Memory</h3>
+          <div class="meters" role="img" data-i18n-attr="aria-label:resources.memory" aria-label="Memory: an empty Quickshell uses 63 MB; with every flare view loaded, 137 MB; one flare run peaks at 17 MB and exits; flare watch uses 5 MB.">
+            <div class="meter"><span class="meter-name" data-i18n="resources.18">Quickshell, empty</span><span class="meter-track"><span class="meter-fill" style="--x: 46"></span></span><span class="meter-value">63 MB</span></div>
+            <div class="meter"><span class="meter-name" data-i18n="resources.19">Quickshell + flare's views</span><span class="meter-track"><span class="meter-fill accent" style="--x: 100"></span></span><span class="meter-value">137 MB</span></div>
+            <div class="meter"><span class="meter-name" data-i18n="resources.20">One <code>flare</code> run (peak)</span><span class="meter-track"><span class="meter-fill" style="--x: 12.4"></span></span><span class="meter-value">17 MB</span></div>
             <div class="meter"><span class="meter-name"><code>flare watch</code></span><span class="meter-track"><span class="meter-fill" style="--x: 3.6"></span></span><span class="meter-value">5 MB</span></div>
           </div>
-          <p>The views were measured with software rendering in a bare Quickshell, so the 74 MB they add includes loading Qt Quick itself. Inside a shell that already draws a bar or a dock, most of that is shared and the real cost is lower. <code>flare</code> itself holds no memory between refreshes: each run exits.</p>
+          <p data-i18n="resources.21">The views were measured with software rendering in a bare Quickshell, so the 74 MB they add includes loading Qt Quick itself. Inside a shell that already draws a bar or a dock, most of that is shared and the real cost is lower. <code>flare</code> itself holds no memory between refreshes: each run exits.</p>
 
-          <h3>Processor</h3>
+          <h3 data-i18n="resources.22">Processor</h3>
           <div class="facts-grid">
-            <div class="fact-tile"><span class="fact-value">152 ms</span><span class="fact-label">one <code>flare --provider all</code>, wall time</span></div>
-            <div class="fact-tile"><span class="fact-value">~0.2 s</span><span class="fact-label">CPU per run, across its threads</span></div>
-            <div class="fact-tile"><span class="fact-value">≈ 0.6 %</span><span class="fact-label">of one core, averaged, while the notch is on screen at the default 30 s</span></div>
-            <div class="fact-tile"><span class="fact-value">0.13 %</span><span class="fact-label">of one core for the idle views themselves</span></div>
+            <div class="fact-tile"><span class="fact-value">152 ms</span><span class="fact-label" data-i18n="resources.23">one <code>flare --provider all</code>, wall time</span></div>
+            <div class="fact-tile"><span class="fact-value">~0.2 s</span><span class="fact-label" data-i18n="resources.24">CPU per run, across its threads</span></div>
+            <div class="fact-tile"><span class="fact-value">≈ 0.6 %</span><span class="fact-label" data-i18n="resources.25">of one core, averaged, while the notch is on screen at the default 30 s</span></div>
+            <div class="fact-tile"><span class="fact-value">0.13 %</span><span class="fact-label" data-i18n="resources.26">of one core for the idle views themselves</span></div>
           </div>
-          <p>Tucked away in <code>hover</code> or <code>shortcut</code> mode, the timer stops and the cost drops to zero. <code>flare activity</code> (the usage panel's week) takes about 0.3 s and runs only while that panel is open.</p>
+          <p data-i18n="resources.27">Tucked away in <code>hover</code> or <code>shortcut</code> mode, the timer stops and the cost drops to zero. <code>flare activity</code> (the usage panel's week) takes about 0.3 s and runs only while that panel is open.</p>
 
-          <h3>Network</h3>
-          <div class="meters" role="img" aria-label="Most requests per hour in official mode: Claude 60, Codex 12, Cursor 12, Kiro 12, OpenCode none, Antigravity none. Local mode: none.">
+          <h3 data-i18n="resources.28">Network</h3>
+          <div class="meters" role="img" data-i18n-attr="aria-label:resources.network" aria-label="Most requests per hour in official mode: Claude 60, Codex 12, Cursor 12, Kiro 12, OpenCode none, Antigravity none. Local mode: none.">
             <div class="meter"><span class="meter-name">Claude Code</span><span class="meter-track"><span class="meter-fill" style="--x: 100"></span></span><span class="meter-value">≤ 60 / h</span></div>
             <div class="meter"><span class="meter-name">Codex</span><span class="meter-track"><span class="meter-fill" style="--x: 20"></span></span><span class="meter-value">≤ 12 / h</span></div>
             <div class="meter"><span class="meter-name">Cursor</span><span class="meter-track"><span class="meter-fill" style="--x: 20"></span></span><span class="meter-value">≤ 12 / h</span></div>
             <div class="meter"><span class="meter-name">Kiro</span><span class="meter-track"><span class="meter-fill" style="--x: 20"></span></span><span class="meter-value">≤ 12 / h</span></div>
-            <div class="meter"><span class="meter-name">OpenCode, Antigravity</span><span class="meter-track"><span class="meter-fill" style="--x: 0"></span></span><span class="meter-value">none</span></div>
+            <div class="meter"><span class="meter-name">OpenCode, Antigravity</span><span class="meter-track"><span class="meter-fill" style="--x: 0"></span></span><span class="meter-value" data-i18n="resources.none">none</span></div>
           </div>
-          <p>Those are ceilings, reached only while the widget keeps refreshing. A 429 backs off from a minute, doubling to fifteen, and honours the server's <code>Retry-After</code>. <code>local</code> mode makes no requests at all.</p>
+          <p data-i18n="resources.34">Those are ceilings, reached only while the widget keeps refreshing. A 429 backs off from a minute, doubling to fifteen, and honours the server's <code>Retry-After</code>. <code>local</code> mode makes no requests at all.</p>
         </section>
 
         <section id="security">
-          <h2>Security and privacy</h2>
+          <h2 data-i18n="security.1">Security and privacy</h2>
           <ul class="checks">
-            <li><strong>Credentials are borrowed, read-only.</strong> flare reads the sign-in each CLI already keeps. It never writes, copies, refreshes or stores a token, and never prints one: <code>flare doctor</code> describes a token by its length.</li>
-            <li><strong>An expired token is never sent.</strong> A 401 or 403 re-reads the credential once, in case the CLI just rotated it, and otherwise waits for you to open the CLI.</li>
-            <li><strong>Renewing a sign-in is left to the tool itself.</strong> Shortly before Claude's token expires, flare runs <code>claude -p</code> with no prompt and no input, which renews and exits; its output is discarded. Kiro's is renewed with <code>kiro-cli whoami</code>. Pin either with <code>claude.binary_path</code> / <code>kiro.binary_path</code> instead of trusting the first match on <code>PATH</code>.</li>
-            <li><strong>Cursor asks first.</strong> Reading Cursor means borrowing a live session cookie from the editor's private state. The widget asks once; declining keeps Cursor out of official mode until <code>data.cursor_consent</code> changes.</li>
-            <li><strong>State files hold no secrets</strong>, only readings, history, pacing and the session log. They are written <code>0600</code> through a temporary file and a rename, so a crash never leaves half a file.</li>
-            <li><strong>Log trees are read defensively.</strong> Symlinks are never followed, recursion stops at depth 12, collection stops at 20 000 files, and a damaged line is reported without losing the rest of the file.</li>
-            <li><strong>The status line hooks are passive.</strong> They make no network request, never write Claude Code's or agy's own files, and a failed capture never delays or breaks your status line.</li>
-            <li><strong>Jumping to a session reads only what it needs</strong>: the session's own <code>/proc/&lt;pid&gt;</code> entries, and from its environment only kitty's window variables.</li>
-            <li><strong>Nothing phones home.</strong> No telemetry, no analytics, no update check. The only outbound requests are the usage endpoints in the table above.</li>
+            <li data-i18n="security.2"><strong>Credentials are borrowed, read-only.</strong> flare reads the sign-in each CLI already keeps. It never writes, copies, refreshes or stores a token, and never prints one: <code>flare doctor</code> describes a token by its length.</li>
+            <li data-i18n="security.3"><strong>An expired token is never sent.</strong> A 401 or 403 re-reads the credential once, in case the CLI just rotated it, and otherwise waits for you to open the CLI.</li>
+            <li data-i18n="security.4"><strong>Renewing a sign-in is left to the tool itself.</strong> Shortly before Claude's token expires, flare runs <code>claude -p</code> with no prompt and no input, which renews and exits; its output is discarded. Kiro's is renewed with <code>kiro-cli whoami</code>. Pin either with <code>claude.binary_path</code> / <code>kiro.binary_path</code> instead of trusting the first match on <code>PATH</code>.</li>
+            <li data-i18n="security.5"><strong>Cursor asks first.</strong> Reading Cursor means borrowing a live session cookie from the editor's private state. The widget asks once; declining keeps Cursor out of official mode until <code>data.cursor_consent</code> changes.</li>
+            <li data-i18n="security.6"><strong>State files hold no secrets</strong>, only readings, history, pacing and the session log. They are written <code>0600</code> through a temporary file and a rename, so a crash never leaves half a file.</li>
+            <li data-i18n="security.7"><strong>Log trees are read defensively.</strong> Symlinks are never followed, recursion stops at depth 12, collection stops at 20 000 files, and a damaged line is reported without losing the rest of the file.</li>
+            <li data-i18n="security.8"><strong>The status line hooks are passive.</strong> They make no network request, never write Claude Code's or agy's own files, and a failed capture never delays or breaks your status line.</li>
+            <li data-i18n="security.9"><strong>Jumping to a session reads only what it needs</strong>: the session's own <code>/proc/&lt;pid&gt;</code> entries, and from its environment only kitty's window variables.</li>
+            <li data-i18n="security.10"><strong>Nothing phones home.</strong> No telemetry, no analytics, no update check. The only outbound requests are the usage endpoints in the table above.</li>
           </ul>
         </section>
 
         <section id="install">
-          <h2>Install</h2>
-          <p>Requires Quickshell 0.3+ and Qt 6.6+, on Hyprland (other Wayland compositors run the widget, without jumping to a session's window).</p>
+          <h2 data-i18n="install.1">Install</h2>
+          <p data-i18n="install.2">Requires Quickshell 0.3+ and Qt 6.6+, on Hyprland (other Wayland compositors run the widget, without jumping to a session's window).</p>
 <pre class="copyable"><code><span class="prompt">$ </span>git clone https://github.com/lunanoir21/flare-notch</code>
 <code><span class="prompt">$ </span>cd flare-notch</code>
 <code><span class="prompt">$ </span>./install.sh</code></pre>
           <p><code>install.sh</code>:</p>
           <ul>
-            <li>builds <code>flare</code> with Cargo if Rust 1.85+ is installed; otherwise downloads the latest release build (x86_64, glibc 2.39+);</li>
-            <li>puts it in <code>~/.local/bin</code> (set <code>FLARE_BIN_DIR</code> to change that);</li>
-            <li>adds <strong>flare</strong> to your app launcher: <code>~/.local/share/applications/flare.desktop</code>, its icon, and <code>flare-settings</code> beside the binary;</li>
-            <li>runs <code>flare doctor</code>, so you see at once what it found.</li>
+            <li data-i18n="install.3">builds <code>flare</code> with Cargo if Rust 1.85+ is installed; otherwise downloads the latest release build (x86_64, glibc 2.39+);</li>
+            <li data-i18n="install.4">puts it in <code>~/.local/bin</code> (set <code>FLARE_BIN_DIR</code> to change that);</li>
+            <li data-i18n="install.5">adds <strong>flare</strong> to your app launcher: <code>~/.local/share/applications/flare.desktop</code>, its icon, and <code>flare-settings</code> beside the binary;</li>
+            <li data-i18n="install.6">runs <code>flare doctor</code>, so you see at once what it found.</li>
           </ul>
-          <p>By hand, <code>cargo build --release</code> is enough: the widget finds the binary it was built next to. The prebuilt binary on its own: <a href="https://github.com/lunanoir21/flare-notch/releases/latest/download/flare-x86_64-linux.tar.gz">flare-x86_64-linux.tar.gz</a> (<a href="https://github.com/lunanoir21/flare-notch/releases/latest/download/flare-x86_64-linux.tar.gz.sha256">sha256</a>).</p>
+          <p data-i18n="install.7">By hand, <code>cargo build --release</code> is enough: the widget finds the binary it was built next to. The prebuilt binary on its own: <a href="https://github.com/lunanoir21/flare-notch/releases/latest/download/flare-x86_64-linux.tar.gz">flare-x86_64-linux.tar.gz</a> (<a href="https://github.com/lunanoir21/flare-notch/releases/latest/download/flare-x86_64-linux.tar.gz.sha256">sha256</a>).</p>
         </section>
 
         <section id="running">
-          <h2>Running it</h2>
-          <h3>On its own</h3>
+          <h2 data-i18n="running.1">Running it</h2>
+          <h3 data-i18n="running.2">On its own</h3>
 <pre class="copyable"><code><span class="prompt">$ </span>quickshell -p /path/to/flare-notch/ui</code></pre>
-          <h3>Inside the shell you already have</h3>
+          <h3 data-i18n="running.3">Inside the shell you already have</h3>
 <pre class="copyable"><code>import "path/to/flare-notch/ui" as Flare
 
 ShellRoot {
     Flare.FlareHost {}
 }</code></pre>
-          <h3>At login</h3>
-          <p>In <code>hyprland.conf</code>:</p>
+          <h3 data-i18n="running.4">At login</h3>
+          <p data-i18n="running.5">In <code>hyprland.conf</code>:</p>
 <pre class="copyable"><code>exec-once = quickshell -p /path/to/flare-notch/ui</code></pre>
-          <h3>From your app launcher</h3>
-          <p>Open <strong>flare</strong> from rofi, wofi, fuzzel or any launcher that reads <code>.desktop</code> files. It opens the settings page in whichever running Quickshell has flare loaded, and starts the widget on its own first if none does.</p>
+          <h3 data-i18n="running.6">From your app launcher</h3>
+          <p data-i18n="running.7">Open <strong>flare</strong> from rofi, wofi, fuzzel or any launcher that reads <code>.desktop</code> files. It opens the settings page in whichever running Quickshell has flare loaded, and starts the widget on its own first if none does.</p>
         </section>
 
         <section id="widget">
-          <h2>Using the widget</h2>
-          <h3>Three looks — <code>notch.style</code></h3>
+          <h2 data-i18n="widget.1">Using the widget</h2>
+          <h3 data-i18n="widget.2">Three looks — <code>notch.style</code></h3>
           <dl class="defs">
-            <dt>classic</dt><dd>Codenotch's notch: a black body on the left or right edge, one ring per provider.</dd>
-            <dt>aura</dt><dd>One provider at a time, large and tinted with its colour; the others wait below as small logos. <code>next</code> / <code>prev</code> step through them.</dd>
-            <dt>compact</dt><dd>A thin strip on the top or bottom edge that opens into a panel with a row per provider, on click or on hover (<code>compact.open_on</code>).</dd>
+            <dt>classic</dt><dd data-i18n="widget.4">Codenotch's notch: a black body on the left or right edge, one ring per provider.</dd>
+            <dt>aura</dt><dd data-i18n="widget.6">One provider at a time, large and tinted with its colour; the others wait below as small logos. <code>next</code> / <code>prev</code> step through them.</dd>
+            <dt>compact</dt><dd data-i18n="widget.8">A thin strip on the top or bottom edge that opens into a panel with a row per provider, on click or on hover (<code>compact.open_on</code>).</dd>
           </dl>
-          <h3>Meeting the edge — <code>notch.mount</code></h3>
+          <h3 data-i18n="widget.9">Meeting the edge — <code>notch.mount</code></h3>
           <dl class="defs">
-            <dt>bridge</dt><dd>Welded to the edge with inverse rounded corners. The default.</dd>
-            <dt>floating</dt><dd>A rounded panel held <code>notch.gap</code> pixels off the edge.</dd>
-            <dt>flush</dt><dd>A strip along the whole edge that flares into the screen at both ends.</dd>
+            <dt>bridge</dt><dd data-i18n="widget.11">Welded to the edge with inverse rounded corners. The default.</dd>
+            <dt>floating</dt><dd data-i18n="widget.13">A rounded panel held <code>notch.gap</code> pixels off the edge.</dd>
+            <dt>flush</dt><dd data-i18n="widget.15">A strip along the whole edge that flares into the screen at both ends.</dd>
           </dl>
-          <h3>When it shows — <code>notch.reveal</code></h3>
+          <h3 data-i18n="widget.16">When it shows — <code>notch.reveal</code></h3>
           <dl class="defs">
-            <dt>always</dt><dd>Always on screen.</dd>
-            <dt>hover</dt><dd>Tucked past the edge; slides in after the pointer rests there for <code>reveal_delay_ms</code>, out <code>hide_delay_ms</code> after it leaves.</dd>
-            <dt>shortcut</dt><dd>Tucked away until <code>qs ipc call flare toggleVisible</code>, which you bind to a key.</dd>
+            <dt>always</dt><dd data-i18n="widget.18">Always on screen.</dd>
+            <dt>hover</dt><dd data-i18n="widget.20">Tucked past the edge; slides in after the pointer rests there for <code>reveal_delay_ms</code>, out <code>hide_delay_ms</code> after it leaves.</dd>
+            <dt>shortcut</dt><dd data-i18n="widget.22">Tucked away until <code>qs ipc call flare toggleVisible</code>, which you bind to a key.</dd>
           </dl>
-          <h3>Reading a ring</h3>
-          <p>A ring fills clockwise from 12 o'clock with the share of the provider's headline limit used. Under it, <code>notch.label</code> shows the percentage, the time until the reset, or both. A provider with no limit (OpenCode) shows today's tokens instead, and a credit plan (Kiro) shows the credits left.</p>
-          <p>With <code>theme.ring_color = "monochrome"</code> rings are drawn in contrast only, with one accent reserved for a critical state; <code>"provider"</code> paints each ring in its own aura colour. The hover card's bars go green, orange and red as a limit fills. A reading that could not be refreshed is dimmed, never invented.</p>
-          <h3>With the pointer</h3>
+          <h3 data-i18n="widget.23">Reading a ring</h3>
+          <p data-i18n="widget.24">A ring fills clockwise from 12 o'clock with the share of the provider's headline limit used. Under it, <code>notch.label</code> shows the percentage, the time until the reset, or both. A provider with no limit (OpenCode) shows today's tokens instead, and a credit plan (Kiro) shows the credits left.</p>
+          <p data-i18n="widget.25">With <code>theme.ring_color = "monochrome"</code> rings are drawn in contrast only, with one accent reserved for a critical state; <code>"provider"</code> paints each ring in its own aura colour. The hover card's bars go green, orange and red as a limit fills. A reading that could not be refreshed is dimmed, never invented.</p>
+          <h3 data-i18n="widget.26">With the pointer</h3>
           <dl class="defs">
-            <dt>Hover a ring</dt><dd>Opens its card: every limit with its reset time, the plan, the login, and the open sessions.</dd>
-            <dt>Click a ring</dt><dd>Opens that provider's own usage page (Claude, Codex, Cursor).</dd>
-            <dt>The card's arrow</dt><dd>Opens the usage panel on that provider.</dd>
-            <dt>Right-click</dt><dd>Opens the settings page.</dd>
-            <dt>Drag</dt><dd>Moves it along its edge; the offset is saved.</dd>
+            <dt data-i18n="widget.27">Hover a ring</dt><dd data-i18n="widget.28">Opens its card: every limit with its reset time, the plan, the login, and the open sessions.</dd>
+            <dt data-i18n="widget.29">Click a ring</dt><dd data-i18n="widget.30">Opens that provider's own usage page (Claude, Codex, Cursor).</dd>
+            <dt data-i18n="widget.31">The card's arrow</dt><dd data-i18n="widget.32">Opens the usage panel on that provider.</dd>
+            <dt data-i18n="widget.33">Right-click</dt><dd data-i18n="widget.34">Opens the settings page.</dd>
+            <dt data-i18n="widget.35">Drag</dt><dd data-i18n="widget.36">Moves it along its edge; the offset is saved.</dd>
           </dl>
         </section>
 
         <section id="sessions">
-          <h2>Open sessions</h2>
-          <p>The card lists the Claude Code sessions running right now, folded under a <strong>Sessions</strong> header, each with its name, project, age and state: working, <strong>waiting on you</strong> (with what it is waiting for), or idle. Clicking a row brings its terminal to the front.</p>
-          <p>The list comes from the records Claude Code itself writes to <code>~/.claude/sessions/&lt;pid&gt;.json</code>. A record counts only while its process is alive and still the one that wrote it (the start time in <code>/proc/&lt;pid&gt;/stat</code> must match), and, on Hyprland, while its terminal still has a window.</p>
-          <p>In kitty, the jump can also select the session's tab or split. That needs kitty's remote control on a socket, in <code>kitty.conf</code>:</p>
+          <h2 data-i18n="sessions.1">Open sessions</h2>
+          <p data-i18n="sessions.2">The card lists the Claude Code sessions running right now, folded under a <strong>Sessions</strong> header, each with its name, project, age and state: working, <strong>waiting on you</strong> (with what it is waiting for), or idle. Clicking a row brings its terminal to the front.</p>
+          <p data-i18n="sessions.3">The list comes from the records Claude Code itself writes to <code>~/.claude/sessions/&lt;pid&gt;.json</code>. A record counts only while its process is alive and still the one that wrote it (the start time in <code>/proc/&lt;pid&gt;/stat</code> must match), and, on Hyprland, while its terminal still has a window.</p>
+          <p data-i18n="sessions.4">In kitty, the jump can also select the session's tab or split. That needs kitty's remote control on a socket, in <code>kitty.conf</code>:</p>
 <pre class="copyable"><code>allow_remote_control socket-only
 listen_on unix:@kitty</code></pre>
-          <p>The same jump from a terminal: <code>flare focus &lt;pid&gt;</code>. <code>sessions.show = false</code> hides the list entirely.</p>
+          <p data-i18n="sessions.5">The same jump from a terminal: <code>flare focus &lt;pid&gt;</code>. <code>sessions.show = false</code> hides the list entirely.</p>
         </section>
 
         <section id="usage-panel">
-          <h2>The usage panel</h2>
-          <p>Open it from the arrow on a card, or with <code>qs ipc call flare usage &lt;provider&gt;</code>. A deck of provider cards runs across the top; pick one with the pointer or ← / →, and Esc closes the panel. For the one picked:</p>
+          <h2 data-i18n="usage-panel.1">The usage panel</h2>
+          <p data-i18n="usage-panel.2">Open it from the arrow on a card, or with <code>qs ipc call flare usage &lt;provider&gt;</code>. A deck of provider cards runs across the top; pick one with the pointer or ← / →, and Esc closes the panel. For the one picked:</p>
           <ul>
-            <li><strong>When you use it</strong>: the week of its longest limit hour by hour as a heatmap (the last seven days for a provider with no limit), with the busiest hours, the quietest day and the reset.</li>
-            <li><strong>Today's sessions</strong> on a timeline, closed ones included; click an open Claude Code one to jump to it.</li>
-            <li><strong>Limits</strong>: each one, how much of its time has gone, and where today's pace takes it.</li>
-            <li><strong>How the longest limit filled</strong> over its period, with today's pace dashed ahead.</li>
-            <li><strong>The last seven days</strong> and <strong>the hours of the day</strong>.</li>
-            <li><strong>The models that took the most</strong> this week.</li>
-            <li><strong>This week's sessions</strong> as a table.</li>
+            <li data-i18n="usage-panel.3"><strong>When you use it</strong>: the week of its longest limit hour by hour as a heatmap (the last seven days for a provider with no limit), with the busiest hours, the quietest day and the reset.</li>
+            <li data-i18n="usage-panel.4"><strong>Today's sessions</strong> on a timeline, closed ones included; click an open Claude Code one to jump to it.</li>
+            <li data-i18n="usage-panel.5"><strong>Limits</strong>: each one, how much of its time has gone, and where today's pace takes it.</li>
+            <li data-i18n="usage-panel.6"><strong>How the longest limit filled</strong> over its period, with today's pace dashed ahead.</li>
+            <li data-i18n="usage-panel.7"><strong>The last seven days</strong> and <strong>the hours of the day</strong>.</li>
+            <li data-i18n="usage-panel.8"><strong>The models that took the most</strong> this week.</li>
+            <li data-i18n="usage-panel.9"><strong>This week's sessions</strong> as a table.</li>
           </ul>
-          <p>Token counts are read from each provider's own logs, every reply counted once (Claude Code repeats a reply's usage on each content block, and a resumed session copies old replies; neither is double counted). Kiro counts credits instead. <code>usage.all_providers = true</code> also lists providers switched off in the widget.</p>
+          <p data-i18n="usage-panel.10">Token counts are read from each provider's own logs, every reply counted once (Claude Code repeats a reply's usage on each content block, and a resumed session copies old replies; neither is double counted). Kiro counts credits instead. <code>usage.all_providers = true</code> also lists providers switched off in the widget.</p>
         </section>
 
         <section id="logins">
-          <h2>More than one login</h2>
-          <p>Two Claude Code logins are two rings, and so are two Codex ones. A folder <code>~/.claude-&lt;name&gt;</code> or <code>~/.codex-&lt;name&gt;</code> that holds a sign-in is found on its own and becomes <code>claude:&lt;name&gt;</code>, with the name's initial on its ring. Sign in to one by pointing the CLI at it once:</p>
+          <h2 data-i18n="logins.1">More than one login</h2>
+          <p data-i18n="logins.2">Two Claude Code logins are two rings, and so are two Codex ones. A folder <code>~/.claude-&lt;name&gt;</code> or <code>~/.codex-&lt;name&gt;</code> that holds a sign-in is found on its own and becomes <code>claude:&lt;name&gt;</code>, with the name's initial on its ring. Sign in to one by pointing the CLI at it once:</p>
 <pre class="copyable"><code><span class="prompt">$ </span>CLAUDE_CONFIG_DIR=~/.claude-work claude      <span class="comment"># then /login</span></code>
 <code><span class="prompt">$ </span>CODEX_HOME=~/.codex-work codex login</code></pre>
-          <p>A login kept anywhere else goes in the config:</p>
+          <p data-i18n="logins.3">A login kept anywhere else goes in the config:</p>
 <pre class="copyable"><code>[[account]]
 provider = "claude"        # or "codex"
 name = "work"              # lower-case letters, digits, - and _
 home = "~/work/.claude"    # what CLAUDE_CONFIG_DIR / CODEX_HOME is set to
 color = "#E0A458"          # optional: aura's colour for this login</code></pre>
-          <p>The default login keeps the plain id (<code>claude</code>), so a config and history from before carry on unchanged. Every login is read, renewed, recorded and reported on its own; <code>providers.claude = false</code> hides every Claude login at once, and <code>providers.accounts_off</code> hides them one by one. Everything that takes a provider takes a login too: <code>card claude:work</code>, <code>flare --provider claude:work</code>.</p>
+          <p data-i18n="logins.4">The default login keeps the plain id (<code>claude</code>), so a config and history from before carry on unchanged. Every login is read, renewed, recorded and reported on its own; <code>providers.claude = false</code> hides every Claude login at once, and <code>providers.accounts_off</code> hides them one by one. Everything that takes a provider takes a login too: <code>card claude:work</code>, <code>flare --provider claude:work</code>.</p>
         </section>
 
         <section id="notifications">
-          <h2>Notifications</h2>
-          <p><code>flare watch</code> is the one long-running process: the widget starts it while any notification is switched on, and it exits when they all are off or the widget goes away. It rescans sessions every two seconds (a few small files, no child processes) and usage at the widget's pace, never more than once a minute. It sends, with <code>notify-send</code>:</p>
+          <h2 data-i18n="notifications.1">Notifications</h2>
+          <p data-i18n="notifications.2"><code>flare watch</code> is the one long-running process: the widget starts it while any notification is switched on, and it exits when they all are off or the widget goes away. It rescans sessions every two seconds (a few small files, no child processes) and usage at the widget's pace, never more than once a minute. It sends, with <code>notify-send</code>:</p>
           <dl class="defs">
-            <dt>notify.waiting</dt><dd>A session stops and waits on you. The notification's action jumps to it.</dd>
-            <dt>notify.limit</dt><dd>A limit reaches <code>notify.limit_at</code> percent (50–100), once per limit period.</dd>
-            <dt>notify.reset</dt><dd>A limit you had been using resets.</dd>
+            <dt>notify.waiting</dt><dd data-i18n="notifications.4">A session stops and waits on you. The notification's action jumps to it.</dd>
+            <dt>notify.limit</dt><dd data-i18n="notifications.6">A limit reaches <code>notify.limit_at</code> percent (50–100), once per limit period.</dd>
+            <dt>notify.reset</dt><dd data-i18n="notifications.8">A limit you had been using resets.</dd>
           </dl>
-          <p>Starting the watcher never replays what was already true: the first reading of anything is only a baseline.</p>
+          <p data-i18n="notifications.9">Starting the watcher never replays what was already true: the first reading of anything is only a baseline.</p>
         </section>
 
         <section id="providers">
-          <h2>Providers</h2>
+          <h2 data-i18n="providers.1">Providers</h2>
           <div class="provider-cards">
             <div class="pcard" style="--aura: #D97757">
               <h3>Claude Code</h3>
-              <p><strong>Official:</strong> <code>api.anthropic.com/api/oauth/usage</code> with Claude Code's own OAuth token; the session and weekly limits, and any model-scoped weekly ones. Renewed with <code>claude -p</code> a few minutes before expiry, once per token, at most every ten minutes. Where the endpoint cannot answer, a status line capture younger than half an hour stands in.</p>
-              <p><strong>Local:</strong> the status line capture only.</p>
-              <p><strong>Tokens:</strong> <code>~/.claude/projects/**/*.jsonl</code>. <strong>Pace:</strong> 1 min.</p>
+              <p data-i18n="providers.3"><strong>Official:</strong> <code>api.anthropic.com/api/oauth/usage</code> with Claude Code's own OAuth token; the session and weekly limits, and any model-scoped weekly ones. Renewed with <code>claude -p</code> a few minutes before expiry, once per token, at most every ten minutes. Where the endpoint cannot answer, a status line capture younger than half an hour stands in.</p>
+              <p data-i18n="providers.4"><strong>Local:</strong> the status line capture only.</p>
+              <p data-i18n="providers.5"><strong>Tokens:</strong> <code>~/.claude/projects/**/*.jsonl</code>. <strong>Pace:</strong> 1 min.</p>
             </div>
             <div class="pcard" style="--aura: #6E7BFF">
               <h3>Codex</h3>
-              <p><strong>Official:</strong> <code>chatgpt.com/backend-api/wham/usage</code> with the session in <code>~/.codex/auth.json</code>; the primary and secondary windows, and Spark and code review limits under their own headings. The token is never refreshed: a 401 means open Codex once.</p>
-              <p><strong>Local and fallback:</strong> the limits Codex wrote into its newest rollout log, current for five minutes.</p>
-              <p><strong>Pace:</strong> 5 min.</p>
+              <p data-i18n="providers.7"><strong>Official:</strong> <code>chatgpt.com/backend-api/wham/usage</code> with the session in <code>~/.codex/auth.json</code>; the primary and secondary windows, and Spark and code review limits under their own headings. The token is never refreshed: a 401 means open Codex once.</p>
+              <p data-i18n="providers.8"><strong>Local and fallback:</strong> the limits Codex wrote into its newest rollout log, current for five minutes.</p>
+              <p data-i18n="providers.9"><strong>Pace:</strong> 5 min.</p>
             </div>
             <div class="pcard" style="--aura: #3DD6C6">
               <h3>Cursor</h3>
-              <p><strong>Official:</strong> <code>cursor.com/api/usage-summary</code> with the editor's own session, after a one-time yes.</p>
-              <p><strong>Local:</strong> Cursor keeps no usage on disk, so nothing.</p>
-              <p><strong>Pace:</strong> 5 min.</p>
+              <p data-i18n="providers.11"><strong>Official:</strong> <code>cursor.com/api/usage-summary</code> with the editor's own session, after a one-time yes.</p>
+              <p data-i18n="providers.12"><strong>Local:</strong> Cursor keeps no usage on disk, so nothing.</p>
+              <p data-i18n="providers.13"><strong>Pace:</strong> 5 min.</p>
             </div>
             <div class="pcard" style="--aura: #C9CED6">
               <h3>OpenCode</h3>
-              <p>Runs on your own API keys, so there is no limit to show: the ring shows today's tokens. Everything comes from its local database, in both modes; sessions and models from its history.</p>
+              <p data-i18n="providers.15">Runs on your own API keys, so there is no limit to show: the ring shows today's tokens. Everything comes from its local database, in both modes; sessions and models from its history.</p>
             </div>
             <div class="pcard" style="--aura: #4F8DF7">
               <h3>Antigravity</h3>
-              <p>agy keeps each model group's quota in memory and hands it only to its status line command, so the quotas come from the <a href="#captures">status line capture</a>. Tokens, models and sessions come from its per-conversation databases. No network, in either mode.</p>
+              <p data-i18n="providers.17">agy keeps each model group's quota in memory and hands it only to its status line command, so the quotas come from the <a href="#captures">status line capture</a>. Tokens, models and sessions come from its per-conversation databases. No network, in either mode.</p>
             </div>
             <div class="pcard" style="--aura: #9046FF">
               <h3>Kiro</h3>
-              <p><strong>Official:</strong> <code>getUsageLimits</code> with the sign-in <code>kiro-cli</code> keeps; the month's credits, shown as credits left, and when they refill. The sign-in lasts an hour and is renewed shortly before by running <code>kiro-cli whoami</code>.</p>
-              <p><strong>Local:</strong> credits per request from <code>~/.kiro/sessions/cli</code>, with no allowance. <strong>Pace:</strong> 5 min.</p>
+              <p data-i18n="providers.19"><strong>Official:</strong> <code>getUsageLimits</code> with the sign-in <code>kiro-cli</code> keeps; the month's credits, shown as credits left, and when they refill. The sign-in lasts an hour and is renewed shortly before by running <code>kiro-cli whoami</code>.</p>
+              <p data-i18n="providers.20"><strong>Local:</strong> credits per request from <code>~/.kiro/sessions/cli</code>, with no allowance. <strong>Pace:</strong> 5 min.</p>
             </div>
           </div>
         </section>
 
         <section id="captures">
-          <h2>Status line captures</h2>
-          <p>Claude Code and agy hand their live limits only to their status line command. The hooks in <code>hooks/</code> save that payload to <code>~/.local/state/flare</code> and then run your real status line unchanged.</p>
+          <h2 data-i18n="captures.1">Status line captures</h2>
+          <p data-i18n="captures.2">Claude Code and agy hand their live limits only to their status line command. The hooks in <code>hooks/</code> save that payload to <code>~/.local/state/flare</code> and then run your real status line unchanged.</p>
           <h3>Claude Code</h3>
-          <p>Needed for <code>local</code> mode; in official mode it only stands in when the endpoint is down. In <code>~/.claude/settings.json</code>, put the hook in front of the command you already use:</p>
+          <p data-i18n="captures.4">Needed for <code>local</code> mode; in official mode it only stands in when the endpoint is down. In <code>~/.claude/settings.json</code>, put the hook in front of the command you already use:</p>
 <pre class="copyable"><code>"statusLine": {
   "type": "command",
   "command": "/path/to/flare-notch/hooks/claude-statusline-capture.sh npx -y @owloops/claude-powerline@latest"
 }</code></pre>
-          <p>The hook runs, in order: its own arguments as the command; <code>$FLARE_STATUSLINE_DELEGATE</code>; <code>statusline-command.sh</code> in Claude Code's directory. With none of them it captures and prints nothing. Each login gets its own capture file, so every login's status line can point at the same hook.</p>
+          <p data-i18n="captures.5">The hook runs, in order: its own arguments as the command; <code>$FLARE_STATUSLINE_DELEGATE</code>; <code>statusline-command.sh</code> in Claude Code's directory. With none of them it captures and prints nothing. Each login gets its own capture file, so every login's status line can point at the same hook.</p>
           <h3>Antigravity</h3>
-          <p>In <code>~/.gemini/antigravity-cli/settings.json</code>, keeping agy's own line:</p>
+          <p data-i18n="captures.7">In <code>~/.gemini/antigravity-cli/settings.json</code>, keeping agy's own line:</p>
 <pre class="copyable"><code>"statusLine": {
   "command": "/path/to/flare-notch/hooks/agy-statusline-capture.sh",
   "enabled": true,
@@ -407,219 +422,219 @@ color = "#E0A458"          # optional: aura's colour for this login</code></pre>
         </section>
 
         <section id="config">
-          <h2>Configuration reference</h2>
-          <p>Everything lives in <code>~/.config/flare/config.toml</code>. Every key is optional; delete a line to get its default back. The settings page and <code>flare config set</code> write the same file, keep its comments, and refuse a value the key cannot hold. The widget picks up a saved change within a second. <code>flare config init</code> writes a commented file holding every default.</p>
+          <h2 data-i18n="config.1">Configuration reference</h2>
+          <p data-i18n="config.2">Everything lives in <code>~/.config/flare/config.toml</code>. Every key is optional; delete a line to get its default back. The settings page and <code>flare config set</code> write the same file, keep its comments, and refuse a value the key cannot hold. The widget picks up a saved change within a second. <code>flare config init</code> writes a commented file holding every default.</p>
           <div class="table-scroll">
             <table class="ref keys">
-              <thead><tr><th scope="col">Key</th><th scope="col">Values</th><th scope="col">Default</th><th scope="col">What it does</th></tr></thead>
+              <thead><tr><th scope="col" data-i18n="config.3">Key</th><th scope="col" data-i18n="config.4">Values</th><th scope="col" data-i18n="config.5">Default</th><th scope="col" data-i18n="config.6">What it does</th></tr></thead>
               <tbody>
                 <tr class="group"><th colspan="4">[data]</th></tr>
-                <tr><td><code>data.mode</code></td><td>official, local</td><td>official</td><td>Where numbers come from. <code>local</code> never touches the network.</td></tr>
-                <tr><td><code>data.cursor_consent</code></td><td>unset, granted, declined</td><td>unset</td><td>Your answer to reading Cursor's live session.</td></tr>
-                <tr class="group"><th colspan="4">[theme] and [ui]</th></tr>
-                <tr><td><code>theme.mode</code></td><td>black, white, auto</td><td>black</td><td><code>auto</code> follows the desktop's light/dark preference.</td></tr>
-                <tr><td><code>theme.ring_color</code></td><td>monochrome, provider</td><td>monochrome</td><td>Rings in contrast only, or in each provider's aura colour.</td></tr>
-                <tr><td><code>ui.language</code></td><td>auto, en, tr</td><td>auto</td><td><code>auto</code> follows LC_ALL, LC_MESSAGES or LANG.</td></tr>
+                <tr><td><code>data.mode</code></td><td>official, local</td><td>official</td><td data-i18n="config.10">Where numbers come from. <code>local</code> never touches the network.</td></tr>
+                <tr><td><code>data.cursor_consent</code></td><td>unset, granted, declined</td><td>unset</td><td data-i18n="config.13">Your answer to reading Cursor's live session.</td></tr>
+                <tr class="group"><th colspan="4" data-i18n="config.14">[theme] and [ui]</th></tr>
+                <tr><td><code>theme.mode</code></td><td>black, white, auto</td><td>black</td><td data-i18n="config.17"><code>auto</code> follows the desktop's light/dark preference.</td></tr>
+                <tr><td><code>theme.ring_color</code></td><td>monochrome, provider</td><td>monochrome</td><td data-i18n="config.20">Rings in contrast only, or in each provider's aura colour.</td></tr>
+                <tr><td><code>ui.language</code></td><td>auto, en, tr</td><td>auto</td><td data-i18n="config.23"><code>auto</code> follows LC_ALL, LC_MESSAGES or LANG.</td></tr>
                 <tr class="group"><th colspan="4">[notch]</th></tr>
-                <tr><td><code>notch.style</code></td><td>classic, aura, compact</td><td>classic</td><td>The look.</td></tr>
-                <tr><td><code>notch.mount</code></td><td>bridge, floating, flush</td><td>bridge</td><td>How it meets the edge.</td></tr>
-                <tr><td><code>notch.gap</code></td><td>0–64</td><td>8</td><td>Floating only: pixels between the panel and the edge.</td></tr>
-                <tr><td><code>notch.reveal</code></td><td>always, hover, shortcut</td><td>always</td><td>When it is on screen.</td></tr>
-                <tr><td><code>notch.reveal_delay_ms</code></td><td>0–5000</td><td>80</td><td>Hover: rest on the edge this long before it slides in.</td></tr>
-                <tr><td><code>notch.hide_delay_ms</code></td><td>0–5000</td><td>400</td><td>Hover: slide away this long after the pointer leaves.</td></tr>
-                <tr><td><code>notch.edge</code></td><td>left, right</td><td>left</td><td>Edge for classic and aura.</td></tr>
-                <tr><td><code>notch.offset</code></td><td>pixels</td><td>0</td><td>Along the edge from the centre; positive moves it down.</td></tr>
-                <tr><td><code>notch.scale</code></td><td>0.5–2.0</td><td>1.0</td><td>Size multiplier.</td></tr>
-                <tr><td><code>notch.screen</code></td><td>output name</td><td>""</td><td>As <code>hyprctl monitors</code> names it. Empty: every screen.</td></tr>
-                <tr><td><code>notch.label</code></td><td>percent, time, both</td><td>percent</td><td>What sits under each ring.</td></tr>
+                <tr><td><code>notch.style</code></td><td>classic, aura, compact</td><td>classic</td><td data-i18n="config.27">The look.</td></tr>
+                <tr><td><code>notch.mount</code></td><td>bridge, floating, flush</td><td>bridge</td><td data-i18n="config.30">How it meets the edge.</td></tr>
+                <tr><td><code>notch.gap</code></td><td>0–64</td><td>8</td><td data-i18n="config.31">Floating only: pixels between the panel and the edge.</td></tr>
+                <tr><td><code>notch.reveal</code></td><td>always, hover, shortcut</td><td>always</td><td data-i18n="config.34">When it is on screen.</td></tr>
+                <tr><td><code>notch.reveal_delay_ms</code></td><td>0–5000</td><td>80</td><td data-i18n="config.35">Hover: rest on the edge this long before it slides in.</td></tr>
+                <tr><td><code>notch.hide_delay_ms</code></td><td>0–5000</td><td>400</td><td data-i18n="config.36">Hover: slide away this long after the pointer leaves.</td></tr>
+                <tr><td><code>notch.edge</code></td><td>left, right</td><td>left</td><td data-i18n="config.39">Edge for classic and aura.</td></tr>
+                <tr><td><code>notch.offset</code></td><td data-i18n="config.40">pixels</td><td>0</td><td data-i18n="config.41">Along the edge from the centre; positive moves it down.</td></tr>
+                <tr><td><code>notch.scale</code></td><td>0.5–2.0</td><td>1.0</td><td data-i18n="config.42">Size multiplier.</td></tr>
+                <tr><td><code>notch.screen</code></td><td data-i18n="config.43">output name</td><td>""</td><td data-i18n="config.44">As <code>hyprctl monitors</code> names it. Empty: every screen.</td></tr>
+                <tr><td><code>notch.label</code></td><td>percent, time, both</td><td>percent</td><td data-i18n="config.47">What sits under each ring.</td></tr>
                 <tr class="group"><th colspan="4">[compact]</th></tr>
-                <tr><td><code>compact.edge</code></td><td>top, bottom</td><td>top</td><td>Edge for the compact strip.</td></tr>
-                <tr><td><code>compact.offset</code></td><td>pixels</td><td>0</td><td>Along the edge from the centre; positive moves it right.</td></tr>
-                <tr><td><code>compact.open_on</code></td><td>click, hover</td><td>click</td><td>How the panel opens.</td></tr>
+                <tr><td><code>compact.edge</code></td><td>top, bottom</td><td>top</td><td data-i18n="config.51">Edge for the compact strip.</td></tr>
+                <tr><td><code>compact.offset</code></td><td data-i18n="config.52">pixels</td><td>0</td><td data-i18n="config.53">Along the edge from the centre; positive moves it right.</td></tr>
+                <tr><td><code>compact.open_on</code></td><td>click, hover</td><td>click</td><td data-i18n="config.56">How the panel opens.</td></tr>
                 <tr class="group"><th colspan="4">[providers]</th></tr>
-                <tr><td><code>providers.claude</code> … <code>.kiro</code></td><td>true, false</td><td>true</td><td>One switch per provider, for all its logins.</td></tr>
-                <tr><td><code>providers.order</code></td><td>list of ids</td><td>claude, codex, opencode, cursor, antigravity, kiro</td><td>Drawing order, and the order aura steps through. Logins by id; one left out follows its provider.</td></tr>
-                <tr><td><code>providers.find_accounts</code></td><td>true, false</td><td>true</td><td>Find logins in <code>~/.claude-&lt;name&gt;</code> and <code>~/.codex-&lt;name&gt;</code>.</td></tr>
-                <tr><td><code>providers.accounts_off</code></td><td>list of ids</td><td>[]</td><td>Logins switched off one by one, e.g. <code>claude:work</code>.</td></tr>
+                <tr><td><code>providers.claude</code> … <code>.kiro</code></td><td>true, false</td><td>true</td><td data-i18n="config.60">One switch per provider, for all its logins.</td></tr>
+                <tr><td><code>providers.order</code></td><td data-i18n="config.61">list of ids</td><td>claude, codex, opencode, cursor, antigravity, kiro</td><td data-i18n="config.63">Drawing order, and the order aura steps through. Logins by id; one left out follows its provider.</td></tr>
+                <tr><td><code>providers.find_accounts</code></td><td>true, false</td><td>true</td><td data-i18n="config.66">Find logins in <code>~/.claude-&lt;name&gt;</code> and <code>~/.codex-&lt;name&gt;</code>.</td></tr>
+                <tr><td><code>providers.accounts_off</code></td><td data-i18n="config.67">list of ids</td><td>[]</td><td data-i18n="config.68">Logins switched off one by one, e.g. <code>claude:work</code>.</td></tr>
                 <tr class="group"><th colspan="4">[aura], [sessions], [usage]</th></tr>
-                <tr><td><code>aura.claude</code> … <code>.kiro</code></td><td>#RRGGBB</td><td>each provider's colour</td><td>Aura's tint, and the ring colour with <code>ring_color = "provider"</code>.</td></tr>
-                <tr><td><code>sessions.show</code></td><td>true, false</td><td>true</td><td>The card's session list.</td></tr>
-                <tr><td><code>usage.all_providers</code></td><td>true, false</td><td>false</td><td>Also list, and read, switched-off providers in the usage panel.</td></tr>
+                <tr><td><code>aura.claude</code> … <code>.kiro</code></td><td>#RRGGBB</td><td data-i18n="config.71">each provider's colour</td><td data-i18n="config.72">Aura's tint, and the ring colour with <code>ring_color = "provider"</code>.</td></tr>
+                <tr><td><code>sessions.show</code></td><td>true, false</td><td>true</td><td data-i18n="config.75">The card's session list.</td></tr>
+                <tr><td><code>usage.all_providers</code></td><td>true, false</td><td>false</td><td data-i18n="config.78">Also list, and read, switched-off providers in the usage panel.</td></tr>
                 <tr class="group"><th colspan="4">[notify]</th></tr>
-                <tr><td><code>notify.waiting</code></td><td>true, false</td><td>true</td><td>A session waits on you.</td></tr>
-                <tr><td><code>notify.limit</code></td><td>true, false</td><td>true</td><td>A limit reaches <code>limit_at</code>.</td></tr>
-                <tr><td><code>notify.limit_at</code></td><td>50–100</td><td>90</td><td>The threshold, in percent.</td></tr>
-                <tr><td><code>notify.reset</code></td><td>true, false</td><td>true</td><td>A used limit resets.</td></tr>
+                <tr><td><code>notify.waiting</code></td><td>true, false</td><td>true</td><td data-i18n="config.82">A session waits on you.</td></tr>
+                <tr><td><code>notify.limit</code></td><td>true, false</td><td>true</td><td data-i18n="config.85">A limit reaches <code>limit_at</code>.</td></tr>
+                <tr><td><code>notify.limit_at</code></td><td>50–100</td><td>90</td><td data-i18n="config.86">The threshold, in percent.</td></tr>
+                <tr><td><code>notify.reset</code></td><td>true, false</td><td>true</td><td data-i18n="config.89">A used limit resets.</td></tr>
                 <tr class="group"><th colspan="4">[poll], [scan]</th></tr>
-                <tr><td><code>poll.interval_secs</code></td><td>≥ 5</td><td>30</td><td>Widget refresh. Network reads keep their own slower pace.</td></tr>
-                <tr><td><code>scan.window_days</code></td><td>≥ 1</td><td>1</td><td>Days of local logs counted toward token and credit totals.</td></tr>
-                <tr class="group"><th colspan="4">Programs</th></tr>
-                <tr><td><code>claude.binary_path</code></td><td>path</td><td>PATH lookup</td><td>The <code>claude</code> used to renew the token.</td></tr>
-                <tr><td><code>kiro.binary_path</code></td><td>path</td><td>PATH lookup</td><td>The <code>kiro-cli</code> used to renew the sign-in.</td></tr>
-                <tr><td><code>codex.binary_path</code>, <code>opencode.binary_path</code></td><td>path</td><td>PATH lookup</td><td>Pin a program that is not on PATH.</td></tr>
-                <tr><td><code>flare.binary_path</code></td><td>path</td><td>search</td><td>For a compositor that starts Quickshell without your login shell's PATH.</td></tr>
+                <tr><td><code>poll.interval_secs</code></td><td>≥ 5</td><td>30</td><td data-i18n="config.91">Widget refresh. Network reads keep their own slower pace.</td></tr>
+                <tr><td><code>scan.window_days</code></td><td>≥ 1</td><td>1</td><td data-i18n="config.92">Days of local logs counted toward token and credit totals.</td></tr>
+                <tr class="group"><th colspan="4" data-i18n="config.93">Programs</th></tr>
+                <tr><td><code>claude.binary_path</code></td><td data-i18n="config.94">path</td><td data-i18n="config.95">PATH lookup</td><td data-i18n="config.96">The <code>claude</code> used to renew the token.</td></tr>
+                <tr><td><code>kiro.binary_path</code></td><td data-i18n="config.97">path</td><td data-i18n="config.98">PATH lookup</td><td data-i18n="config.99">The <code>kiro-cli</code> used to renew the sign-in.</td></tr>
+                <tr><td><code>codex.binary_path</code>, <code>opencode.binary_path</code></td><td data-i18n="config.100">path</td><td data-i18n="config.101">PATH lookup</td><td data-i18n="config.102">Pin a program that is not on PATH.</td></tr>
+                <tr><td><code>flare.binary_path</code></td><td data-i18n="config.103">path</td><td data-i18n="config.104">search</td><td data-i18n="config.105">For a compositor that starts Quickshell without your login shell's PATH.</td></tr>
                 <tr class="group"><th colspan="4">[[account]]</th></tr>
-                <tr><td><code>provider</code>, <code>name</code>, <code>home</code>, <code>color</code></td><td>see <a href="#logins">More than one login</a></td><td>—</td><td>A login that lives somewhere <code>find_accounts</code> does not look.</td></tr>
+                <tr><td><code>provider</code>, <code>name</code>, <code>home</code>, <code>color</code></td><td data-i18n="config.107">see <a href="#logins">More than one login</a></td><td>—</td><td data-i18n="config.108">A login that lives somewhere <code>find_accounts</code> does not look.</td></tr>
               </tbody>
             </table>
           </div>
-          <p>List keys take either form: <code>flare config set providers.order claude,codex,opencode</code> or <code>'["claude", "codex"]'</code>. A file that fails to parse or validate falls back to defaults and says why in <code>flare doctor</code> and on the settings page; a typo never stops the widget from drawing.</p>
+          <p data-i18n="config.109">List keys take either form: <code>flare config set providers.order claude,codex,opencode</code> or <code>'["claude", "codex"]'</code>. A file that fails to parse or validate falls back to defaults and says why in <code>flare doctor</code> and on the settings page; a typo never stops the widget from drawing.</p>
         </section>
 
         <section id="ipc">
-          <h2>IPC reference</h2>
-          <p>flare listens on Quickshell IPC as the target <code>flare</code>.</p>
+          <h2 data-i18n="ipc.1">IPC reference</h2>
+          <p data-i18n="ipc.2">flare listens on Quickshell IPC as the target <code>flare</code>.</p>
           <div class="table-scroll">
             <table class="ref">
-              <thead><tr><th scope="col">Call</th><th scope="col">Does</th></tr></thead>
+              <thead><tr><th scope="col" data-i18n="ipc.3">Call</th><th scope="col" data-i18n="ipc.4">Does</th></tr></thead>
               <tbody>
-                <tr><td><code>next</code>, <code>prev</code></td><td>Step aura to the next or previous provider.</td></tr>
-                <tr><td><code>toggle</code></td><td>Open or close the compact panel.</td></tr>
-                <tr><td><code>toggleVisible</code>, <code>show</code>, <code>hide</code></td><td>Bring the widget in or tuck it away (hover and shortcut reveal).</td></tr>
-                <tr><td><code>toggleSessions</code></td><td>Open or fold the card's session list.</td></tr>
-                <tr><td><code>card &lt;provider&gt;</code></td><td>Open a provider's card without the pointer, bringing the notch in; again to close.</td></tr>
-                <tr><td><code>usage &lt;provider&gt;</code></td><td>Open the usage panel on a provider; again to close.</td></tr>
-                <tr><td><code>style classic|aura|compact</code></td><td>Switch the look (saved to the config).</td></tr>
-                <tr><td><code>settings</code></td><td>Open or close the settings page.</td></tr>
-                <tr><td><code>openSettings</code></td><td>Open the settings page, leaving it open if it already is.</td></tr>
-                <tr><td><code>refresh</code></td><td>Read now, skipping each provider's pace (a server's retry deadline still holds).</td></tr>
+                <tr><td><code>next</code>, <code>prev</code></td><td data-i18n="ipc.5">Step aura to the next or previous provider.</td></tr>
+                <tr><td><code>toggle</code></td><td data-i18n="ipc.6">Open or close the compact panel.</td></tr>
+                <tr><td><code>toggleVisible</code>, <code>show</code>, <code>hide</code></td><td data-i18n="ipc.7">Bring the widget in or tuck it away (hover and shortcut reveal).</td></tr>
+                <tr><td><code>toggleSessions</code></td><td data-i18n="ipc.8">Open or fold the card's session list.</td></tr>
+                <tr><td><code>card &lt;provider&gt;</code></td><td data-i18n="ipc.9">Open a provider's card without the pointer, bringing the notch in; again to close.</td></tr>
+                <tr><td><code>usage &lt;provider&gt;</code></td><td data-i18n="ipc.10">Open the usage panel on a provider; again to close.</td></tr>
+                <tr><td><code>style classic|aura|compact</code></td><td data-i18n="ipc.11">Switch the look (saved to the config).</td></tr>
+                <tr><td><code>settings</code></td><td data-i18n="ipc.12">Open or close the settings page.</td></tr>
+                <tr><td><code>openSettings</code></td><td data-i18n="ipc.13">Open the settings page, leaving it open if it already is.</td></tr>
+                <tr><td><code>refresh</code></td><td data-i18n="ipc.14">Read now, skipping each provider's pace (a server's retry deadline still holds).</td></tr>
               </tbody>
             </table>
           </div>
-          <p>For Hyprland, with flare inside the shell at <code>~/.config/quickshell/shell.qml</code>:</p>
+          <p data-i18n="ipc.15">For Hyprland, with flare inside the shell at <code>~/.config/quickshell/shell.qml</code>:</p>
 <pre class="copyable"><code>bind = SUPER, right,     exec, qs ipc call flare next
 bind = SUPER, left,      exec, qs ipc call flare prev
 bind = SUPER, U,         exec, qs ipc call flare toggle
 bind = SUPER SHIFT, U,   exec, qs ipc call flare toggleVisible
 bind = SUPER, C,         exec, qs ipc call flare card claude</code></pre>
-          <p>Add <code>-p /path/to/shell.qml</code> after <code>qs</code> when your shell lives elsewhere, or <code>--pid &lt;pid&gt;</code> when more than one Quickshell runs (<code>qs list --all</code>).</p>
+          <p data-i18n="ipc.16">Add <code>-p /path/to/shell.qml</code> after <code>qs</code> when your shell lives elsewhere, or <code>--pid &lt;pid&gt;</code> when more than one Quickshell runs (<code>qs list --all</code>).</p>
         </section>
 
         <section id="cli">
-          <h2>Command line</h2>
-          <p>In JSON mode stdout carries JSON and nothing else; diagnostics go to stderr. <code>doctor</code> is the one plain-text command.</p>
+          <h2 data-i18n="cli.1">Command line</h2>
+          <p data-i18n="cli.2">In JSON mode stdout carries JSON and nothing else; diagnostics go to stderr. <code>doctor</code> is the one plain-text command.</p>
           <div class="table-scroll">
             <table class="ref">
-              <thead><tr><th scope="col">Command</th><th scope="col">Does</th></tr></thead>
+              <thead><tr><th scope="col" data-i18n="cli.3">Command</th><th scope="col" data-i18n="cli.4">Does</th></tr></thead>
               <tbody>
-                <tr><td><code>flare</code></td><td>Read every provider and print a JSON array. The widget runs this.</td></tr>
-                <tr><td><code>flare --provider &lt;id&gt;</code></td><td>One provider or login (<code>claude</code>, <code>claude:work</code>, …) as a JSON object.</td></tr>
-                <tr><td><code>flare --refresh</code></td><td>Read now instead of waiting for each provider's pace.</td></tr>
-                <tr><td><code>flare doctor</code></td><td>Where flare looked and what it found, per provider and login. Never prints a secret.</td></tr>
-                <tr><td><code>flare activity --provider &lt;id&gt;</code></td><td>Use per hour over the last eight days, with the models, as JSON.</td></tr>
-                <tr><td><code>flare focus &lt;pid&gt;</code></td><td>Bring a live session's terminal to the front (Hyprland).</td></tr>
-                <tr><td><code>flare watch</code></td><td>Stay running and send notifications, as <code>[notify]</code> sets them.</td></tr>
-                <tr><td><code>flare config path</code></td><td>Print the config file's path.</td></tr>
-                <tr><td><code>flare config init [--force]</code></td><td>Write a commented config with every default.</td></tr>
-                <tr><td><code>flare config get</code></td><td>The effective config, the drawing order and every login, as JSON.</td></tr>
-                <tr><td><code>flare config set &lt;key&gt; &lt;value&gt;</code></td><td>Set one key, keeping the file's comments.</td></tr>
+                <tr><td><code>flare</code></td><td data-i18n="cli.5">Read every provider and print a JSON array. The widget runs this.</td></tr>
+                <tr><td><code>flare --provider &lt;id&gt;</code></td><td data-i18n="cli.6">One provider or login (<code>claude</code>, <code>claude:work</code>, …) as a JSON object.</td></tr>
+                <tr><td><code>flare --refresh</code></td><td data-i18n="cli.7">Read now instead of waiting for each provider's pace.</td></tr>
+                <tr><td><code>flare doctor</code></td><td data-i18n="cli.8">Where flare looked and what it found, per provider and login. Never prints a secret.</td></tr>
+                <tr><td><code>flare activity --provider &lt;id&gt;</code></td><td data-i18n="cli.9">Use per hour over the last eight days, with the models, as JSON.</td></tr>
+                <tr><td><code>flare focus &lt;pid&gt;</code></td><td data-i18n="cli.10">Bring a live session's terminal to the front (Hyprland).</td></tr>
+                <tr><td><code>flare watch</code></td><td data-i18n="cli.11">Stay running and send notifications, as <code>[notify]</code> sets them.</td></tr>
+                <tr><td><code>flare config path</code></td><td data-i18n="cli.12">Print the config file's path.</td></tr>
+                <tr><td><code>flare config init [--force]</code></td><td data-i18n="cli.13">Write a commented config with every default.</td></tr>
+                <tr><td><code>flare config get</code></td><td data-i18n="cli.14">The effective config, the drawing order and every login, as JSON.</td></tr>
+                <tr><td><code>flare config set &lt;key&gt; &lt;value&gt;</code></td><td data-i18n="cli.15">Set one key, keeping the file's comments.</td></tr>
               </tbody>
             </table>
           </div>
         </section>
 
         <section id="json">
-          <h2>The JSON output</h2>
-          <p>Each provider or login is one object. The keys are stable from 1.0.0 on: new ones may appear, existing ones keep their meaning.</p>
+          <h2 data-i18n="json.1">The JSON output</h2>
+          <p data-i18n="json.2">Each provider or login is one object. The keys are stable from 1.0.0 on: new ones may appear, existing ones keep their meaning.</p>
           <div class="table-scroll">
             <table class="ref">
-              <thead><tr><th scope="col">Key</th><th scope="col">Meaning</th></tr></thead>
+              <thead><tr><th scope="col" data-i18n="json.3">Key</th><th scope="col" data-i18n="json.4">Meaning</th></tr></thead>
               <tbody>
-                <tr><td><code>provider</code></td><td>The id: <code>claude</code>, or <code>claude:work</code> for another login.</td></tr>
-                <tr><td><code>status</code></td><td>See the statuses below.</td></tr>
-                <tr><td><code>note</code></td><td>One line on why the status is what it is.</td></tr>
-                <tr><td><code>source</code></td><td><code>official</code> or <code>local</code>: where these windows came from.</td></tr>
-                <tr><td><code>account</code>, <code>plan</code></td><td>Whose readings these are (a label, never used to sign in) and the plan.</td></tr>
-                <tr><td><code>metered</code></td><td>Whether the provider has a rate limit at all.</td></tr>
-                <tr><td><code>hidden</code></td><td>Switched off in the widget, read only for the usage panel.</td></tr>
-                <tr><td><code>windows</code></td><td>Each limit: <code>id</code>, <code>label</code>, <code>group</code>, <code>used</code> (0–1), <code>window_minutes</code>, <code>resets_at</code>, <code>resets_in_secs</code>, <code>reset_elapsed</code>, and for a credit limit <code>amount</code> (<code>used</code>, <code>limit</code>, <code>unit</code>).</td></tr>
-                <tr><td><code>headline</code></td><td>The window the ring draws, by id.</td></tr>
-                <tr><td><code>fetched_at</code>, <code>backoff_until</code></td><td>When the reading was taken; no network read before this time.</td></tr>
-                <tr><td><code>tokens_today</code>, <code>credits_today</code></td><td>Over <code>scan.window_days</code>.</td></tr>
-                <tr><td><code>cost_today_usd</code>, <code>cost_is_estimated</code></td><td>Where a provider reports cost; an estimate is never a bill.</td></tr>
-                <tr><td><code>error</code></td><td>Category-prefixed detail, e.g. <code>parse error: …</code>.</td></tr>
-                <tr><td><code>sessions</code></td><td>Open now: <code>pid</code>, <code>name</code>, <code>project</code>, <code>state</code>, <code>waiting_for</code>, <code>started_at</code>.</td></tr>
-                <tr><td><code>history</code></td><td>Per window id, <code>[unix seconds, fraction used]</code> over the window's length.</td></tr>
-                <tr><td><code>session_log</code></td><td>Sessions seen over the last week, closed ones included.</td></tr>
+                <tr><td><code>provider</code></td><td data-i18n="json.5">The id: <code>claude</code>, or <code>claude:work</code> for another login.</td></tr>
+                <tr><td><code>status</code></td><td data-i18n="json.6">See the statuses below.</td></tr>
+                <tr><td><code>note</code></td><td data-i18n="json.7">One line on why the status is what it is.</td></tr>
+                <tr><td><code>source</code></td><td data-i18n="json.8"><code>official</code> or <code>local</code>: where these windows came from.</td></tr>
+                <tr><td><code>account</code>, <code>plan</code></td><td data-i18n="json.9">Whose readings these are (a label, never used to sign in) and the plan.</td></tr>
+                <tr><td><code>metered</code></td><td data-i18n="json.10">Whether the provider has a rate limit at all.</td></tr>
+                <tr><td><code>hidden</code></td><td data-i18n="json.11">Switched off in the widget, read only for the usage panel.</td></tr>
+                <tr><td><code>windows</code></td><td data-i18n="json.12">Each limit: <code>id</code>, <code>label</code>, <code>group</code>, <code>used</code> (0–1), <code>window_minutes</code>, <code>resets_at</code>, <code>resets_in_secs</code>, <code>reset_elapsed</code>, and for a credit limit <code>amount</code> (<code>used</code>, <code>limit</code>, <code>unit</code>).</td></tr>
+                <tr><td><code>headline</code></td><td data-i18n="json.13">The window the ring draws, by id.</td></tr>
+                <tr><td><code>fetched_at</code>, <code>backoff_until</code></td><td data-i18n="json.14">When the reading was taken; no network read before this time.</td></tr>
+                <tr><td><code>tokens_today</code>, <code>credits_today</code></td><td data-i18n="json.15">Over <code>scan.window_days</code>.</td></tr>
+                <tr><td><code>cost_today_usd</code>, <code>cost_is_estimated</code></td><td data-i18n="json.16">Where a provider reports cost; an estimate is never a bill.</td></tr>
+                <tr><td><code>error</code></td><td data-i18n="json.17">Category-prefixed detail, e.g. <code>parse error: …</code>.</td></tr>
+                <tr><td><code>sessions</code></td><td data-i18n="json.18">Open now: <code>pid</code>, <code>name</code>, <code>project</code>, <code>state</code>, <code>waiting_for</code>, <code>started_at</code>.</td></tr>
+                <tr><td><code>history</code></td><td data-i18n="json.19">Per window id, <code>[unix seconds, fraction used]</code> over the window's length.</td></tr>
+                <tr><td><code>session_log</code></td><td data-i18n="json.20">Sessions seen over the last week, closed ones included.</td></tr>
               </tbody>
             </table>
           </div>
-          <h3>Statuses</h3>
+          <h3 data-i18n="json.21">Statuses</h3>
           <dl class="defs">
-            <dt>ok</dt><dd>A reading taken just now, or recent enough to stand (five minutes).</dd>
-            <dt>stale</dt><dd>The last good reading, kept because a fresh one could not be taken. Drawn dimmed.</dd>
-            <dt>needs_auth</dt><dd>No usable sign-in. Open the provider's CLI once.</dd>
-            <dt>needs_consent</dt><dd>Cursor, before you have answered the one-time question.</dd>
-            <dt>backoff</dt><dd>Asked to slow down, with no earlier reading to show.</dd>
-            <dt>error</dt><dd>A fresh reading failed and there is no earlier one.</dd>
-            <dt>none</dt><dd>Present, but nothing metered or recorded yet.</dd>
-            <dt>absent</dt><dd>Not installed here; no cell is drawn.</dd>
+            <dt>ok</dt><dd data-i18n="json.23">A reading taken just now, or recent enough to stand (five minutes).</dd>
+            <dt>stale</dt><dd data-i18n="json.25">The last good reading, kept because a fresh one could not be taken. Drawn dimmed.</dd>
+            <dt>needs_auth</dt><dd data-i18n="json.27">No usable sign-in. Open the provider's CLI once.</dd>
+            <dt>needs_consent</dt><dd data-i18n="json.29">Cursor, before you have answered the one-time question.</dd>
+            <dt>backoff</dt><dd data-i18n="json.31">Asked to slow down, with no earlier reading to show.</dd>
+            <dt>error</dt><dd data-i18n="json.33">A fresh reading failed and there is no earlier one.</dd>
+            <dt>none</dt><dd data-i18n="json.35">Present, but nothing metered or recorded yet.</dd>
+            <dt>absent</dt><dd data-i18n="json.37">Not installed here; no cell is drawn.</dd>
           </dl>
         </section>
 
         <section id="files">
-          <h2>Files</h2>
+          <h2 data-i18n="files.1">Files</h2>
           <div class="table-scroll">
             <table class="ref">
-              <thead><tr><th scope="col">Path</th><th scope="col">What</th></tr></thead>
+              <thead><tr><th scope="col" data-i18n="files.2">Path</th><th scope="col" data-i18n="files.3">What</th></tr></thead>
               <tbody>
-                <tr><td><code>~/.config/flare/config.toml</code></td><td>Your settings.</td></tr>
-                <tr><td><code>~/.local/state/flare/&lt;id&gt;.json</code></td><td>The last reading and its pacing (last attempt, back-off, renewal bookkeeping). No token.</td></tr>
-                <tr><td><code>~/.local/state/flare/history-&lt;id&gt;.json</code></td><td>How each limit filled.</td></tr>
-                <tr><td><code>~/.local/state/flare/sessions-&lt;id&gt;.json</code></td><td>The session log, kept eight days.</td></tr>
-                <tr><td><code>~/.local/state/flare/claude-statusline*.json</code>, <code>agy-statusline.json</code></td><td>Status line captures, one per login.</td></tr>
-                <tr><td><code>~/.local/bin/flare</code>, <code>flare-settings</code></td><td>The binary and the launcher's helper.</td></tr>
-                <tr><td><code>~/.local/share/applications/flare.desktop</code></td><td>The launcher entry; its icon sits under <code>~/.local/share/icons/hicolor/scalable/apps/</code>.</td></tr>
+                <tr><td><code>~/.config/flare/config.toml</code></td><td data-i18n="files.4">Your settings.</td></tr>
+                <tr><td><code>~/.local/state/flare/&lt;id&gt;.json</code></td><td data-i18n="files.5">The last reading and its pacing (last attempt, back-off, renewal bookkeeping). No token.</td></tr>
+                <tr><td><code>~/.local/state/flare/history-&lt;id&gt;.json</code></td><td data-i18n="files.6">How each limit filled.</td></tr>
+                <tr><td><code>~/.local/state/flare/sessions-&lt;id&gt;.json</code></td><td data-i18n="files.7">The session log, kept eight days.</td></tr>
+                <tr><td><code>~/.local/state/flare/claude-statusline*.json</code>, <code>agy-statusline.json</code></td><td data-i18n="files.8">Status line captures, one per login.</td></tr>
+                <tr><td><code>~/.local/bin/flare</code>, <code>flare-settings</code></td><td data-i18n="files.9">The binary and the launcher's helper.</td></tr>
+                <tr><td><code>~/.local/share/applications/flare.desktop</code></td><td data-i18n="files.10">The launcher entry; its icon sits under <code>~/.local/share/icons/hicolor/scalable/apps/</code>.</td></tr>
               </tbody>
             </table>
           </div>
-          <p>Everything under <code>~/.local/state/flare</code> is safe to delete: flare starts over with an empty history.</p>
+          <p data-i18n="files.11">Everything under <code>~/.local/state/flare</code> is safe to delete: flare starts over with an empty history.</p>
         </section>
 
         <section id="troubleshooting">
-          <h2>Troubleshooting</h2>
-          <p>Start with <code>flare doctor</code>: it prints, per provider and login, the files it looked for, whether a sign-in is usable, where renewal would run, the last capture, and the reading it gets.</p>
+          <h2 data-i18n="troubleshooting.1">Troubleshooting</h2>
+          <p data-i18n="troubleshooting.2">Start with <code>flare doctor</code>: it prints, per provider and login, the files it looked for, whether a sign-in is usable, where renewal would run, the last capture, and the reading it gets.</p>
           <dl class="faq">
-            <dt>The notch shows nothing at all</dt>
-            <dd>The widget cannot find <code>flare</code>. Check <code>qs log</code>; set <code>flare.binary_path</code>, which a compositor-started Quickshell needs when <code>~/.local/bin</code> is not on its PATH.</dd>
-            <dt>A provider has no ring</dt>
-            <dd>It is not installed (status <code>absent</code>), or switched off in the settings page.</dd>
-            <dt>A ring is dimmed</dt>
-            <dd>The reading is stale: the endpoint failed or is backing off. The card's note says which.</dd>
-            <dt>"Credential expired" on Claude</dt>
-            <dd>flare could not renew the token. Run <code>claude</code> once; if renewal keeps failing, pin <code>claude.binary_path</code>.</dd>
-            <dt>Claude shows nothing in local mode</dt>
-            <dd>Point Claude Code's status line at the capture hook (<a href="#captures">above</a>).</dd>
-            <dt>A second login is not found</dt>
-            <dd>The folder needs a sign-in in it (<code>.credentials.json</code> for Claude, <code>auth.json</code> for Codex), and its name must be lower-case letters, digits, <code>-</code> or <code>_</code>.</dd>
-            <dt>Clicking a session does nothing</dt>
-            <dd>Jumping needs Hyprland (<code>hyprctl</code>); selecting kitty's tab needs its remote control socket.</dd>
-            <dt>No notifications</dt>
-            <dd><code>notify-send</code> must be installed and a notification daemon running; check that <code>[notify]</code> has something switched on.</dd>
+            <dt data-i18n="troubleshooting.3">The notch shows nothing at all</dt>
+            <dd data-i18n="troubleshooting.4">The widget cannot find <code>flare</code>. Check <code>qs log</code>; set <code>flare.binary_path</code>, which a compositor-started Quickshell needs when <code>~/.local/bin</code> is not on its PATH.</dd>
+            <dt data-i18n="troubleshooting.5">A provider has no ring</dt>
+            <dd data-i18n="troubleshooting.6">It is not installed (status <code>absent</code>), or switched off in the settings page.</dd>
+            <dt data-i18n="troubleshooting.7">A ring is dimmed</dt>
+            <dd data-i18n="troubleshooting.8">The reading is stale: the endpoint failed or is backing off. The card's note says which.</dd>
+            <dt data-i18n="troubleshooting.9">"Credential expired" on Claude</dt>
+            <dd data-i18n="troubleshooting.10">flare could not renew the token. Run <code>claude</code> once; if renewal keeps failing, pin <code>claude.binary_path</code>.</dd>
+            <dt data-i18n="troubleshooting.11">Claude shows nothing in local mode</dt>
+            <dd data-i18n="troubleshooting.12">Point Claude Code's status line at the capture hook (<a href="#captures">above</a>).</dd>
+            <dt data-i18n="troubleshooting.13">A second login is not found</dt>
+            <dd data-i18n="troubleshooting.14">The folder needs a sign-in in it (<code>.credentials.json</code> for Claude, <code>auth.json</code> for Codex), and its name must be lower-case letters, digits, <code>-</code> or <code>_</code>.</dd>
+            <dt data-i18n="troubleshooting.15">Clicking a session does nothing</dt>
+            <dd data-i18n="troubleshooting.16">Jumping needs Hyprland (<code>hyprctl</code>); selecting kitty's tab needs its remote control socket.</dd>
+            <dt data-i18n="troubleshooting.17">No notifications</dt>
+            <dd data-i18n="troubleshooting.18"><code>notify-send</code> must be installed and a notification daemon running; check that <code>[notify]</code> has something switched on.</dd>
           </dl>
         </section>
 
         <section id="uninstall">
-          <h2>Uninstall</h2>
+          <h2 data-i18n="uninstall.1">Uninstall</h2>
 <pre class="copyable"><code>rm ~/.local/bin/flare ~/.local/bin/flare-settings
 rm ~/.local/share/applications/flare.desktop
 rm ~/.local/share/icons/hicolor/scalable/apps/flare.svg
 rm -r ~/.config/flare ~/.local/state/flare</code></pre>
-          <p>Then remove the <code>exec-once</code> line or the <code>FlareHost</code> import, and the hook from any <code>statusLine</code> you pointed at it. flare changed nothing else.</p>
+          <p data-i18n="uninstall.2">Then remove the <code>exec-once</code> line or the <code>FlareHost</code> import, and the hook from any <code>statusLine</code> you pointed at it. flare changed nothing else.</p>
         </section>
 
         <section id="development">
-          <h2>Development</h2>
+          <h2 data-i18n="development.1">Development</h2>
           <dl class="defs">
-            <dt><code>core/</code></dt><dd>The providers, config, sessions, history and pacing (<code>flare-core</code>).</dd>
-            <dt><code>cli/</code></dt><dd>The <code>flare</code> command.</dd>
-            <dt><code>ui/</code></dt><dd>The QML widget. Every visible string lives in <code>Strings.qml</code>, in English and Turkish.</dd>
-            <dt><code>hooks/</code></dt><dd>The status line captures.</dd>
-            <dt><code>tools/shots/</code></dt><dd>Makes every screenshot from a made-up world, drawn by flare's own QML with no compositor: <code>tools/shots/shots.sh</code>.</dd>
+            <dt><code>core/</code></dt><dd data-i18n="development.2">The providers, config, sessions, history and pacing (<code>flare-core</code>).</dd>
+            <dt><code>cli/</code></dt><dd data-i18n="development.3">The <code>flare</code> command.</dd>
+            <dt><code>ui/</code></dt><dd data-i18n="development.4">The QML widget. Every visible string lives in <code>Strings.qml</code>, in English and Turkish.</dd>
+            <dt><code>hooks/</code></dt><dd data-i18n="development.5">The status line captures.</dd>
+            <dt><code>tools/shots/</code></dt><dd data-i18n="development.6">Makes every screenshot from a made-up world, drawn by flare's own QML with no compositor: <code>tools/shots/shots.sh</code>.</dd>
           </dl>
 <pre class="copyable"><code><span class="prompt">$ </span>cargo test</code>
 <code><span class="prompt">$ </span>cargo clippy -- -D warnings</code></pre>
-          <p>CI runs both on every push. A release is a <code>## x.y.z</code> section in <code>CHANGELOG.md</code>, the same version in <code>Cargo.toml</code>, and a pushed <code>vX.Y.Z</code> tag: the release workflow checks the three agree, tests, builds on Ubuntu 24.04 and publishes the binary and its checksum.</p>
+          <p data-i18n="development.7">CI runs both on every push. A release is a <code>## x.y.z</code> section in <code>CHANGELOG.md</code>, the same version in <code>Cargo.toml</code>, and a pushed <code>vX.Y.Z</code> tag: the release workflow checks the three agree, tests, builds on Ubuntu 24.04 and publishes the binary and its checksum.</p>
         </section>
 
       </article>
@@ -627,15 +642,17 @@ rm -r ~/.config/flare ~/.local/state/flare</code></pre>
   </main>
 
   <footer class="foot">
-    <p>flare is MIT licensed.</p>
+    <p data-i18n="foot.1">flare is MIT licensed.</p>
     <nav aria-label="Footer">
-      <a href="./">Home</a>
-      <a href="changelog.html">Changelog</a>
-      <a href="https://github.com/lunanoir21/flare-notch/releases">Releases</a>
-      <a href="https://github.com/lunanoir21/flare-notch/blob/main/README.tr.md">Türkçe</a>
+      <a href="./" data-i18n="foot.2">Home</a>
+      <a href="changelog.html" data-i18n="foot.3">Changelog</a>
+      <a href="https://github.com/lunanoir21/flare-notch/releases" data-i18n="foot.4">Releases</a>
+      <a href="https://github.com/lunanoir21/flare-notch/blob/main/README.tr.md" data-i18n="foot.5">Türkçe</a>
     </nav>
   </footer>
 
+  <script src="i18n/tr.js" defer></script>
+  <script src="i18n.js" defer></script>
   <script src="news.js" defer></script>
   <script src="site.js" defer></script>
   <script src="docs.js" defer></script>
