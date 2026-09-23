@@ -13,7 +13,7 @@ screen.
 [![Hyprland](https://img.shields.io/badge/Hyprland-wlroots-111111?style=flat-square)](https://hyprland.org/)
 [![License](https://img.shields.io/badge/License-MIT-111111?style=flat-square)](LICENSE)
 
-**[Website](https://lunanoir21.github.io/flare-notch/)** · [Türkçe README](README.tr.md)
+**[Website](https://lunanoir21.github.io/flare-notch/)** · **[Documentation](https://lunanoir21.github.io/flare-notch/docs.html)** · [Türkçe README](README.tr.md)
 
 <img src="docs/screenshots/themes.png" width="720" alt="The notch on the left edge with Claude's hover card open, in the black theme and in the white theme">
 

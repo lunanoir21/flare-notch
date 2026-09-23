@@ -13,7 +13,7 @@ gösterir.
 [![Hyprland](https://img.shields.io/badge/Hyprland-wlroots-111111?style=flat-square)](https://hyprland.org/)
 [![Lisans](https://img.shields.io/badge/Lisans-MIT-111111?style=flat-square)](LICENSE)
 
-**[Web sitesi](https://lunanoir21.github.io/flare-notch/)** · [English README](README.md)
+**[Web sitesi](https://lunanoir21.github.io/flare-notch/)** · **[Dokümantasyon](https://lunanoir21.github.io/flare-notch/docs.html)** (İngilizce) · [English README](README.md)
 
 <img src="docs/screenshots/themes.png" width="720" alt="Sol kenardaki notch ve açık Claude hover kartı, siyah ve beyaz temada">
 
