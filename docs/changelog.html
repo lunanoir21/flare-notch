@@ -3,10 +3,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Changelog — flare</title>
+  <title data-i18n="chg-head.1">Changelog — flare</title>
   <meta name="theme-color" content="#000000">
-  <meta name="description" content="Every flare release and what changed in it.">
+  <meta name="description" data-i18n-attr="content:chg-head.desc" content="Every flare release and what changed in it.">
   <script>try { if (localStorage.getItem("flare-theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+  <script>
+    (function () {
+      var root = document.documentElement, known = /^(en|tr)$/, asked = new URLSearchParams(location.search).get("lang"), saved = null;
+      try { saved = localStorage.getItem("flare-lang"); } catch (e) {}
+      var lang = known.test(asked) ? asked : known.test(saved) ? saved : /^tr\b/i.test(navigator.language || "") ? "tr" : "en";
+      if (asked === lang) try { localStorage.setItem("flare-lang", lang); } catch (e) {}
+      root.dataset.lang = lang;
+      if (lang !== "en") {
+        root.classList.add("i18n-pending");
+        setTimeout(function () { root.classList.remove("i18n-pending"); }, 2000);
+      }
+    })();
+  </script>
+  <link rel="alternate" hreflang="en" href="https://lunanoir21.github.io/flare-notch/changelog.html?lang=en">
+  <link rel="alternate" hreflang="tr" href="https://lunanoir21.github.io/flare-notch/changelog.html?lang=tr">
   <link rel="icon" href="assets/flare.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,9 +34,9 @@
   <header class="top">
     <a class="wordmark" href="./"><img src="assets/flare.svg" alt="" width="28" height="28">flare</a>
     <nav aria-label="Site">
-      <a href="docs.html">Docs</a>
-      <a href="changelog.html" aria-current="page">Changelog</a>
-      <a href="credits.html">Credits</a>
+      <a href="docs.html" data-i18n="nav.2">Docs</a>
+      <a href="changelog.html" aria-current="page" data-i18n="nav.3">Changelog</a>
+      <a href="credits.html" data-i18n="nav.4">Credits</a>
       <a class="wide" href="https://github.com/lunanoir21/flare-notch">GitHub</a>
       <button class="theme" type="button" aria-label="Switch to the white theme">
         <svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.6A5.6 5.6 0 0 1 6.4 2.5a5.6 5.6 0 1 0 7.1 7.1Z"/></svg>
@@ -32,25 +47,27 @@
 
   <main id="main">
     <div class="page-head">
-      <span class="tag">CHANGELOG.md</span>
-      <h1>Changelog</h1>
-      <p class="lede">Every release and what changed in it, newest first. This page reads the changelog straight from the repository.</p>
+      <span class="tag" data-i18n="chg-divpage-head.1">CHANGELOG.md</span>
+      <h1 data-i18n="chg-divpage-head.2">Changelog</h1>
+      <p class="lede" data-i18n="chg-divpage-head.3">Every release and what changed in it, newest first. This page reads the changelog straight from the repository.</p>
     </div>
     <div class="log" id="log" aria-live="polite">
-      <p>Loading the changelog…</p>
+      <p data-i18n="chg-divpage-head.4">Loading the changelog…</p>
     </div>
   </main>
 
   <footer class="foot">
-    <p>flare is MIT licensed. The notch is Codenotch's design, brought to Hyprland; <a href="credits.html">credits</a> lists where every part came from.</p>
+    <p data-i18n="chg-foot.1">flare is MIT licensed. The notch is Codenotch's design, brought to Hyprland; <a href="credits.html">credits</a> lists where every part came from.</p>
     <nav aria-label="Footer">
-      <a href="./">Home</a>
-      <a href="credits.html">Credits</a>
-      <a href="https://github.com/lunanoir21/flare-notch/releases">Releases</a>
-      <a href="https://github.com/lunanoir21/flare-notch/blob/main/README.tr.md">Türkçe</a>
+      <a href="./" data-i18n="chg-foot.2">Home</a>
+      <a href="credits.html" data-i18n="chg-foot.3">Credits</a>
+      <a href="https://github.com/lunanoir21/flare-notch/releases" data-i18n="chg-foot.4">Releases</a>
+      <a href="https://github.com/lunanoir21/flare-notch/blob/main/README.tr.md" data-i18n="chg-foot.5">Türkçe</a>
     </nav>
   </footer>
 
+  <script src="i18n/tr.js" defer></script>
+  <script src="i18n.js" defer></script>
   <script src="news.js" defer></script>
   <script src="site.js" defer></script>
 </body>

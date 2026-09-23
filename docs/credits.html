@@ -3,10 +3,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Credits — flare</title>
+  <title data-i18n="cred-head.1">Credits — flare</title>
   <meta name="theme-color" content="#000000">
-  <meta name="description" content="The projects flare is built from and on, and what it takes from each.">
+  <meta name="description" data-i18n-attr="content:cred-head.desc" content="The projects flare is built from and on, and what it takes from each.">
   <script>try { if (localStorage.getItem("flare-theme") === "light") document.documentElement.dataset.theme = "light"; } catch (e) {}</script>
+  <script>
+    (function () {
+      var root = document.documentElement, known = /^(en|tr)$/, asked = new URLSearchParams(location.search).get("lang"), saved = null;
+      try { saved = localStorage.getItem("flare-lang"); } catch (e) {}
+      var lang = known.test(asked) ? asked : known.test(saved) ? saved : /^tr\b/i.test(navigator.language || "") ? "tr" : "en";
+      if (asked === lang) try { localStorage.setItem("flare-lang", lang); } catch (e) {}
+      root.dataset.lang = lang;
+      if (lang !== "en") {
+        root.classList.add("i18n-pending");
+        setTimeout(function () { root.classList.remove("i18n-pending"); }, 2000);
+      }
+    })();
+  </script>
+  <link rel="alternate" hreflang="en" href="https://lunanoir21.github.io/flare-notch/credits.html?lang=en">
+  <link rel="alternate" hreflang="tr" href="https://lunanoir21.github.io/flare-notch/credits.html?lang=tr">
   <link rel="icon" href="assets/flare.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,9 +34,9 @@
   <header class="top">
     <a class="wordmark" href="./"><img src="assets/flare.svg" alt="" width="28" height="28">flare</a>
     <nav aria-label="Site">
-      <a href="docs.html">Docs</a>
-      <a href="changelog.html">Changelog</a>
-      <a href="credits.html" aria-current="page">Credits</a>
+      <a href="docs.html" data-i18n="nav.2">Docs</a>
+      <a href="changelog.html" data-i18n="nav.3">Changelog</a>
+      <a href="credits.html" aria-current="page" data-i18n="nav.4">Credits</a>
       <a class="wide" href="https://github.com/lunanoir21/flare-notch">GitHub</a>
       <button class="theme" type="button" aria-label="Switch to the white theme">
         <svg class="moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.6A5.6 5.6 0 0 1 6.4 2.5a5.6 5.6 0 1 0 7.1 7.1Z"/></svg>
@@ -32,109 +47,111 @@
 
   <main id="main">
     <div class="page-head">
-      <span class="tag">README.md#credit-where-it-is-due</span>
-      <h1>Credits</h1>
-      <p class="lede">flare brings someone else's idea to Hyprland. These are the projects it comes from, what it takes from each, and what it doesn't.</p>
+      <span class="tag" data-i18n="cred-divpage-head.1">README.md#credit-where-it-is-due</span>
+      <h1 data-i18n="cred-divpage-head.2">Credits</h1>
+      <p class="lede" data-i18n="cred-divpage-head.3">flare brings someone else's idea to Hyprland. These are the projects it comes from, what it takes from each, and what it doesn't.</p>
     </div>
 
     <ul class="ledger">
       <li class="entry">
         <div>
           <h2>Codenotch</h2>
-          <p class="by">by Vinz</p>
+          <p class="by" data-i18n="cred-ulledger.2">by Vinz</p>
           <a class="link" href="https://github.com/vinzdg/codenotch">github.com/vinzdg/codenotch</a>
         </div>
         <dl>
-          <dt>What flare takes</dt>
-          <dd>The design and the idea. The notch's shape, its rings and colours, the hover card, and the rule that a reading is never invented all come from Codenotch, as does the way each provider is read. Codenotch also showed that the idea could live on a desktop other than a Mac.</dd>
-          <dt>What it doesn't</dt>
-          <dd class="no">Code. Codenotch is Swift; flare's Rust was written from the behaviour Codenotch documents, not from its source.</dd>
+          <dt data-i18n="cred-ulledger.3">What flare takes</dt>
+          <dd data-i18n="cred-ulledger.4">The design and the idea. The notch's shape, its rings and colours, the hover card, and the rule that a reading is never invented all come from Codenotch, as does the way each provider is read. Codenotch also showed that the idea could live on a desktop other than a Mac.</dd>
+          <dt data-i18n="cred-ulledger.5">What it doesn't</dt>
+          <dd class="no" data-i18n="cred-ulledger.6">Code. Codenotch is Swift; flare's Rust was written from the behaviour Codenotch documents, not from its source.</dd>
         </dl>
       </li>
 
       <li class="entry">
         <div>
-          <h2>Codenotch for Windows</h2>
-          <p class="by">by Im-Midi</p>
+          <h2 data-i18n="cred-ulledger.7">Codenotch for Windows</h2>
+          <p class="by" data-i18n="cred-ulledger.8">by Im-Midi</p>
           <a class="link" href="https://github.com/Im-Midi/codenotch-windows">github.com/Im-Midi/codenotch-windows</a>
         </div>
         <dl>
-          <dt>What flare takes</dt>
-          <dd>A reference for each provider's wire format. It wrote Codenotch's provider rules down in portable Rust, which made reading every endpoint on Linux much less of a guess.</dd>
+          <dt data-i18n="cred-ulledger.9">What flare takes</dt>
+          <dd data-i18n="cred-ulledger.10">A reference for each provider's wire format. It wrote Codenotch's provider rules down in portable Rust, which made reading every endpoint on Linux much less of a guess.</dd>
         </dl>
       </li>
 
       <li class="entry">
         <div>
           <h2>Orca</h2>
-          <p class="by">by Stably</p>
+          <p class="by" data-i18n="cred-ulledger.12">by Stably</p>
           <a class="link" href="https://github.com/stablyai/orca">github.com/stablyai/orca</a>
         </div>
         <dl>
-          <dt>What flare takes</dt>
-          <dd>The technique behind local mode: read what each agent has already written to disk, instead of asking a server.</dd>
+          <dt data-i18n="cred-ulledger.13">What flare takes</dt>
+          <dd data-i18n="cred-ulledger.14">The technique behind local mode: read what each agent has already written to disk, instead of asking a server.</dd>
         </dl>
       </li>
 
       <li class="entry">
         <div>
           <h2>CodexBar</h2>
-          <p class="by">by Peter Steinberger</p>
+          <p class="by" data-i18n="cred-ulledger.16">by Peter Steinberger</p>
           <a class="link" href="https://github.com/steipete/CodexBar">github.com/steipete/CodexBar</a>
         </div>
         <dl>
-          <dt>What flare takes</dt>
-          <dd>The wish behind the whole thing: to see how much AI usage is left at a glance, without opening a page.</dd>
+          <dt data-i18n="cred-ulledger.17">What flare takes</dt>
+          <dd data-i18n="cred-ulledger.18">The wish behind the whole thing: to see how much AI usage is left at a glance, without opening a page.</dd>
         </dl>
       </li>
 
       <li class="entry">
         <div>
-          <h2>LobeHub Icons</h2>
-          <p class="by">by LobeHub · MIT</p>
+          <h2 data-i18n="cred-ulledger.19">LobeHub Icons</h2>
+          <p class="by" data-i18n="cred-ulledger.20">by LobeHub · MIT</p>
           <a class="link" href="https://github.com/lobehub/lobe-icons">github.com/lobehub/lobe-icons</a>
         </div>
         <dl>
-          <dt>What flare takes</dt>
-          <dd>The provider logos in the rings, from <code>@lobehub/icons-static-svg</code> 1.95.0. Two are recoloured white for a black background.</dd>
-          <dt>Note</dt>
-          <dd class="no">The logos are trademarks of Anthropic, OpenAI, Anysphere, OpenCode, Google and Amazon, used only to name the product whose usage is shown.</dd>
+          <dt data-i18n="cred-ulledger.21">What flare takes</dt>
+          <dd data-i18n="cred-ulledger.22">The provider logos in the rings, from <code>@lobehub/icons-static-svg</code> 1.95.0. Two are recoloured white for a black background.</dd>
+          <dt data-i18n="cred-ulledger.23">Note</dt>
+          <dd class="no" data-i18n="cred-ulledger.24">The logos are trademarks of Anthropic, OpenAI, Anysphere, OpenCode, Google and Amazon, used only to name the product whose usage is shown.</dd>
         </dl>
       </li>
     </ul>
 
     <section class="section" aria-labelledby="stack-title">
       <div class="section-head">
-        <span class="tag">Cargo.toml · ui/</span>
-        <h2 id="stack-title">Built on</h2>
+        <span class="tag" data-i18n="cred-stack.1">Cargo.toml · ui/</span>
+        <h2 id="stack-title" data-i18n="cred-stack.2">Built on</h2>
       </div>
       <div class="section-body">
       <ul class="stack">
-        <li><a href="https://quickshell.org">Quickshell</a> · the widget toolkit</li>
-        <li><a href="https://hyprland.org">Hyprland</a> · the compositor it's made for</li>
-        <li><a href="https://www.qt.io">Qt Quick</a> · the UI</li>
-        <li><a href="https://www.rust-lang.org">Rust</a> · the <code>flare</code> binary</li>
-        <li><a href="https://crates.io/crates/ureq">ureq</a> · HTTP for official mode</li>
-        <li><a href="https://crates.io/crates/rusqlite">rusqlite</a> · OpenCode's, Antigravity's and Cursor's databases</li>
-        <li><a href="https://crates.io/crates/serde">serde</a> · JSON in and out</li>
-        <li><a href="https://crates.io/crates/toml_edit">toml_edit</a> · config edits that keep comments</li>
-        <li><a href="https://crates.io/crates/clap">clap</a> · the command line</li>
-        <li><a href="https://crates.io/crates/chrono">chrono</a> · reset times</li>
+        <li data-i18n="cred-stack.3"><a href="https://quickshell.org">Quickshell</a> · the widget toolkit</li>
+        <li data-i18n="cred-stack.4"><a href="https://hyprland.org">Hyprland</a> · the compositor it's made for</li>
+        <li data-i18n="cred-stack.5"><a href="https://www.qt.io">Qt Quick</a> · the UI</li>
+        <li data-i18n="cred-stack.6"><a href="https://www.rust-lang.org">Rust</a> · the <code>flare</code> binary</li>
+        <li data-i18n="cred-stack.7"><a href="https://crates.io/crates/ureq">ureq</a> · HTTP for official mode</li>
+        <li data-i18n="cred-stack.8"><a href="https://crates.io/crates/rusqlite">rusqlite</a> · OpenCode's, Antigravity's and Cursor's databases</li>
+        <li data-i18n="cred-stack.9"><a href="https://crates.io/crates/serde">serde</a> · JSON in and out</li>
+        <li data-i18n="cred-stack.10"><a href="https://crates.io/crates/toml_edit">toml_edit</a> · config edits that keep comments</li>
+        <li data-i18n="cred-stack.11"><a href="https://crates.io/crates/clap">clap</a> · the command line</li>
+        <li data-i18n="cred-stack.12"><a href="https://crates.io/crates/chrono">chrono</a> · reset times</li>
       </ul>
       </div>
     </section>
   </main>
 
   <footer class="foot">
-    <p>flare is MIT licensed. Every project above keeps its own license.</p>
+    <p data-i18n="cred-foot.1">flare is MIT licensed. Every project above keeps its own license.</p>
     <nav aria-label="Footer">
-      <a href="./">Home</a>
-      <a href="changelog.html">Changelog</a>
-      <a href="https://github.com/lunanoir21/flare-notch/releases">Releases</a>
-      <a href="https://github.com/lunanoir21/flare-notch/blob/main/README.tr.md">Türkçe</a>
+      <a href="./" data-i18n="cred-foot.2">Home</a>
+      <a href="changelog.html" data-i18n="cred-foot.3">Changelog</a>
+      <a href="https://github.com/lunanoir21/flare-notch/releases" data-i18n="cred-foot.4">Releases</a>
+      <a href="https://github.com/lunanoir21/flare-notch/blob/main/README.tr.md" data-i18n="cred-foot.5">Türkçe</a>
     </nav>
   </footer>
 
+  <script src="i18n/tr.js" defer></script>
+  <script src="i18n.js" defer></script>
   <script src="news.js" defer></script>
   <script src="site.js" defer></script>
 </body>

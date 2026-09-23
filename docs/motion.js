@@ -71,9 +71,11 @@ function liveGauge(art, reduce) {
   let shown = 0;
   let frame = 0;
 
+  const t = window.flareT || ((key, english, vars = {}) => english.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m)));
+
   const left = () => {
     const minutes = Math.max(0, SESSION - state.gone);
-    return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+    return t("ui.hoursMinutes", "{h}h {m}m", { h: Math.floor(minutes / 60), m: minutes % 60 });
   };
 
   const count = (target, length, delay = 0) => {
@@ -98,7 +100,7 @@ function liveGauge(art, reduce) {
     for (const line of ticks) line.classList.toggle("lit", state.v >= Number(line.dataset.at));
     weekOut.textContent = `${Math.round(state.w)}%`;
     const ahead = state.v > (state.gone / SESSION) * 100 + 12;
-    paceOut.textContent = ahead ? "ahead of pace" : "on pace";
+    paceOut.textContent = ahead ? t("ui.aheadOfPace", "ahead of pace") : t("ui.onPace", "on pace");
     paceOut.classList.toggle("ahead", ahead);
     count(state.v, length);
   };
@@ -106,7 +108,7 @@ function liveGauge(art, reduce) {
   const reset = () => {
     gauge.classList.add("draining", "flash");
     caption.classList.add("reset");
-    caption.textContent = "limit reset · a fresh five hours";
+    caption.textContent = t("ui.limitReset", "limit reset · a fresh five hours");
     state.v = 2 + Math.random() * 4;
     state.gone = 0;
     if (state.w > 94) state.w = 5;
@@ -128,7 +130,7 @@ function liveGauge(art, reduce) {
       state.v = Math.min(99, state.v + used);
       state.w = Math.min(99, state.w + used * 0.16);
     }
-    caption.textContent = `current session · resets in ${left()}`;
+    caption.textContent = t("ui.currentSessionCaption", "current session · resets in {left}", { left: left() });
     paint();
   };
 

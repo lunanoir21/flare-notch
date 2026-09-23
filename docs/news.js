@@ -121,8 +121,8 @@
         <article class="release" id="v${escape(release.version)}">
           <header>
             <h2>${escape(release.version)}</h2>
-            ${i === 0 ? '<span class="latest">Latest</span>' : ""}
-            <a class="release-link" href="https://github.com/lunanoir21/flare-notch/releases/tag/v${encodeURIComponent(release.version)}">Release</a>
+            ${i === 0 ? `<span class="latest">${escape(t("ui.latest", "Latest"))}</span>` : ""}
+            <a class="release-link" href="https://github.com/lunanoir21/flare-notch/releases/tag/v${encodeURIComponent(release.version)}">${escape(t("ui.release", "Release"))}</a>
           </header>
           <div class="release-body">${release.html}</div>
         </article>`
@@ -149,6 +149,6 @@
       }
     })
     .catch(() => {
-      if (log) log.innerHTML = `<p>The changelog could not be loaded here. <a href="${FALLBACK}">Read CHANGELOG.md on GitHub</a>.</p>`;
+      if (log) log.innerHTML = `<p>${t("ui.changelogFailed", "The changelog could not be loaded here.")} <a href="${FALLBACK}">${t("ui.readOnGithub", "Read CHANGELOG.md on GitHub")}</a>.</p>`;
     });
 })();
