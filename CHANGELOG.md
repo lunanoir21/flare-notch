@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+**Open sessions for OpenCode:** the live sessions list only ever worked for
+Claude Code, the one CLI that keeps a per-process record
+(`sessions/<pid>.json`) on disk. OpenCode keeps no such record, so flare now
+finds its running `opencode` processes itself and names each one after the
+session its working directory last touched in `opencode.db`. Background
+`opencode serve` processes are not sessions and stay out of the list; with no
+busy/waiting signal to read, every match shows as idle rather than guessing.
+
 **Proactive audit ahead of an Omarchy marketplace submission** — Before
 submitting to the Omarchy marketplace, everything flare takes from the
 outside world was re-read against a hostile/malformed-input lens: every

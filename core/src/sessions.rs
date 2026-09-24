@@ -197,6 +197,39 @@ pub fn folder_name(path: &str) -> String {
         .map(|name| name.to_string_lossy().into_owned())
         .unwrap_or_default()
 }
+
+/// Running processes whose own binary is named `bin_name`, each with its
+/// working directory. A process whose first argument is one of
+/// `skip_first_args` is left out — a subcommand that isn't an interactive
+/// session, such as a background server.
+///
+/// For a CLI that keeps no per-session record on disk (unlike Claude Code's
+/// `sessions/<pid>.json`), this is the only way to tell a session is open at
+/// all: there is no status to read, so every match counts as idle.
+pub fn processes_named(proc_root: &Path, bin_name: &str, skip_first_args: &[&str]) -> Vec<(u32, std::path::PathBuf)> {
+    let Ok(entries) = fs::read_dir(proc_root) else {
+        return Vec::new();
+    };
+    entries
+        .flatten()
+        .filter_map(|entry| {
+            let pid: u32 = entry.file_name().to_str()?.parse().ok()?;
+            let dir = entry.path();
+            let cmdline = fs::read(dir.join("cmdline")).ok()?;
+            let mut args = cmdline.split(|&b| b == 0).filter(|arg| !arg.is_empty());
+            let exe = std::str::from_utf8(args.next()?).ok()?;
+            if Path::new(exe).file_name()?.to_str()? != bin_name {
+                return None;
+            }
+            if let Some(first) = args.next() {
+                if skip_first_args.contains(&std::str::from_utf8(first).ok()?) {
+                    return None;
+                }
+            }
+            Some((pid, fs::read_link(dir.join("cwd")).ok()?))
+        })
+        .collect()
+}
 /// A still-open session's last_seen is rewritten at most this often.
 const LOG_TOUCH_SECS: i64 = 60;
 
@@ -450,6 +483,25 @@ mod tests {
         let windows = vec![(100, "0xabc".to_string()), (999, "0xdef".to_string())];
         assert_eq!(window_for(&procfs, 300, &windows).as_deref(), Some("0xabc"));
         assert_eq!(window_for(&procfs, 300, &[(999, "0xdef".into())]), None);
+    }
+
+    #[test]
+    fn processes_named_matches_the_binary_and_skips_named_subcommands() {
+        let (_root, _sessions, procfs) = setup();
+        let write = |pid: u32, args: &[&str], cwd: &Path| {
+            let dir = procfs.join(pid.to_string());
+            fs::create_dir_all(&dir).unwrap();
+            fs::write(dir.join("cmdline"), args.join("\0") + "\0").unwrap();
+            std::os::unix::fs::symlink(cwd, dir.join("cwd")).unwrap();
+        };
+        write(1, &["/usr/bin/opencode", "run", "hi"], Path::new("/a"));
+        write(2, &["/usr/bin/opencode", "serve", "--port", "0"], Path::new("/b"));
+        write(3, &["/usr/bin/other"], Path::new("/c"));
+        write(4, &["/usr/bin/opencode"], Path::new("/d"));
+
+        let mut found = processes_named(&procfs, "opencode", &["serve"]);
+        found.sort();
+        assert_eq!(found, vec![(1, Path::new("/a").to_path_buf()), (4, Path::new("/d").to_path_buf())]);
     }
 
     fn setup() -> (tempfile::TempDir, std::path::PathBuf, std::path::PathBuf) {

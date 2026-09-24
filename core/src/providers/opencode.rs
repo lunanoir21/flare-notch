@@ -13,9 +13,9 @@
 use std::path::Path;
 
 use anyhow::Result;
-use rusqlite::{Connection, OpenFlags};
+use rusqlite::{Connection, OpenFlags, OptionalExtension};
 
-use crate::sessions::{self, Logged};
+use crate::sessions::{self, Logged, Session, SessionState};
 use crate::{Activity, Config, Fetch, ModelUse, ProviderUsage, SOURCE_LOCAL, Status, Unit, UsageProvider, err_parse, paths};
 
 const ID: &str = "opencode";
@@ -78,6 +78,49 @@ impl UsageProvider for OpenCode {
         let db = paths::opencode_data().ok()?.join("opencode.db");
         read_sessions(&db, now - sessions::LOG_KEEP_SECS, now).ok()
     }
+
+    fn open_sessions(&self) -> Vec<Session> {
+        let Ok(db) = paths::opencode_data().map(|dir| dir.join("opencode.db")) else {
+            return Vec::new();
+        };
+        open_sessions_at(&db, Path::new("/proc")).unwrap_or_default()
+    }
+}
+
+/// OpenCode keeps no per-session pid record the way Claude Code does, so a
+/// session only counts as open while its own `opencode` process is still
+/// running. Its cwd finds the session it most recently touched in the
+/// database, for a name; with no status field to read, every match is idle.
+fn open_sessions_at(db_path: &Path, proc_root: &Path) -> Result<Vec<Session>> {
+    let processes = sessions::processes_named(proc_root, "opencode", &["serve"]);
+    if processes.is_empty() {
+        return Ok(Vec::new());
+    }
+    let conn = open(db_path)?;
+    let mut statement = conn.prepare(
+        "SELECT title, time_created FROM session \
+         WHERE parent_id IS NULL AND directory = ?1 \
+         ORDER BY time_updated DESC LIMIT 1",
+    )?;
+    let mut out: Vec<Session> = processes
+        .into_iter()
+        .map(|(pid, cwd)| {
+            let directory = cwd.to_string_lossy().into_owned();
+            let project = sessions::folder_name(&directory);
+            let row: Option<(String, i64)> = statement
+                .query_row([&directory], |row| Ok((row.get(0)?, row.get(1)?)))
+                .optional()
+                .unwrap_or(None);
+            let (name, started_at) = match row {
+                Some((title, created)) if !title.trim().is_empty() => (title, Some(created / 1000)),
+                Some((_, created)) => (project.clone(), Some(created / 1000)),
+                None => (project.clone(), None),
+            };
+            Session { pid, name, project, state: SessionState::Idle, waiting_for: None, started_at }
+        })
+        .collect();
+    out.sort_by_key(|session| (session.started_at, session.pid));
+    Ok(out)
 }
 
 fn open(db_path: &Path) -> Result<Connection> {
@@ -334,5 +377,51 @@ mod tests {
         let account = read_account(&fixture("opencode/auth_ok.json"));
         assert_eq!(account.as_deref(), Some("nvidia, openrouter"));
         assert!(read_account(&fixture("opencode/no_such_auth.json")).is_none());
+    }
+
+    fn write_proc(proc_root: &Path, pid: u32, args: &[&str], cwd: &Path) {
+        let dir = proc_root.join(pid.to_string());
+        std::fs::create_dir_all(&dir).expect("proc dir");
+        std::fs::write(dir.join("cmdline"), args.join("\0") + "\0").expect("cmdline");
+        std::os::unix::fs::symlink(cwd, dir.join("cwd")).expect("cwd symlink");
+    }
+
+    #[test]
+    fn a_running_process_is_a_session_named_after_its_latest_db_row() {
+        let dir = tempfile::tempdir().expect("temp dir");
+        let db = seeded_history(dir.path());
+        let proc_root = dir.path().join("proc");
+        write_proc(&proc_root, 42, &["/usr/bin/opencode", "run", "hi"], Path::new("/home/u/flare"));
+
+        let sessions = open_sessions_at(&db, &proc_root).expect("sessions");
+        assert_eq!(sessions.len(), 1);
+        assert_eq!(sessions[0].pid, 42);
+        assert_eq!(sessions[0].name, "fix the parser");
+        assert_eq!(sessions[0].project, "flare");
+        assert_eq!(sessions[0].state, SessionState::Idle);
+    }
+
+    #[test]
+    fn a_background_serve_process_is_not_a_session() {
+        let dir = tempfile::tempdir().expect("temp dir");
+        let db = seeded_history(dir.path());
+        let proc_root = dir.path().join("proc");
+        write_proc(&proc_root, 7, &["/usr/bin/opencode", "serve", "--port", "0"], Path::new("/home/u/flare"));
+
+        assert!(open_sessions_at(&db, &proc_root).expect("sessions").is_empty());
+    }
+
+    #[test]
+    fn a_process_with_no_matching_db_row_still_shows_up_by_its_folder() {
+        let dir = tempfile::tempdir().expect("temp dir");
+        let db = seeded_history(dir.path());
+        let proc_root = dir.path().join("proc");
+        write_proc(&proc_root, 9, &["/usr/bin/opencode", "run", "hi"], Path::new("/home/u/other"));
+
+        let sessions = open_sessions_at(&db, &proc_root).expect("sessions");
+        assert_eq!(sessions.len(), 1);
+        assert_eq!(sessions[0].name, "other");
+        assert_eq!(sessions[0].project, "other");
+        assert_eq!(sessions[0].started_at, None);
     }
 }
