@@ -1,6 +1,10 @@
 #!/bin/sh
 # Installs the flare binary to ~/.local/bin (or $FLARE_BIN_DIR): built from
-# this checkout when cargo is available, otherwise the latest release build.
+# this checkout when cargo is available, otherwise the release build matching
+# this checkout's own Cargo.toml version — never whatever is newest, so a
+# pinned checkout gets the release it was pinned for. FLARE_SHA256 pins the
+# expected digest out of band, for a caller that doesn't want to trust
+# whichever .sha256 that release happens to publish at install time.
 set -eu
 
 repo="lunanoir21/flare-notch"
@@ -19,12 +23,19 @@ else
     [ "$(uname -m)" = "x86_64" ] || { say "no release build for $(uname -m); install Rust and run this again"; exit 1; }
     command -v curl >/dev/null 2>&1 || { say "curl is needed to download the release build"; exit 1; }
     command -v sha256sum >/dev/null 2>&1 || { say "sha256sum is needed to verify the release build"; exit 1; }
+    version=$(sed -n 's/^version = "\(.*\)"/\1/p' "$here/Cargo.toml" | head -n1)
+    [ -n "$version" ] || { say "could not read the version from $here/Cargo.toml"; exit 1; }
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
-    say "downloading the latest release build"
+    say "downloading the v$version release build"
     asset="flare-x86_64-linux.tar.gz"
-    curl -fsSL "https://github.com/$repo/releases/latest/download/$asset" -o "$tmp/$asset"
-    curl -fsSL "https://github.com/$repo/releases/latest/download/$asset.sha256" -o "$tmp/$asset.sha256"
+    base="https://github.com/$repo/releases/download/v$version"
+    curl -fsSL "$base/$asset" -o "$tmp/$asset"
+    if [ -n "${FLARE_SHA256:-}" ]; then
+        printf '%s  %s\n' "$FLARE_SHA256" "$asset" > "$tmp/$asset.sha256"
+    else
+        curl -fsSL "$base/$asset.sha256" -o "$tmp/$asset.sha256"
+    fi
     ( cd "$tmp" && sha256sum -c "$asset.sha256" ) || { say "checksum mismatch; not installing"; exit 1; }
     tar -xzf "$tmp/$asset" -C "$tmp"
     install -m 755 "$tmp/flare" "$bin_dir/flare"

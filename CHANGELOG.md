@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+**`install.sh` no longer downloads a moving target:** the release-build
+fallback used to fetch `releases/latest`, so a pinned checkout (an Omarchy
+wrapper vendoring a fixed commit, say) could still end up installing a
+different, newer binary than the one that was reviewed — its checksum came
+from that same mutable release, so it verified against itself rather than
+against anything the checkout actually pinned. It now downloads the release
+matching the checkout's own `Cargo.toml` version, and a new `FLARE_SHA256`
+lets a caller pin the expected digest itself instead of trusting whatever
+`.sha256` the release page publishes at install time.
+
 **Open sessions for OpenCode:** the live sessions list only ever worked for
 Claude Code, the one CLI that keeps a per-process record
 (`sessions/<pid>.json`) on disk. OpenCode keeps no such record, so flare now

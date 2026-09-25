@@ -185,9 +185,11 @@ cd flare-notch
 ./install.sh
 ```
 
-`install.sh`, Rust 1.85+ kuruluysa `flare` binary'sini derler, değilse
-[son sürümün](https://github.com/lunanoir21/flare-notch/releases/latest) hazır
-binary'sini indirir (x86_64, glibc 2.39+), `~/.local/bin`'e koyar (değiştirmek için
+`install.sh`, Rust 1.85+ kuruluysa `flare` binary'sini derler, değilse bu checkout'un
+kendi `Cargo.toml` sürümüne denk gelen sürümü indirir (x86_64, glibc 2.39+) — asla
+o an en yeni olan sürümü değil — ve o sürümün yayınladığı `.sha256` ile doğrular
+(kurulum sırasında sürüm sayfasına güvenmek yerine kendi digest'ini pinlemek
+istersen `FLARE_SHA256`'yı ayarla), `~/.local/bin`'e koyar (değiştirmek için
 `FLARE_BIN_DIR`) ve `flare doctor`'ı çalıştırır.
 
 Ayrıca **flare**'i uygulama başlatıcınıza (rofi, wofi, fuzzel vb.) ekler: `~/.local/share`
