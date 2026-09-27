@@ -36,6 +36,41 @@ Singleton {
     property real previewScale: NaN
     property real previewGap: NaN
 
+    // The first-run setup, drawn by the settings window in place of the
+    // settings page while it is true.
+    property bool onboarding: false
+    // Asks for the setup on a config that has not been through it, once the
+    // config and the first reading have both landed — in either order — and
+    // again the moment `ui.onboarded` is switched back off.
+    readonly property bool wantOnboarding: root.ready && root.config !== null && !root.onboarded
+
+    onWantOnboardingChanged: {
+        if (wantOnboarding && !onboarding)
+            startOnboarding();
+    }
+
+    function startOnboarding() {
+        onboarding = true;
+        settingsOpen = true;
+    }
+
+    // The setup's last screen: the answer is written, the window closes as the
+    // settings page's own does. `onboarding` itself waits for onboardingClosed
+    // below, so the settings page never shows for a frame behind a setup that
+    // is still fading out.
+    function finishOnboarding() {
+        set("ui.onboarded", true);
+        settingsOpen = false;
+    }
+
+    // Called by the settings window once its closing animation is over. A setup
+    // that was only dismissed keeps its place, and is there again the next time
+    // the settings page opens; a finished one lets the settings page take over.
+    function onboardingClosed() {
+        if (onboarded)
+            onboarding = false;
+    }
+
     property real now: Date.now() / 1000
 
     readonly property var section: name => root.config && root.config[name] ? root.config[name] : ({})

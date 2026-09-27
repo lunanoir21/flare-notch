@@ -16,6 +16,7 @@ PageAlerts 1.0 PageAlerts.qml
 SessionList 1.0 SessionList.qml
 LivePreview 1.0 LivePreview.qml
 NotchShape 1.0 NotchShape.qml
+Onboarding 1.0 Onboarding.qml
 OnboardingIntro 1.0 OnboardingIntro.qml
 OnboardingLanguage 1.0 OnboardingLanguage.qml
 OnboardingProviders 1.0 OnboardingProviders.qml
