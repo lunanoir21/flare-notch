@@ -228,6 +228,9 @@ Singleton {
     readonly property string introNumbersOfficial: tr ? "Official mod, her sağlayıcının kendi kullanım uç noktasını CLI'ının zaten sakladığı girişle okur; Codenotch'un yaptığı gibi." : "Official mode reads each provider's own usage endpoint with the sign-in its CLI already keeps, as Codenotch does."
     readonly property string introNumbersLocal: tr ? "Local mod ağa hiç çıkmaz; yalnızca CLI'ların diske yazdığını okur." : "Local mode never touches the network; it reads only what the CLIs wrote to disk."
     readonly property string introNumbersSafe: tr ? "Girişler okunur, yazılmaz ve hiçbir yere yazdırılmaz." : "Credentials are read, never written and never printed."
+    readonly property string languageStepHint: tr ? "flare bunu her yerde kullanır; sonra Görünüm'den değiştirebilirsin." : "flare uses this everywhere; you can change it later under Look."
+    readonly property string languageEnglish: tr ? "Her şey İngilizce kalır" : "Everything stays in English"
+    readonly property string languageTurkish: tr ? "Her şey Türkçe kalır" : "Everything stays in Turkish"
 
     function howItFilled(label) {
         return tr ? label + " nasıl doldu" : "How " + label.toLowerCase() + " filled";
