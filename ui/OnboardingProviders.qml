@@ -55,7 +55,7 @@ Item {
                 id: column
 
                 width: list.width
-                spacing: 8
+                spacing: 6
 
                 Repeater {
                     model: FlareData.allIds()
@@ -70,7 +70,7 @@ Item {
                         readonly property color tint: FlareData.auraColour(modelData)
 
                         Layout.fillWidth: true
-                        implicitHeight: 68
+                        implicitHeight: 62
                         radius: 14
                         color: Theme.sheetRaised
                         border.color: Theme.sheetLine
@@ -82,17 +82,17 @@ Item {
                             spacing: 14
 
                             Rectangle {
-                                Layout.preferredWidth: 40
-                                Layout.preferredHeight: 40
-                                radius: 11
+                                Layout.preferredWidth: 36
+                                Layout.preferredHeight: 36
+                                radius: 10
                                 color: Qt.rgba(1, 1, 1, 0.05)
                                 border.color: Theme.sheetLine
                                 opacity: card.enabledHere ? 1 : 0.45
 
                                 Image {
                                     anchors.centerIn: parent
-                                    width: 22
-                                    height: 22
+                                    width: 20
+                                    height: 20
                                     source: Theme.logo(card.modelData)
                                     sourceSize: Qt.size(48, 48)
                                     fillMode: Image.PreserveAspectFit
@@ -102,9 +102,9 @@ Item {
                                     anchors.right: parent.right
                                     anchors.bottom: parent.bottom
                                     anchors.margins: -3
-                                    width: 12
-                                    height: 12
-                                    radius: 6
+                                    width: 11
+                                    height: 11
+                                    radius: 5.5
                                     visible: card.enabledHere && !card.otherLogin
                                     color: card.tint
                                     border.width: 2
@@ -120,7 +120,7 @@ Item {
                                     Layout.fillWidth: true
                                     text: FlareData.nameOf(card.modelData)
                                     color: card.enabledHere ? Theme.sheetText : Theme.sheetSubtext
-                                    font.pixelSize: 15
+                                    font.pixelSize: 14
                                     font.weight: Font.DemiBold
                                     elide: Text.ElideRight
                                 }
@@ -129,7 +129,7 @@ Item {
                                     Layout.fillWidth: true
                                     text: screen.installedLabel(card.modelData)
                                     color: Theme.sheetMuted
-                                    font.pixelSize: 12
+                                    font.pixelSize: 11
                                     elide: Text.ElideRight
                                 }
                             }
