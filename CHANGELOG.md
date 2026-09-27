@@ -1,6 +1,15 @@
 # Changelog
 
-## Unreleased
+## 1.1.0
+
+**A first-run setup wizard:** the settings window used to open straight onto
+the normal tabs, with no path to change the language or say which providers
+to draw before the widget just started drawing all of them. Now, until
+`ui.onboarded` is set, opening settings shows a short setup instead: the
+language first, then what flare is and how to use it in three brief screens,
+then which providers to show, with the install-status and toggle any
+provider card already had. There is no way past it but forward, and it can
+be run again any time from the About page.
 
 **`install.sh` no longer downloads a moving target:** the release-build
 fallback used to fetch `releases/latest`, so a pinned checkout (an Omarchy
