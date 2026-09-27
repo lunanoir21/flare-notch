@@ -2,8 +2,10 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 
-// The settings surface. Everything it changes goes through `flare config set`,
-// so it lands in the same config.toml a terminal would edit.
+// The settings surface, and the first-run setup that takes its place until it
+// has been finished. Everything either of them changes goes through
+// `flare config set`, so it lands in the same config.toml a terminal would
+// edit.
 PanelWindow {
     id: win
 
@@ -15,7 +17,9 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
-    implicitWidth: 1000
+    // The setup is a narrower surface, and it holds that width while it fades
+    // out: `onboarding` is only cleared once the closing animation is over.
+    implicitWidth: FlareData.onboarding ? 720 : 1000
     implicitHeight: Math.min(660, (screen ? screen.height : 900) - 80)
 
     Connections {
@@ -72,14 +76,34 @@ PanelWindow {
             duration: 140
             easing.type: Easing.InCubic
         }
+        ScriptAction {
+            script: FlareData.onboardingClosed()
+        }
     }
 
-    SettingsSheet {
+    // One surface or the other, never both: the settings page keeps its own
+    // timers and its live preview, and there is no reason to run either while
+    // the setup is up.
+    Loader {
         id: sheet
         anchors.fill: parent
         anchors.margins: 10
         opacity: 0
         scale: 0.96
-        onCloseRequested: FlareData.settingsOpen = false
+        sourceComponent: FlareData.onboarding ? setupSheet : settingsSheet
+    }
+
+    Component {
+        id: settingsSheet
+
+        SettingsSheet {
+            onCloseRequested: FlareData.settingsOpen = false
+        }
+    }
+
+    Component {
+        id: setupSheet
+
+        Onboarding {}
     }
 }
