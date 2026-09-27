@@ -231,6 +231,9 @@ Singleton {
     readonly property string languageStepHint: tr ? "flare bunu her yerde kullanır; sonra Görünüm'den değiştirebilirsin." : "flare uses this everywhere; you can change it later under Look."
     readonly property string languageEnglish: tr ? "Her şey İngilizce kalır" : "Everything stays in English"
     readonly property string languageTurkish: tr ? "Her şey Türkçe kalır" : "Everything stays in Turkish"
+    readonly property string providersStepTitle: tr ? "Hangi sağlayıcılar?" : "Which providers?"
+    readonly property string providersStepHint: tr ? "Kullanmadığın sağlayıcıları kapat: widget'tan tamamen kalkarlar. Sırayı ve renkleri sonra ayarlar sayfasından değiştirebilirsin." : "Switch off what you don't use and they leave the widget entirely. The order and the colours are yours to change later, in the settings."
+    readonly property string installed: tr ? "Bu makinede kurulu" : "Installed on this machine"
 
     function howItFilled(label) {
         return tr ? label + " nasıl doldu" : "How " + label.toLowerCase() + " filled";

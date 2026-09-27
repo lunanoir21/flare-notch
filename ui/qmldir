@@ -18,6 +18,7 @@ LivePreview 1.0 LivePreview.qml
 NotchShape 1.0 NotchShape.qml
 OnboardingIntro 1.0 OnboardingIntro.qml
 OnboardingLanguage 1.0 OnboardingLanguage.qml
+OnboardingProviders 1.0 OnboardingProviders.qml
 PageAbout 1.0 PageAbout.qml
 PageData 1.0 PageData.qml
 PageLook 1.0 PageLook.qml
