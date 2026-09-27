@@ -1,14 +1,15 @@
 import QtQuick
 import QtQuick.Layouts
 
-// The first-run setup, in the settings page's own surface: what flare is, then
-// the language, then which providers to draw. One screen at a time — the last
-// one writes ui.onboarded and the window closes as it does for the settings.
+// The first-run setup, in the settings page's own surface: the language
+// first, then what flare is, then which providers to draw. One screen at a
+// time, no way past it but forward — the last one writes ui.onboarded and
+// the window closes as it does for the settings.
 Rectangle {
     id: wizard
 
     property int step: 0
-    // Three opening screens, then the language and the providers.
+    // The language, three opening screens, then the providers.
     readonly property int steps: 5
     readonly property bool last: step === steps - 1
 
@@ -32,7 +33,6 @@ Rectangle {
     color: Theme.sheet
     border.color: Theme.sheetLine
     focus: true
-    Keys.onEscapePressed: FlareData.settingsOpen = false
     Keys.onReturnPressed: wizard.forward()
 
     Component.onCompleted: {
@@ -155,15 +155,15 @@ Rectangle {
             sourceComponent: {
                 switch (wizard.step) {
                 case 1:
-                    return openingUse;
+                    return openingWhat;
                 case 2:
-                    return openingNumbers;
+                    return openingUse;
                 case 3:
-                    return language;
+                    return openingNumbers;
                 case 4:
                     return providers;
                 }
-                return openingWhat;
+                return language;
             }
         }
 
