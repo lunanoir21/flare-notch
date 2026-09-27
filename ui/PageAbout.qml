@@ -52,6 +52,27 @@ Flickable {
         }
 
         SettingsCard {
+            title: Strings.onboardingTitle
+
+            Text {
+                Layout.fillWidth: true
+                text: Strings.runSetupHint
+                color: Theme.sheetSubtext
+                font.pixelSize: 12
+                lineHeight: 1.35
+                wrapMode: Text.WordWrap
+            }
+
+            SettingsButton {
+                text: Strings.runSetup
+                // The setup is on screen already; no point asking for it.
+                enabled: !FlareData.onboarding
+                opacity: enabled ? 1 : 0.4
+                onClicked: FlareData.set("ui.onboarded", false)
+            }
+        }
+
+        SettingsCard {
             title: Strings.file
 
             Text {

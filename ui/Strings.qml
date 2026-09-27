@@ -234,6 +234,17 @@ Singleton {
     readonly property string providersStepTitle: tr ? "Hangi sağlayıcılar?" : "Which providers?"
     readonly property string providersStepHint: tr ? "Kullanmadığın sağlayıcıları kapat: widget'tan tamamen kalkarlar. Sırayı ve renkleri sonra ayarlar sayfasından değiştirebilirsin." : "Switch off what you don't use and they leave the widget entirely. The order and the colours are yours to change later, in the settings."
     readonly property string installed: tr ? "Bu makinede kurulu" : "Installed on this machine"
+    readonly property string onboardingTitle: tr ? "Kurulum" : "Setup"
+    readonly property string next: tr ? "İleri" : "Next"
+    readonly property string back: tr ? "Geri" : "Back"
+    readonly property string finish: tr ? "Bitti" : "Finish"
+    readonly property string runSetup: tr ? "Kurulumu tekrarla" : "Set up again"
+    readonly property string runSetupHint: tr ? "İlk çalıştırma kurulumu baştan: flare ne, hangi dil, hangi sağlayıcılar." : "The first-run setup from the top: what flare is, the language, and which providers to show."
+
+    // The first-run setup, in the order it shows.
+    function stepOf(here, total) {
+        return tr ? here + "/" + total + ". adım" : "Step " + here + " of " + total;
+    }
 
     function howItFilled(label) {
         return tr ? label + " nasıl doldu" : "How " + label.toLowerCase() + " filled";
