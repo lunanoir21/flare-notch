@@ -41,6 +41,8 @@ Singleton {
     readonly property var section: name => root.config && root.config[name] ? root.config[name] : ({})
     readonly property string themeMode: section("theme").mode || "black"
     readonly property string language: section("ui").language || "auto"
+    // The first-run setup has been finished; the wizard writes this itself.
+    readonly property bool onboarded: section("ui").onboarded === true
     readonly property string ringLabel: section("notch").label || "percent"
     readonly property bool showSessions: section("sessions").show !== false
     readonly property var notifyRules: section("notify")

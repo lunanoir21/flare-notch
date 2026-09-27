@@ -277,6 +277,7 @@ comments. The widget picks up a saved change within a second.
 | `theme.mode` | `black`, `white`, `auto` |
 | `theme.ring_color` | `monochrome`, `provider` |
 | `ui.language` | `auto` (the locale), `en`, `tr` |
+| `ui.onboarded` | `true`, `false` — the first-run setup is finished; `false` again shows it |
 | `notch.style` | `classic`, `aura`, `compact` |
 | `notch.mount` | `bridge`, `floating`, `flush` |
 | `notch.gap` | floating: pixels off the edge, `0` to `64` |

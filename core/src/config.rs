@@ -173,6 +173,10 @@ pub struct Data {
 #[serde(default)]
 pub struct Ui {
     pub language: Language,
+    /// The first-run setup has been finished. The wizard itself writes this;
+    /// false again brings it back, which is how the settings page offers it a
+    /// second time.
+    pub onboarded: bool,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -438,6 +442,7 @@ pub const KEYS: &[&str] = &[
     "theme.mode",
     "theme.ring_color",
     "ui.language",
+    "ui.onboarded",
     "notch.style",
     "notch.mount",
     "notch.gap",
@@ -516,6 +521,9 @@ ring_color = "monochrome"
 [ui]
 # auto (follow LC_ALL / LC_MESSAGES / LANG), en or tr.
 language = "auto"
+# The first-run setup has been finished; the widget shows it once, before the
+# settings page, and writes this itself. Set it back to false to see it again.
+onboarded = false
 
 [notch]
 # classic  Codenotch's notch, every provider as a ring
@@ -975,6 +983,7 @@ mod tests {
         assert_eq!(config.theme.mode, ThemeMode::Black);
         assert_eq!(config.theme.ring_color, RingColor::Monochrome);
         assert_eq!(config.notch.style, Style::Classic);
+        assert!(!config.ui.onboarded);
         assert_eq!(config.provider_order(), ["claude", "codex", "opencode", "cursor", "antigravity", "kiro"]);
     }
 
@@ -994,6 +1003,7 @@ mod tests {
             dir.path(),
             "[data]\nmode = \"local\"\ncursor_consent = \"granted\"\n\
              [theme]\nmode = \"white\"\nring_color = \"provider\"\n\
+             [ui]\nonboarded = true\n\
              [notch]\nstyle = \"aura\"\nmount = \"floating\"\ngap = 12\nreveal = \"hover\"\nhide_delay_ms = 250\nedge = \"right\"\noffset = -40\nscale = 1.25\nscreen = \"DP-1\"\n\
              [compact]\nedge = \"bottom\"\noffset = 12\nopen_on = \"hover\"\n\
              [providers]\ncodex = false\norder = [\"cursor\", \"claude\"]\n\
@@ -1005,6 +1015,7 @@ mod tests {
         assert_eq!(config.data.cursor_consent, Consent::Granted);
         assert_eq!(config.theme.mode, ThemeMode::White);
         assert_eq!(config.theme.ring_color, RingColor::Provider);
+        assert!(config.ui.onboarded);
         assert_eq!(config.notch.style, Style::Aura);
         assert_eq!(config.notch.mount, Mount::Floating);
         assert_eq!(config.notch.gap, 12);
@@ -1095,16 +1106,19 @@ mod tests {
         set_value(&path, "aura.cursor", "#abcdef").unwrap();
         set_value(&path, "theme.mode", "auto").unwrap();
         set_value(&path, "ui.language", "en").unwrap();
+        set_value(&path, "ui.onboarded", "true").unwrap();
         set_value(&path, "notch.label", "both").unwrap();
         set_value(&path, "notify.limit_at", "80").unwrap();
         set_value(&path, "sessions.show", "false").unwrap();
         set_value(&path, "usage.all_providers", "true").unwrap();
         assert!(set_value(&path, "notify.limit_at", "20").is_err());
         assert!(set_value(&path, "ui.language", "de").is_err());
+        assert!(set_value(&path, "ui.onboarded", "maybe").is_err());
         let (config, problem) = Config::load_from(&path);
         assert!(problem.is_none(), "{problem:?}");
         assert_eq!(config.theme.mode, ThemeMode::Auto);
         assert_eq!(config.ui.language, Language::En);
+        assert!(config.ui.onboarded);
         assert_eq!(config.notch.label, Label::Both);
         assert_eq!(config.notify.limit_at, 80);
         assert!(!config.sessions.show);
